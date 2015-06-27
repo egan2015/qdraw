@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     mdiArea->tileSubWindows();
 
 
-    setWindowTitle(tr("Qt Graphics Editor"));
+    setWindowTitle(tr("Qt Drawing"));
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(updateUI()));

@@ -2,7 +2,7 @@
 #define DRAWOBJ
 
 #include <qgraphicsitem.h>
-#include <qtcore/qobject.h>
+#include <QtCore/QObject>
 #include <QGraphicsSceneMouseEvent>
 #include "drawtool.h"
 #include "sizehandle.h"

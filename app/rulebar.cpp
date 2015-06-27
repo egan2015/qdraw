@@ -5,7 +5,7 @@ QtRuleBar::QtRuleBar(int type , QGraphicsView * view, QWidget *parent)
     :QFrame(parent),
     m_DocSize(QSize(3000,2000)),
     m_view(view),
-    m_faceColor(0xE0, 0xFF, 0xE0)
+    m_faceColor(0xFF, 0xFF, 0xFF)
 {
     m_rulerType   = type;
     m_scrollPos   = QPoint(0,0);
@@ -120,7 +120,7 @@ QtCornerBox::QtCornerBox(QWidget *parent)
 void QtCornerBox::paintEvent(QPaintEvent *e)
 {
     QPainter painter(this);
-    painter.fillRect(rect(),QColor(0xE0, 0xFF, 0xE0));
+    painter.fillRect(rect(),QColor(0xFF, 0xFF, 0xFF));
     painter.setPen(Qt::DashLine);
     painter.drawLine(rect().center().x(),rect().top(),rect().center().x(),rect().bottom());
     painter.drawLine(rect().left(),rect().center().y(),rect().right(),rect().center().y());

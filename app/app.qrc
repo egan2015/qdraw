@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/align_bottom.png</file>
+        <file>icons/align_hcenter.png</file>
+        <file>icons/align_left.png</file>
+        <file>icons/align_right.png</file>
+        <file>icons/align_vcenter.png</file>
+        <file>icons/bezier.png</file>
+        <file>icons/ellipse.png</file>
+        <file>icons/line.png</file>
+        <file>icons/polygon.png</file>
+        <file>icons/polyline.png</file>
+        <file>icons/rectangle.png</file>
+        <file>icons/align_top.png</file>
+        <file>icons/arrow.png</file>
+        <file>icons/rotate.png</file>
+        <file>icons/bringtofront.png</file>
+        <file>icons/sendtoback.png</file>
+        <file>icons/roundrect.png</file>
+        <file>icons/ungroup.png</file>
+        <file>icons/group.png</file>
+    </qresource>
+</RCC>

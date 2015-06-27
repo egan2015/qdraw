@@ -45,13 +45,9 @@ void QtRuleBar::paintEvent(QPaintEvent *event)
     painter.fillRect(rulerRect,m_faceColor);
     if ( m_rulerType == RT_HORIZONTAL ){
         painter.drawLine(rulerRect.bottomLeft(),rulerRect.bottomRight());
-//        painter.translate(rulerRect.width()/2 , 0);
-//        rulerRect.translate(-rulerRect.width()/2 , 0);
     }
     else{
         painter.drawLine(rulerRect.topRight(),rulerRect.bottomRight());
-//        painter.translate(0,rulerRect.height()/2 );
-//        rulerRect.translate(0,-rulerRect.height()/2 );
     }
     DrawTicker(&painter, rulerRect, 50);
     DrawTicker(&painter, rulerRect, 10, 10, false);
@@ -124,8 +120,6 @@ void QtCornerBox::paintEvent(QPaintEvent *e)
     painter.setPen(Qt::DashLine);
     painter.drawLine(rect().center().x(),rect().top(),rect().center().x(),rect().bottom());
     painter.drawLine(rect().left(),rect().center().y(),rect().right(),rect().center().y());
-//    painter.drawLine(rect().topLeft(),rect().topRight());
-//    painter.drawLine(rect().topLeft(),rect().bottomLeft());
     painter.drawLine(rect().topRight(),rect().bottomRight());
     painter.drawLine(rect().bottomLeft(),rect().bottomRight());
 

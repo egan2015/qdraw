@@ -212,53 +212,21 @@ void MainWindow::addShape()
 
 void MainWindow::updateUI()
 {
-    switch (DrawTool::c_drawShape ) {
-    case selection:
-        actionSelect->setChecked(true);
-        break;
-    case line:
-        actionLine->setChecked(true);
-        break;
-    case rectangle:
-        actionRect->setChecked(true);
-        break;
-    case roundrect:
-        actionRoundRect->setChecked(true);
-        break;
-    case ellipse:
-        actionEllipse->setChecked(true);
-        break;
-    case bezier:
-        actionBezier->setChecked(true);
-        break;
-    case rotation:
-        actionRotate->setChecked(true);
-        break;
-    case polygon:
-        actionPolygon->setChecked(true);
-        break;
-    default:
-        break;
-    }
+    actionSelect->setChecked(DrawTool::c_drawShape == selection);
+    actionLine->setChecked(DrawTool::c_drawShape == line);
+    actionRect->setChecked(DrawTool::c_drawShape == rectangle);
+    actionRoundRect->setChecked(DrawTool::c_drawShape == roundrect);
+    actionEllipse->setChecked(DrawTool::c_drawShape == ellipse);
+    actionBezier->setChecked(DrawTool::c_drawShape == bezier);
+    actionRotate->setChecked(DrawTool::c_drawShape == rotation);
+    actionPolygon->setChecked(DrawTool::c_drawShape == polygon);
 
-    if (scene->selectedItems().count() > 0 ){
-        actionBringToFront->setEnabled(true);
-        actionSendToBack->setEnabled(true);
-        if ( scene->selectedItems().count() > 1 )
-            actionGroup->setEnabled(true);
-        else
-            actionGroup->setEnabled(false);
-        GraphicsItemGroup * group = dynamic_cast<GraphicsItemGroup*>(scene->selectedItems().first());
-        if ( group )
-            actionUnGroup->setEnabled(true);
-        else
-            actionUnGroup->setEnabled(false);
-    }else{
-        actionBringToFront->setEnabled(false);
-        actionSendToBack->setEnabled(false);
-        actionGroup->setEnabled(false);
-        actionUnGroup->setEnabled(false);
-    }
+    actionBringToFront->setEnabled(scene->selectedItems().count() > 0);
+    actionSendToBack->setEnabled(scene->selectedItems().count() > 0);
+    actionGroup->setEnabled( scene->selectedItems().count() > 1);
+    actionUnGroup->setEnabled(scene->selectedItems().count() > 0 &&
+                              dynamic_cast<GraphicsItemGroup*>(scene->selectedItems().first()));
+
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item)

@@ -29,6 +29,7 @@ class QStatusBar;
 class QMdiArea;
 class QMdiSubWindow;
 class QSignalMapper;
+class QUndoStack;
 QT_END_NAMESPACE
 
 class QtVariantProperty;
@@ -47,11 +48,10 @@ public slots:
     void updateUI();
     void deleteItem();
     void itemSelected(QGraphicsItem *item);
-
+    void itemMoved(QGraphicsItem * item , const QPointF & oldPosition );
+    void itemAdded(QGraphicsItem * item );
     void on_actionBringToFront_triggered();
-
     void on_actionSendToBack_triggered();
-
     void on_aglin_triggered();
 
 private:
@@ -71,6 +71,8 @@ private:
     // toolbox
     QToolBox *toolBox;
 
+    // edit toolbar;
+    QToolBar * editToolBar;
     // align toolbar
     QToolBar * alignToolBar;
     QAction  * actionRight;
@@ -87,6 +89,9 @@ private:
 
     // edit action
     QAction  * deleteAction;
+    QAction  * undoAction;
+    QAction  * redoAction;
+
     // drawing toolbar
     QToolBar * drawToolBar;
     QActionGroup * drawActionGroup;
@@ -99,6 +104,7 @@ private:
     QAction  * actionPolygon;
     QAction  * actionPolyline;
     QAction  * actionBezier;
+    QAction  * actionArc;
     QAction  * actionRotate;
 
     //property editor
@@ -109,6 +115,7 @@ private:
     DrawScene      *scene;
     QListView      *listView;
 
+    QUndoStack *undoStack;
 };
 
 #endif // MAINWINDOW_H

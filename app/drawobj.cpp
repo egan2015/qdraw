@@ -559,17 +559,12 @@ QPainterPath GraphicsBezierCurve::shape() const
 {
     QPainterPath path;
     path.moveTo(m_points.at(0));
-    if ( m_points.count() < 3 )
-        path.addPolygon(m_points);
-    else
-    for ( int i = 1 ; i < m_points.count() ; ++i ){
-        QPointF p1 = m_points.at(i-1);
-        QPointF p2 = m_points.at(i);
-        qreal distance = p2.x() - p1.x();
-        path.cubicTo(p1.x() + distance / 2, p1.y(),
-                     p1.x() + distance / 2, p2.y(),
-                     p2.x(), p2.y());
-
+    if ( m_points.count() ==2 )
+        path.quadTo(m_points.at(0),m_points.at(1));
+    else if (m_points.count() == 3) {
+        path.cubicTo(m_points.at(0),m_points.at(1),m_points.at(2));
+    } else if ( m_points.count() == 4 ){
+        path.cubicTo(m_points.at(1),m_points.at(2),m_points.at(3));
     }
     return path;
 }
@@ -595,19 +590,14 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setPen(pen());
     painter->setBrush(brush());
     path.moveTo(m_points.at(0));
-    if ( m_points.count() < 3 )
-        path.addPolygon(m_points);
-    else
-    for ( int i = 1 ; i < m_points.count() ; ++i ){
-        QPointF p1 = m_points.at(i-1);
-        QPointF p2 = m_points.at(i);
-        qreal distance = p2.x() - p1.x();
-
-        path.cubicTo(p1.x() + distance / 2, p1.y(),
-                     p1.x() + distance / 2, p2.y(),
-                     p2.x(), p2.y());
-
+    if ( m_points.count() ==2 )
+        path.quadTo(m_points.at(0),m_points.at(1));
+    else if (m_points.count() == 3) {
+        path.cubicTo(m_points.at(0),m_points.at(1),m_points.at(2));
+    } else if ( m_points.count() == 4 ){
+        path.cubicTo(m_points.at(1),m_points.at(2),m_points.at(3));
     }
+
     painter->drawPath(path);
 }
 
@@ -738,6 +728,13 @@ void GraphicsArcItem::addPoint(const QPointF &point)
     if ( m_points.count() >3 ) return;
     GraphicsPolygonItem::addPoint( point );
 
+}
+
+void GraphicsArcItem::endPoint(const QPointF &point)
+{
+    m_points.remove(3);
+    delete m_handles.at(3);
+    m_handles.remove(3);
 }
 
 void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)

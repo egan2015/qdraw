@@ -27,6 +27,8 @@ public:
 
 signals:
     void itemSelected(QGraphicsItem *item);
+    void itemMoved( QGraphicsItem * item , const QPointF & oldPosition );
+    void itemAdded(QGraphicsItem * item );
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;

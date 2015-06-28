@@ -149,7 +149,7 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
         dashRect->setTransform(item->transform());
         dashRect->setRotation(item->rotation());
         dashRect->setScale(item->scale());
-        initialPositions = dashRect->pos();
+        initialPositions = item->pos();
         scene->addItem(dashRect);
     }
 }
@@ -201,6 +201,7 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
         GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(items.first());
         if ( item != 0  && selectMode == move && c_last != c_down ){
              item->setPos(initialPositions + c_last - c_down);
+             emit scene->itemMoved(item , initialPositions );
          }else if ( item !=0 && selectMode == size && c_last != c_down ){
             item->updateCoordinate();
         }
@@ -425,7 +426,9 @@ void RectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
        }
        selectTool.mousePressEvent(event,scene);
        qDebug()<<"RectTool removeItem:";
-    }
+    }else
+        emit scene->itemAdded( item );
+
     selectTool.mouseReleaseEvent(event,scene);
     c_drawShape = selection;
 }
@@ -455,6 +458,7 @@ void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
         item->addPoint(c_down);
         item->setSelected(true);
         m_nPoints++;
+
         scene->connect(item, SIGNAL(selectedChange(QGraphicsItem*)),
                 scene, SIGNAL(itemSelected(QGraphicsItem*)));
 
@@ -488,12 +492,21 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
 void PolygonTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-    if ( c_drawShape == arc && m_nPoints == 4 ){
-        item->endPoint(event->scenePos());
+    if ( c_drawShape == bezier && m_nPoints == 4 ){
         item->updateCoordinate();
+        emit scene->itemAdded( item );
         item = NULL;
         selectMode = none;
         c_drawShape = selection;
+        m_nPoints = 0;
+    }else if (c_drawShape == arc && m_nPoints == 4 ){
+        item->updateCoordinate();
+        item->endPoint(event->scenePos());
+        emit scene->itemAdded( item );
+        item = NULL;
+        selectMode = none;
+        c_drawShape = selection;
+        m_nPoints = 0;
     }
 
     DrawTool::mousePressEvent(event,scene);
@@ -504,7 +517,9 @@ void PolygonTool::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event, DrawSce
     DrawTool::mouseDoubleClickEvent(event,scene);
     item->endPoint(event->scenePos());
     item->updateCoordinate();
+    emit scene->itemAdded( item );
     item = NULL;
     selectMode = none;
     c_drawShape = selection;
+    m_nPoints = 0;
 }

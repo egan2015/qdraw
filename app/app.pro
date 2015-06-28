@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     objectcontroller.cpp \
     customproperty.cpp \
     rulebar.cpp \
-    drawview.cpp
+    drawview.cpp \
+    commands.cpp
 
 HEADERS  += mainwindow.h \
     drawobj.h \
@@ -32,7 +33,8 @@ HEADERS  += mainwindow.h \
     objectcontroller.h \
     customproperty.h \
     rulebar.h \
-    drawview.h
+    drawview.h \
+    commands.h
 
 RESOURCES += \
     app.qrc

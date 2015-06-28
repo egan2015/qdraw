@@ -134,8 +134,7 @@ public:
     virtual void addPoint( const QPointF & point ) ;
     virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );    
     void updateCoordinate ();
-    void endPoint(const QPointF & point );
-
+    virtual void endPoint(const QPointF & point );
 protected:
     QRectF RecalcBounds();
     void updateGeometry();
@@ -163,6 +162,7 @@ public:
     GraphicsArcItem(QGraphicsItem * parent);
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
+     void endPoint(const QPointF & point );
     virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
     QRectF boundingRect() const ;
     void updateCoordinate ();

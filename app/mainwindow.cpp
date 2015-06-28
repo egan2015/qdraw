@@ -5,13 +5,16 @@
 #include <QDockWidget>
 #include <QGraphicsItem>
 #include <QMdiSubWindow>
+#include <QUndoStack>
 #include "customproperty.h"
-
 #include "drawobj.h"
+#include "commands.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    undoStack = new QUndoStack(this);
+
     createActions();
     createToolbars();
     createToolBox();
@@ -26,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(scene, SIGNAL(itemSelected(QGraphicsItem*)),
             this, SLOT(itemSelected(QGraphicsItem*)));
 
+    connect(scene,SIGNAL(itemAdded(QGraphicsItem*)),
+            this, SLOT(itemAdded(QGraphicsItem*)));
+    connect(scene,SIGNAL(itemMoved(QGraphicsItem*,QPointF)),
+            this,SLOT(itemMoved(QGraphicsItem*,QPointF)));
 
     view = new DrawView(scene);
     scene->setView(view);
@@ -113,6 +120,8 @@ void MainWindow::createActions()
     actionPolyline->setCheckable(true);
     actionBezier= new QAction(QIcon(":/icons/bezier.png"),tr("bezier tool"),this);
     actionBezier->setCheckable(true);
+    actionArc = new QAction(QIcon(":/icons/arc.png"),tr("arc tool"),this);
+    actionArc->setCheckable(true);
 
     actionRotate = new QAction(QIcon(":/icons/rotate.png"),tr("rotate tool"),this);
     actionRotate->setCheckable(true);
@@ -127,6 +136,7 @@ void MainWindow::createActions()
     drawActionGroup->addAction(actionPolyline);
     drawActionGroup->addAction(actionBezier);
     drawActionGroup->addAction(actionRotate);
+    drawActionGroup->addAction(actionArc);
     actionSelect->setChecked(true);
 
 
@@ -139,9 +149,19 @@ void MainWindow::createActions()
     connect(actionPolyline,SIGNAL(triggered()),this,SLOT(addShape()));
     connect(actionBezier,SIGNAL(triggered()),this,SLOT(addShape()));
     connect(actionRotate,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(actionArc,SIGNAL(triggered()),this,SLOT(addShape()));
 
     deleteAction = new QAction(tr("&Delete"), this);
     deleteAction->setShortcut(tr("Delete"));
+
+    undoAction = undoStack->createUndoAction(this,tr("undo"));
+    undoAction->setIcon(QIcon(":/icons/undo.png"));
+    undoAction->setShortcuts(QKeySequence::Undo);
+
+    redoAction = undoStack->createRedoAction(this,tr("redo"));
+    redoAction->setIcon(QIcon(":/icons/redo.png"));
+    redoAction->setShortcuts(QKeySequence::Redo);
+
     connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
     this->addAction(deleteAction);
 }
@@ -153,6 +173,10 @@ void MainWindow::createMenus()
 
 void MainWindow::createToolbars()
 {
+    // create edit toolbar
+    editToolBar = addToolBar(tr("edit"));
+    editToolBar->addAction(undoAction);
+    editToolBar->addAction(redoAction);
     // create draw toolbar
     drawToolBar = addToolBar(tr("drawing"));
     drawToolBar->setIconSize(QSize(24,24));
@@ -160,6 +184,7 @@ void MainWindow::createToolbars()
     drawToolBar->addAction(actionLine);
     drawToolBar->addAction(actionRect);
     drawToolBar->addAction(actionRoundRect);
+    drawToolBar->addAction(actionArc);
     drawToolBar->addAction(actionEllipse);
     drawToolBar->addAction(actionPolygon);
     drawToolBar->addAction(actionPolyline);
@@ -205,9 +230,11 @@ void MainWindow::addShape()
     else if ( sender() == actionPolygon )
         DrawTool::c_drawShape = polygon;
     else if ( sender() == actionBezier )
-        DrawTool::c_drawShape = arc ;
+        DrawTool::c_drawShape = bezier ;
     else if (sender() == actionRotate )
         DrawTool::c_drawShape = rotation;
+    else if ( sender() == actionArc)
+        DrawTool::c_drawShape = arc;
 }
 
 void MainWindow::updateUI()
@@ -220,6 +247,10 @@ void MainWindow::updateUI()
     actionBezier->setChecked(DrawTool::c_drawShape == bezier);
     actionRotate->setChecked(DrawTool::c_drawShape == rotation);
     actionPolygon->setChecked(DrawTool::c_drawShape == polygon);
+    actionArc->setChecked(DrawTool::c_drawShape==arc);
+
+    undoAction->setEnabled(undoStack->canUndo());
+    redoAction->setEnabled(undoStack->canRedo());
 
     actionBringToFront->setEnabled(scene->selectedItems().count() > 0);
     actionSendToBack->setEnabled(scene->selectedItems().count() > 0);
@@ -238,17 +269,25 @@ void MainWindow::itemSelected(QGraphicsItem *item)
 
 }
 
+void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
+{
+    undoStack->push(new MoveCommand(item, oldPosition));
+}
+
+void MainWindow::itemAdded(QGraphicsItem *item)
+{
+    QUndoCommand *addCommand = new AddCommand(item, scene);
+    undoStack->push(addCommand);
+}
+
 void MainWindow::deleteItem()
 {
     if (scene->selectedItems().isEmpty())
         return;
 
-    QList<QGraphicsItem *> overlapItems = scene->selectedItems();
+    QUndoCommand *deleteCommand = new DeleteCommand(scene);
+    undoStack->push(deleteCommand);
 
-    foreach (QGraphicsItem *item, overlapItems) {
-        scene->removeItem(item);
-        delete item;
-    }
 }
 
 void MainWindow::on_actionBringToFront_triggered()

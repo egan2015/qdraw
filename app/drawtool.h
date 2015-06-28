@@ -96,6 +96,7 @@ public:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene );
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent * event ,DrawScene *scene );
     GraphicsPolygonItem * item;
+    int m_nPoints;
     QPointF initialPositions;
 
 };

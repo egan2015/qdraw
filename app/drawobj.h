@@ -151,19 +151,23 @@ class GraphicsBezierCurve : public GraphicsPolygonItem
 public:
     GraphicsBezierCurve(QGraphicsItem * parent );
     QPainterPath shape() const;
-    virtual void addPoint( const QPointF & point ) ;
+    virtual void addPoint( const QPointF & point ) ;    
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     int m_index;
 };
 
-class GraphicsArcItem :public GraphicsLineItem
+class GraphicsArcItem :public GraphicsPolygonItem
 {
 public:
     GraphicsArcItem(QGraphicsItem * parent);
     QPainterPath shape() const;
+    virtual void addPoint( const QPointF & point ) ;
+    virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
+    void updateCoordinate ();
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    qreal m_Radius;
 };
 
 class GridTool : public QGraphicsItem

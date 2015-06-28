@@ -702,73 +702,105 @@ void GridTool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
 
 GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
-    :GraphicsLineItem(parent)
+    :GraphicsPolygonItem(parent)
 {
-    // handles
-    m_handles.reserve(SizeHandleRect::None);
-
-    Handles::iterator hend =  m_handles.end();
-    for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
-        delete (*it);
-    m_handles.clear();
-
-    SizeHandleRect *shr = new SizeHandleRect(this,SizeHandleRect::LeftTop, this);
-    m_handles.push_back(shr);
-    shr = new SizeHandleRect(this,SizeHandleRect::RightBottom, this);
-    m_handles.push_back(shr);
-
-    updateGeometry();
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-    this->setAcceptHoverEvents(true);
+    m_Radius = 0;
 }
 
 QPainterPath GraphicsArcItem::shape() const
 {
     QPainterPath path;
+
+    if ( m_points.count() == 2  ){
+        path.addEllipse(m_points.at(0),m_Radius,m_Radius);
+        return path;
+    }
+
     qreal startAngle,endAngle;
-    qreal len_y = m_localRect.bottomLeft().y() - m_localRect.center().y();
-    qreal len_x = m_localRect.bottomLeft().x() - m_localRect.center().x();
-
-
-    endAngle = atan2(len_y,len_x)*180/3.1416;
-
-    if ( endAngle > 360 )
-        endAngle -= 360;
-
-    len_y = m_localRect.bottomRight().y() - m_localRect.center().y();
-    len_x = m_localRect.bottomRight().x() - m_localRect.center().x();
+    qreal len_y = m_points.at(1).y() - m_points.at(0).y();
+    qreal len_x = m_points.at(1).x() - m_points.at(0).x();
 
     startAngle = atan2(len_y,len_x)*180/3.1416;
 
-    if ( startAngle > 360 )
-        startAngle -= 360;
+//    if ( startAngle > 360 )
+//        startAngle -= 360;
 
-    path.arcTo(m_localRect,30 * 16, 120*16);
+
+    len_y = m_points.at(2).y() - m_points.at(0).y();
+    len_x = m_points.at(2).x() - m_points.at(0).x();
+
+    endAngle = atan2(len_y,len_x)*180/3.1416;
+
+//    if ( endAngle > 360 )
+//        endAngle -= 360;
+    path.moveTo(m_points.at(0));
+    path.arcTo(m_localRect,startAngle, endAngle);
+    path.closeSubpath();
     return path;
+}
+
+void GraphicsArcItem::addPoint(const QPointF &point)
+{
+    GraphicsPolygonItem::addPoint( point );
+
+}
+
+void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
+{
+    GraphicsPolygonItem::resizeTo( dir , point);
+
+    if ( m_points.count() ==  2 ){
+        QPointF local = mapFromScene(point);
+        qreal rx = abs(local.x() - m_points.at(0).x());
+        qreal ry = abs(local.y() - m_points.at(0).y());
+        qreal r  = qMax(rx,ry);
+        m_Radius = r;
+    }
+}
+
+void GraphicsArcItem::updateCoordinate()
+{
+
 }
 
 void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    QPainterPath path;
+    if ( m_points.count() == 2  ){
+        path.addEllipse(m_points.at(0),m_Radius,m_Radius);
+        painter->drawPath(path);
+        return ;
+    }
+
     qreal startAngle,endAngle;
-    qreal len_y = m_localRect.bottomLeft().y() - m_localRect.center().y();
-    qreal len_x = m_localRect.bottomLeft().x() - m_localRect.center().x();
-
-    endAngle = atan2(len_y,len_x)*180/3.1416;
-
-    if ( endAngle > 360 )
-        endAngle -= 360;
-
-    len_y = m_localRect.bottomRight().y() - m_localRect.center().y();
-    len_x = m_localRect.bottomRight().x() - m_localRect.center().x();
+    qreal len_y = m_points.at(1).y() - m_points.at(0).y();
+    qreal len_x = m_points.at(1).x() - m_points.at(0).x();
 
     startAngle = atan2(len_y,len_x)*180/3.1416;
 
-    if ( startAngle > 360 )
-        startAngle -= 360;
+//    if ( startAngle > 360 )
+//        startAngle -= 360;
 
-   painter->drawArc(m_localRect,30 * 16, 120*16);
+
+    len_y = m_points.at(2).y() - m_points.at(0).y();
+    len_x = m_points.at(2).x() - m_points.at(0).x();
+
+    endAngle = atan2(len_y,len_x)*180/3.1416;
+
+
+//    if ( endAngle > 360 )
+//        endAngle -= 360;
+
+
+    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
+
+    path.moveTo(m_points.at(0));
+
+    path.arcTo(m_localRect,startAngle, endAngle);
+    path.closeSubpath();
+    painter->drawPath(path);
+
+//  painter->drawArc(m_localRect, -startAngle * 16 , -endAngle * 16);
 }
 
 

@@ -205,7 +205,7 @@ void MainWindow::addShape()
     else if ( sender() == actionPolygon )
         DrawTool::c_drawShape = polygon;
     else if ( sender() == actionBezier )
-        DrawTool::c_drawShape = bezier ;
+        DrawTool::c_drawShape = arc ;
     else if (sender() == actionRotate )
         DrawTool::c_drawShape = rotation;
 }

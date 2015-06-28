@@ -720,27 +720,22 @@ QPainterPath GraphicsArcItem::shape() const
     qreal len_y = m_points.at(1).y() - m_points.at(0).y();
     qreal len_x = m_points.at(1).x() - m_points.at(0).x();
 
-    startAngle = atan2(len_y,len_x)*180/3.1416;
-
-//    if ( startAngle > 360 )
-//        startAngle -= 360;
-
+    startAngle = -atan2(len_y,len_x)*180/3.1416;
 
     len_y = m_points.at(2).y() - m_points.at(0).y();
     len_x = m_points.at(2).x() - m_points.at(0).x();
 
-    endAngle = atan2(len_y,len_x)*180/3.1416;
+    endAngle = -atan2(len_y,len_x)*180/3.1416;
 
-//    if ( endAngle > 360 )
-//        endAngle -= 360;
     path.moveTo(m_points.at(0));
-    path.arcTo(m_localRect,startAngle, endAngle);
+    path.arcTo(m_localRect,startAngle,endAngle-startAngle);
     path.closeSubpath();
     return path;
 }
 
 void GraphicsArcItem::addPoint(const QPointF &point)
 {
+    if ( m_points.count() >3 ) return;
     GraphicsPolygonItem::addPoint( point );
 
 }
@@ -756,6 +751,11 @@ void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &poi
         qreal r  = qMax(rx,ry);
         m_Radius = r;
     }
+}
+
+QRectF GraphicsArcItem::boundingRect() const
+{
+    return m_localRect;
 }
 
 void GraphicsArcItem::updateCoordinate()
@@ -776,31 +776,22 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     qreal len_y = m_points.at(1).y() - m_points.at(0).y();
     qreal len_x = m_points.at(1).x() - m_points.at(0).x();
 
-    startAngle = atan2(len_y,len_x)*180/3.1416;
-
-//    if ( startAngle > 360 )
-//        startAngle -= 360;
-
+    startAngle = -atan2(len_y,len_x)*180/3.1416;
 
     len_y = m_points.at(2).y() - m_points.at(0).y();
     len_x = m_points.at(2).x() - m_points.at(0).x();
 
-    endAngle = atan2(len_y,len_x)*180/3.1416;
-
-
-//    if ( endAngle > 360 )
-//        endAngle -= 360;
+    endAngle = -atan2(len_y,len_x)*180/3.1416;
 
 
     m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
 
     path.moveTo(m_points.at(0));
-
-    path.arcTo(m_localRect,startAngle, endAngle);
+    path.arcTo(m_localRect,startAngle, endAngle-startAngle);
     path.closeSubpath();
-    painter->drawPath(path);
+//    painter->drawPath(path);
 
-//  painter->drawArc(m_localRect, -startAngle * 16 , -endAngle * 16);
+  painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
 }
 
 

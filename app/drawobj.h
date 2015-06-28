@@ -164,6 +164,7 @@ public:
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
     virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
+    QRectF boundingRect() const ;
     void updateCoordinate ();
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

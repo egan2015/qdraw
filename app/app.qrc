@@ -22,5 +22,7 @@
         <file>icons/undo.png</file>
         <file>icons/redo.png</file>
         <file>icons/arc.png</file>
+        <file>icons/zoomin.png</file>
+        <file>icons/zoomout.png</file>
     </qresource>
 </RCC>

@@ -15,8 +15,10 @@ void DrawView::drawBackground(QPainter *painter, const QRectF &rect)
     QGraphicsView::drawBackground(painter,rect);
     painter->save();
     painter->resetTransform();
-    if( m_grid )
-        m_grid->paintGrid(painter,sceneRect().toRect());
+    if( m_grid ){
+        QRectF rc = transform().mapRect(sceneRect());
+        m_grid->paintGrid(painter,rc.toRect());
+    }
     painter->restore();
 }
 

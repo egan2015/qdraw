@@ -54,7 +54,8 @@ public slots:
     void on_actionBringToFront_triggered();
     void on_actionSendToBack_triggered();
     void on_aglin_triggered();
-
+    void zoomIn();
+    void zoomOut();
 private:
     void createActions();
     void createMenus();
@@ -92,6 +93,8 @@ private:
     QAction  * deleteAction;
     QAction  * undoAction;
     QAction  * redoAction;
+    QAction  * zoomInAction;
+    QAction  * zoomOutAction;
 
     // drawing toolbar
     QToolBar * drawToolBar;

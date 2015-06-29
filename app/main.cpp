@@ -1,12 +1,16 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QTextCodec>
 
 int main(int argc, char *argv[])
 {
 
     Q_INIT_RESOURCE(app);
     QApplication a(argc, argv);
+
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
     MainWindow w;
     w.show();
     QSize size(QApplication::desktop()->availableGeometry().width() * 5 / 6 ,

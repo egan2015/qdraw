@@ -746,6 +746,18 @@ void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &poi
             len_y = m_points.at(2).y() - m_points.at(0).y();
             len_x = m_points.at(2).x() - m_points.at(0).x();
             m_endAngle = -atan2(len_y,len_x)*180/3.1416;
+
+            if ( m_startAngle > m_endAngle )
+                m_startAngle-=360;
+            if ( m_endAngle < m_startAngle ){
+                qreal tmp = m_endAngle;
+                m_endAngle = m_startAngle;
+                m_startAngle = m_endAngle;
+            }
+            if ( abs(m_endAngle-m_startAngle) > 360 ){
+                m_startAngle = 0;
+                m_endAngle = 360;
+            }
         }
     }
     break;
@@ -797,15 +809,12 @@ void GraphicsArcItem::updateGeometry()
 void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QPainterPath path;
-/*
-    if ( m_points.count() == 2  ){
-        path.addEllipse(m_points.at(0),m_Radius,m_Radius);
-        painter->drawPath(path);
-        return ;
-    }
-*/
-//    qDebug() << m_localRect << " start :" << m_startAngle << " sweep :" <<  (m_endAngle - m_startAngle);
-    painter->drawArc(m_localRect, m_startAngle * 16 , (m_endAngle - m_startAngle) * 16);
+    qreal startAngle = m_startAngle <= m_endAngle ? m_startAngle : m_endAngle;
+    qreal endAngle = m_startAngle >= m_endAngle ? m_startAngle : m_endAngle;
+
+    if(endAngle - startAngle > 360)
+        endAngle = startAngle + 360;
+    painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
 }
 
 

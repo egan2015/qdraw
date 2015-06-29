@@ -164,6 +164,12 @@ void MainWindow::createActions()
     redoAction->setIcon(QIcon(":/icons/redo.png"));
     redoAction->setShortcuts(QKeySequence::Redo);
 
+    zoomInAction = new QAction(QIcon(":/icons/zoomin.png"),tr("zoomIn"),this);
+    zoomOutAction = new QAction(QIcon(":/icons/zoomout.png"),tr("zoomOut"),this);
+
+    connect(zoomInAction , SIGNAL(triggered()),this,SLOT(zoomIn()));
+    connect(zoomOutAction , SIGNAL(triggered()),this,SLOT(zoomOut()));
+
     connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
     this->addAction(deleteAction);
 }
@@ -179,6 +185,9 @@ void MainWindow::createToolbars()
     editToolBar = addToolBar(tr("edit"));
     editToolBar->addAction(undoAction);
     editToolBar->addAction(redoAction);
+    editToolBar->addAction(zoomInAction);
+    editToolBar->addAction(zoomOutAction);
+
     // create draw toolbar
     drawToolBar = addToolBar(tr("drawing"));
     drawToolBar->setIconSize(QSize(24,24));
@@ -381,4 +390,14 @@ void MainWindow::on_aglin_triggered()
             delete group;
         }
     }
+}
+
+void MainWindow::zoomIn()
+{
+    view->scale(1.2,1.2);
+}
+
+void MainWindow::zoomOut()
+{
+    view->scale(1 / 1.2, 1 / 1.2);
 }

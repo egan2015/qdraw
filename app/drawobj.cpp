@@ -693,7 +693,7 @@ GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
 {
     m_Radius = 0;
     m_startAngle = 0;
-    m_endAngle = 360;
+    m_endAngle = 0;
 }
 
 QPainterPath GraphicsArcItem::shape() const
@@ -722,19 +722,23 @@ void GraphicsArcItem::endPoint(const QPointF &point)
 
 void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
 {
-    if ( dir == 0 ) return;
     QPointF local = mapFromScene(point);
-    m_points[(int)dir] = local;
-    if ( m_points.count() ==  2 ){
+    switch( dir )
+    {
+    case 0:
+        break;
+    case 1:
+    case 2:
+    {
+        m_points[(int)dir] = local;
         qreal rx = abs(local.x() - m_points.at(0).x());
         qreal ry = abs(local.y() - m_points.at(0).y());
-        qreal r  = qMax(rx,ry);
+        qreal r  = sqrt(rx*rx+ry*ry);
         m_Radius = r;
         qreal len_y = local.y() - m_points.at(0).y();
         qreal len_x = local.x() - m_points.at(0).x();
         m_startAngle = -atan2(len_y,len_x)*180/3.1416;
-        qDebug()<<"radius:"<<m_Radius;
-    }else if ( m_points.count() > 2){
+       if ( m_points.count() > 2){
             qreal startAngle,endAngle;
             qreal len_y = m_points.at(1).y() - m_points.at(0).y();
             qreal len_x = m_points.at(1).x() - m_points.at(0).x();
@@ -742,7 +746,11 @@ void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &poi
             len_y = m_points.at(2).y() - m_points.at(0).y();
             len_x = m_points.at(2).x() - m_points.at(0).x();
             m_endAngle = -atan2(len_y,len_x)*180/3.1416;
+        }
     }
+    break;
+    }
+
     prepareGeometryChange();
     m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
     updateGeometry();
@@ -1029,35 +1037,17 @@ void GraphicsPolygonItem::updateGeometry()
 
 void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QColor c = QColor(Qt::red);
 
-    /*
+    QColor c = brush();
     QLinearGradient result(rect().topLeft(), rect().topRight());
     result.setColorAt(0, c.dark(150));
     result.setColorAt(0.5, c.light(200));
     result.setColorAt(1, c.dark(150));
     painter->setBrush(result);
-*/
-    painter->setBrush(brush());
 
     painter->setPen(pen());
     painter->drawPolygon(m_points);
 
 
-    /*
-    painter->setBrush(Qt::NoBrush);
 
-    painter->setPen(Qt::DashLine);
-    painter->setPen(Qt::green);
-    painter->drawRect(m_points.boundingRect());
-
-    QPointF pos = m_points.boundingRect().center();
-    painter->setBrush(Qt::green);
-    painter->drawEllipse(pos,6,6);
-
-
-    QPointF pos2 = transformOriginPoint();
-    painter->setBrush(Qt::black);
-    painter->drawEllipse(pos2,6,6);
-    */
 }

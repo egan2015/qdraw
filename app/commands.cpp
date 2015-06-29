@@ -80,7 +80,6 @@ AddCommand::AddCommand(QGraphicsItem *item,
     myGraphicsScene = scene;
     myDiagramItem = item;
     initialPosition = item->pos();
-    scene->update();
     ++itemCount;
     setText(QObject::tr("Add %1")
         .arg(createCommandString(myDiagramItem, initialPosition)));
@@ -104,9 +103,9 @@ void AddCommand::undo()
 //! [9]
 void AddCommand::redo()
 {
-    myGraphicsScene->addItem(myDiagramItem);
+    if ( myDiagramItem->scene() == NULL )
+        myGraphicsScene->addItem(myDiagramItem);
     myDiagramItem->setPos(initialPosition);
-    myGraphicsScene->clearSelection();
     myGraphicsScene->update();
 }
 

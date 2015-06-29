@@ -699,12 +699,6 @@ GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
 QPainterPath GraphicsArcItem::shape() const
 {
     QPainterPath path;
-
-    if ( m_points.count() == 2  ){
-        path.addEllipse(m_points.at(0),m_Radius,m_Radius);
-        return path;
-    }
-
     path.moveTo(m_points.at(0));
     path.arcTo(m_localRect,m_startAngle,m_endAngle-m_startAngle);
     path.closeSubpath();
@@ -729,8 +723,8 @@ void GraphicsArcItem::endPoint(const QPointF &point)
 void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
 {
     if ( dir == 0 ) return;
-    GraphicsPolygonItem::resizeTo( dir , point);
     QPointF local = mapFromScene(point);
+    m_points[(int)dir] = local;
     if ( m_points.count() ==  2 ){
         qreal rx = abs(local.x() - m_points.at(0).x());
         qreal ry = abs(local.y() - m_points.at(0).y());
@@ -739,7 +733,7 @@ void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &poi
         qreal len_y = local.y() - m_points.at(0).y();
         qreal len_x = local.x() - m_points.at(0).x();
         m_startAngle = -atan2(len_y,len_x)*180/3.1416;
-        qDebug() <<" change radius:" << m_Radius << " " << m_startAngle;
+        qDebug()<<"radius:"<<m_Radius;
     }else if ( m_points.count() > 2){
             qreal startAngle,endAngle;
             qreal len_y = m_points.at(1).y() - m_points.at(0).y();
@@ -748,7 +742,6 @@ void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &poi
             len_y = m_points.at(2).y() - m_points.at(0).y();
             len_x = m_points.at(2).x() - m_points.at(0).x();
             m_endAngle = -atan2(len_y,len_x)*180/3.1416;
-            qDebug() <<" change angle:" << m_startAngle << " " << m_endAngle;
     }
     prepareGeometryChange();
     m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
@@ -803,6 +796,7 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
         return ;
     }
 */
+//    qDebug() << m_localRect << " start :" << m_startAngle << " sweep :" <<  (m_endAngle - m_startAngle);
     painter->drawArc(m_localRect, m_startAngle * 16 , (m_endAngle - m_startAngle) * 16);
 }
 
@@ -953,11 +947,6 @@ void GraphicsPolygonItem::addPoint(const QPointF &point)
     SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(dir), this);
     shr->setState(SelectionHandleActive);
     m_handles.push_back(shr);
-    prepareGeometryChange();
-    m_localRect = m_points.boundingRect();//RecalcBounds();
-    m_width = m_localRect.width();
-    m_height = m_localRect.height();
-    updateGeometry();
 }
 
 void GraphicsPolygonItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
@@ -965,7 +954,7 @@ void GraphicsPolygonItem::resizeTo(SizeHandleRect::Direction dir, const QPointF 
     QPointF pt = mapFromScene(point);
     m_points[(int)dir] = pt;
     prepareGeometryChange();
-    m_localRect = m_points.boundingRect();//RecalcBounds();
+    m_localRect = m_points.boundingRect();
     m_width = m_localRect.width();
     m_height = m_localRect.height();
     updateGeometry();

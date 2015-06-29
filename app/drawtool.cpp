@@ -458,7 +458,6 @@ void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
         item->addPoint(c_down);
         item->setSelected(true);
         m_nPoints++;
-
         scene->connect(item, SIGNAL(selectedChange(QGraphicsItem*)),
                 scene, SIGNAL(itemSelected(QGraphicsItem*)));
 
@@ -485,9 +484,7 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 {
     DrawTool::mouseMoveEvent(event,scene);
     setCursor(scene,Qt::CrossCursor);
-
     selectTool.mouseMoveEvent(event,scene);
-
 }
 
 void PolygonTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)

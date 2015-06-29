@@ -42,7 +42,7 @@ public:
     virtual QRectF  rect() const { return m_localRect;}
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){}
-    int  getHandleCount() const { return m_handles.count();}
+    int  getHandleCount() const { return m_handles.count()-1;}
 signals:
     void selectedChange(QGraphicsItem *item);
 protected:
@@ -167,8 +167,12 @@ public:
     QRectF boundingRect() const ;
     void updateCoordinate ();
 protected:
+    void updateGeometry();
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     qreal m_Radius;
+    qreal m_startAngle;
+    qreal m_endAngle;
 };
 
 class GridTool : public QGraphicsItem

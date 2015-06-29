@@ -235,6 +235,9 @@ void MainWindow::addShape()
         DrawTool::c_drawShape = rotation;
     else if ( sender() == actionArc)
         DrawTool::c_drawShape = arc;
+
+    if ( sender() != actionSelect && sender() != actionRotate )
+        scene->clearSelection();
 }
 
 void MainWindow::updateUI()

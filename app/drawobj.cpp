@@ -259,8 +259,6 @@ void GraphicsRectItem::updateCoordinate()
     moveBy(-delta.x(),-delta.y());
     setTransform(transform().translate(-delta.x(),-delta.y()));
 
-    qDebug()<<"changeOrigin: "<< delta << mapFromScene( pos()) << mapFromScene(pt2)<<m_localRect;
-
     updateGeometry();
 
 }
@@ -507,7 +505,6 @@ void GraphicsItemGroup::updateCoordinate()
     setTransform(transform().translate(delta.x(),delta.y()));
     setTransformOriginPoint(boundingRect().center());
     moveBy(-delta.x(),-delta.y());
-    qDebug()<<"changeOrigin: "<< delta << mapFromScene( pos()) << mapFromScene(pt2)<<boundingRect();
     updateGeometry();
 }
 
@@ -572,10 +569,10 @@ QPainterPath GraphicsBezierCurve::shape() const
 void GraphicsBezierCurve::addPoint(const QPointF &point)
 {
     m_points.append(mapFromScene(point));
-    m_index++;
     SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(m_index), this);
     shr->setState(SelectionHandleActive);
     m_handles.push_back(shr);
+    m_index++;
     prepareGeometryChange();
     m_localRect = m_points.boundingRect();
     m_width = m_localRect.width();
@@ -695,6 +692,8 @@ GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
     :GraphicsPolygonItem(parent)
 {
     m_Radius = 0;
+    m_startAngle = 0;
+    m_endAngle = 360;
 }
 
 QPainterPath GraphicsArcItem::shape() const
@@ -706,48 +705,54 @@ QPainterPath GraphicsArcItem::shape() const
         return path;
     }
 
-    qreal startAngle,endAngle;
-    qreal len_y = m_points.at(1).y() - m_points.at(0).y();
-    qreal len_x = m_points.at(1).x() - m_points.at(0).x();
-
-    startAngle = -atan2(len_y,len_x)*180/3.1416;
-
-    len_y = m_points.at(2).y() - m_points.at(0).y();
-    len_x = m_points.at(2).x() - m_points.at(0).x();
-
-    endAngle = -atan2(len_y,len_x)*180/3.1416;
-
     path.moveTo(m_points.at(0));
-    path.arcTo(m_localRect,startAngle,endAngle-startAngle);
+    path.arcTo(m_localRect,m_startAngle,m_endAngle-m_startAngle);
     path.closeSubpath();
     return path;
 }
 
 void GraphicsArcItem::addPoint(const QPointF &point)
 {
-    if ( m_points.count() >3 ) return;
+    if ( m_points.count() > 3 ) return;
     GraphicsPolygonItem::addPoint( point );
-
 }
 
 void GraphicsArcItem::endPoint(const QPointF &point)
 {
-    m_points.remove(3);
-    delete m_handles.at(3);
-    m_handles.remove(3);
+    if ( m_points.count() > 3) {
+        m_points.remove(3);
+        delete m_handles.at(3);
+        m_handles.remove(3);
+    }
 }
 
 void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
 {
+    if ( dir == 0 ) return;
     GraphicsPolygonItem::resizeTo( dir , point);
-
+    QPointF local = mapFromScene(point);
     if ( m_points.count() ==  2 ){
-        QPointF local = mapFromScene(point);
         qreal rx = abs(local.x() - m_points.at(0).x());
         qreal ry = abs(local.y() - m_points.at(0).y());
         qreal r  = qMax(rx,ry);
         m_Radius = r;
+        qreal len_y = local.y() - m_points.at(0).y();
+        qreal len_x = local.x() - m_points.at(0).x();
+        m_startAngle = -atan2(len_y,len_x)*180/3.1416;
+        qDebug() <<" change radius:" << m_Radius << " " << m_startAngle;
+    }else if ( m_points.count() > 2){
+            qreal startAngle,endAngle;
+            qreal len_y = m_points.at(1).y() - m_points.at(0).y();
+            qreal len_x = m_points.at(1).x() - m_points.at(0).x();
+            m_startAngle = -atan2(len_y,len_x)*180/3.1416;
+            len_y = m_points.at(2).y() - m_points.at(0).y();
+            len_x = m_points.at(2).x() - m_points.at(0).x();
+            m_endAngle = -atan2(len_y,len_x)*180/3.1416;
+            qDebug() <<" change angle:" << m_startAngle << " " << m_endAngle;
     }
+    prepareGeometryChange();
+    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
+    updateGeometry();
 }
 
 QRectF GraphicsArcItem::boundingRect() const
@@ -758,37 +763,47 @@ QRectF GraphicsArcItem::boundingRect() const
 void GraphicsArcItem::updateCoordinate()
 {
 
+    QPointF pt1,pt2,delta;
+    pt1 = mapToScene(transformOriginPoint());
+    pt2 = mapToScene(m_points.at(0));
+    delta = pt1 - pt2;
+
+    prepareGeometryChange();
+
+    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
+
+    setTransform(transform().translate(delta.x(),delta.y()));
+    setTransformOriginPoint(boundingRect().center());
+    moveBy(-delta.x(),-delta.y());
+    setTransform(transform().translate(-delta.x(),-delta.y()));
+    updateGeometry();
+}
+
+void GraphicsArcItem::updateGeometry()
+{
+    GraphicsPolygonItem::updateGeometry();
+    if ( m_points.count() > 2 ){
+        qreal x = m_Radius * cos( -m_startAngle * 3.1416 / 180 );
+        qreal y = m_Radius * sin( -m_startAngle * 3.1416 / 180);
+        m_handles.at(1)->move(x,y);
+
+        x = m_Radius * cos( -m_endAngle * 3.1416 / 180);
+        y = m_Radius * sin(-m_endAngle * 3.1416 / 180);
+        m_handles.at(2)->move(x,y);
+    }
 }
 
 void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QPainterPath path;
+/*
     if ( m_points.count() == 2  ){
         path.addEllipse(m_points.at(0),m_Radius,m_Radius);
         painter->drawPath(path);
         return ;
     }
-
-    qreal startAngle,endAngle;
-    qreal len_y = m_points.at(1).y() - m_points.at(0).y();
-    qreal len_x = m_points.at(1).x() - m_points.at(0).x();
-
-    startAngle = -atan2(len_y,len_x)*180/3.1416;
-
-    len_y = m_points.at(2).y() - m_points.at(0).y();
-    len_x = m_points.at(2).x() - m_points.at(0).x();
-
-    endAngle = -atan2(len_y,len_x)*180/3.1416;
-
-
-    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
-
-    path.moveTo(m_points.at(0));
-    path.arcTo(m_localRect,startAngle, endAngle-startAngle);
-    path.closeSubpath();
-//    painter->drawPath(path);
-
-  painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
+*/
+    painter->drawArc(m_localRect, m_startAngle * 16 , (m_endAngle - m_startAngle) * 16);
 }
 
 
@@ -914,6 +929,8 @@ GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)
         delete (*it);
     m_handles.clear();
 
+    m_points.clear();
+
 }
 
 QRectF GraphicsPolygonItem::boundingRect() const
@@ -932,7 +949,8 @@ QPainterPath GraphicsPolygonItem::shape() const
 void GraphicsPolygonItem::addPoint(const QPointF &point)
 {
     m_points.append(mapFromScene(point));
-    SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(m_points.count()), this);
+    int dir = m_points.count() - 1 ;
+    SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(dir), this);
     shr->setState(SelectionHandleActive);
     m_handles.push_back(shr);
     prepareGeometryChange();
@@ -945,7 +963,7 @@ void GraphicsPolygonItem::addPoint(const QPointF &point)
 void GraphicsPolygonItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
 {
     QPointF pt = mapFromScene(point);
-    m_points[(int)dir-1] = pt;
+    m_points[(int)dir] = pt;
     prepareGeometryChange();
     m_localRect = m_points.boundingRect();//RecalcBounds();
     m_width = m_localRect.width();
@@ -973,8 +991,6 @@ void GraphicsPolygonItem::updateCoordinate()
     setTransformOriginPoint(boundingRect().center());
     moveBy(-delta.x(),-delta.y());
     setTransform(transform().translate(-delta.x(),-delta.y()));
-
-    qDebug()<<"changeOrigin: "<< delta << mapFromScene( pos() ) << transformOriginPoint()<<boundingRect();
 
     updateGeometry();
 
@@ -1017,7 +1033,7 @@ void GraphicsPolygonItem::updateGeometry()
 
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
         SizeHandleRect *hndl = *it;
-        int idx = (int)hndl->dir()-1;
+        int idx = (int)hndl->dir();
         hndl->move(m_points[idx].x() ,m_points[idx].y() );
     }
 }

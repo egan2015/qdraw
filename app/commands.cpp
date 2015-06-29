@@ -115,3 +115,24 @@ QString createCommandString(QGraphicsItem *item, const QPointF &pos)
     return QObject::tr("Item at (%1, %2)")
         .arg(pos.x()).arg(pos.y());
 }
+
+
+RotateCommand::RotateCommand(QGraphicsItem *item, const qreal oldAngle, QUndoCommand *parent)
+    :QUndoCommand(parent)
+{
+    myItem = item;
+    myOldAngle = oldAngle;
+    newAngle = item->rotation();
+}
+
+void RotateCommand::undo()
+{
+    myItem->setRotation(myOldAngle);
+    myItem->scene()->update();
+}
+
+void RotateCommand::redo()
+{
+    myItem->setRotation(newAngle);
+    myItem->update();
+}

@@ -50,6 +50,7 @@ public slots:
     void itemSelected(QGraphicsItem *item);
     void itemMoved(QGraphicsItem * item , const QPointF & oldPosition );
     void itemAdded(QGraphicsItem * item );
+    void itemRotate(QGraphicsItem * item , const qreal oldAngle );
     void on_actionBringToFront_triggered();
     void on_actionSendToBack_triggered();
     void on_aglin_triggered();

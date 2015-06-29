@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(itemAdded(QGraphicsItem*)));
     connect(scene,SIGNAL(itemMoved(QGraphicsItem*,QPointF)),
             this,SLOT(itemMoved(QGraphicsItem*,QPointF)));
+    connect(scene,SIGNAL(itemRotate(QGraphicsItem*,qreal)),
+            this,SLOT(itemRotate(QGraphicsItem*,qreal)));
 
     view = new DrawView(scene);
     scene->setView(view);
@@ -281,6 +283,12 @@ void MainWindow::itemAdded(QGraphicsItem *item)
 {
     QUndoCommand *addCommand = new AddCommand(item, scene);
     undoStack->push(addCommand);
+}
+
+void MainWindow::itemRotate(QGraphicsItem *item, const qreal oldAngle)
+{
+    QUndoCommand *rotateCommand = new RotateCommand(item , oldAngle);
+    undoStack->push(rotateCommand);
 }
 
 void MainWindow::deleteItem()

@@ -21,6 +21,19 @@ private:
     QPointF newPos;
 };
 
+class RotateCommand : public QUndoCommand
+{
+public:
+    RotateCommand(QGraphicsItem *item , const qreal oldAngle ,
+                QUndoCommand * parent = 0);
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
+private:
+    QGraphicsItem *myItem;
+    qreal myOldAngle;
+    qreal newAngle;
+};
+
 class DeleteCommand : public QUndoCommand
 {
 public:

@@ -342,12 +342,13 @@ void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene 
              QPointF delta = c_last - origin ;
              qreal len_y = c_last.y() - origin.y();
              qreal len_x = c_last.x() - origin.x();
-             qreal angle = atan2(len_y,len_x)*180/PI;
+             qreal angle = atan2(len_y,len_x)*180/PI,oldAngle = item->rotation();
              angle = item->rotation() + int(angle - lastAngle) ;
+
              if ( angle > 360 )
                  angle -= 360;
              item->setRotation( angle );
-
+             emit scene->itemRotate(item , oldAngle);
              qDebug()<<"rotate:"<<angle<<item->boundingRect();
         }
     }
@@ -397,11 +398,11 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
     if ( item == 0) return;
     item->setPos(event->scenePos());
     scene->addItem(item);
+    item->setSelected(true);
 
     scene->connect(item, SIGNAL(selectedChange(QGraphicsItem*)),
             scene, SIGNAL(itemSelected(QGraphicsItem*)));
 
-    item->setSelected(true);
     selectMode = size;
     nDragHandle = SizeHandleRect::RightBottom;
 
@@ -416,6 +417,8 @@ void RectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 
 void RectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
+    selectTool.mouseReleaseEvent(event,scene);
+
     if ( event->scenePos() == c_down ){
 
        if ( item != 0){
@@ -424,12 +427,11 @@ void RectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
          delete item ;
          item = 0;
        }
-       selectTool.mousePressEvent(event,scene);
        qDebug()<<"RectTool removeItem:";
-    }else
+    }else if( item ){
         emit scene->itemAdded( item );
+    }
 
-    selectTool.mouseReleaseEvent(event,scene);
     c_drawShape = selection;
 }
 

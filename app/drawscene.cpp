@@ -2,6 +2,7 @@
 #include<QGraphicsSceneMouseEvent>
 #include<QGraphicsRectItem>
 #include <QDebug>
+#include <QKeyEvent>
 #include "drawobj.h"
 
 DrawScene::DrawScene(QObject *parent)
@@ -112,5 +113,38 @@ void DrawScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvet)
     if ( tool )
         tool->mouseDoubleClickEvent(mouseEvet,this);
 
+}
+
+void DrawScene::keyPressEvent(QKeyEvent *e)
+{
+    qreal dx=0,dy=0;
+    switch( e->key())
+    {
+    case Qt::Key_Up:
+        dx = 0;
+        dy = -1;
+        break;
+    case Qt::Key_Down:
+        dx = 0;
+        dy = 1;
+        break;
+    case Qt::Key_Left:
+        dx = -1;
+        dy = 0;
+        break;
+    case Qt::Key_Right:
+        dx = 1;
+        dy = 0;
+        break;
+    }
+    foreach (QGraphicsItem *item, selectedItems()) {
+       item->moveBy(dx,dy);
+    }
+    QGraphicsScene::keyPressEvent(e);
+}
+
+void DrawScene::keyReleaseEvent(QKeyEvent *e)
+{
+    QGraphicsScene::keyReleaseEvent(e);
 }
 

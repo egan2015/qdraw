@@ -1,11 +1,9 @@
 #ifndef DRAWTOOL
 #define DRAWTOOL
 
-#include <QGraphicsScene>
-#include <QList>
-#include <QCursor>
-#include "drawscene.h"
+
 #include "drawobj.h"
+#include "drawscene.h"
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;

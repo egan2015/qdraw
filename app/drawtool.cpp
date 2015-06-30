@@ -5,7 +5,7 @@
 #include <QGraphicsView>
 #include <QGraphicsLineItem>
 #include <QtMath>
-
+#include "drawobj.h"
 #define PI 3.14
 
 QList<DrawTool*> DrawTool::c_tools;
@@ -37,7 +37,7 @@ enum SelectMode
 
 SelectMode selectMode = none;
 
-SizeHandleRect::Direction nDragHandle = SizeHandleRect::None;
+int nDragHandle = Handle_None;
 
 static void setCursor(DrawScene * scene , const QCursor & cursor )
 {
@@ -105,15 +105,15 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
     selectMode = none;
     QList<QGraphicsItem *> items = scene->selectedItems();
-    GraphicsItem *item = 0;
+    AbstractBasicShape *item = 0;
 
     if ( items.count() == 1 )
-        item = qgraphicsitem_cast<GraphicsItem*>(items.first());
+        item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
 
     if ( item != 0 ){
 
-        nDragHandle = item->hitTest(event->scenePos());
-        if ( nDragHandle !=SizeHandleRect::None)
+        nDragHandle = item->collidesWithHandle(event->scenePos());
+        if ( nDragHandle != Handle_None)
              selectMode = size;
         else
             selectMode =  move;
@@ -159,17 +159,17 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
 
     DrawTool::mouseMoveEvent(event,scene);
     QList<QGraphicsItem *> items = scene->selectedItems();
-    GraphicsItem * item = 0;
+    AbstractBasicShape * item = 0;
     if ( items.count() == 1 ){
-        item = qgraphicsitem_cast<GraphicsItem*>(items.first());
+        item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
         if ( item != 0 ){
-            if ( nDragHandle != SizeHandleRect::None && selectMode == size ){
+            if ( nDragHandle != Handle_None && selectMode == size ){
                 QSizeF delta(c_last.x() - c_down.x() , c_last.y() - c_down.y());
                 item->resizeTo(nDragHandle,c_last);
             }
-            else if(nDragHandle == SizeHandleRect::None && selectMode == selection ){
-                 SizeHandleRect::Direction handle = item->hitTest(event->scenePos());
-                 if ( handle != SizeHandleRect::None){
+            else if(nDragHandle == Handle_None && selectMode == selection ){
+                 int handle = item->collidesWithHandle(event->scenePos());
+                 if ( handle != Handle_None){
                      setCursor(scene,Qt::OpenHandCursor/*item->getCursor(handle)*/);
                      m_hoverSizer = true;
                  }else{
@@ -198,7 +198,7 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
 
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
-        GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(items.first());
+        AbstractBasicShape * item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
         if ( item != 0  && selectMode == move && c_last != c_down ){
              item->setPos(initialPositions + c_last - c_down);
              emit scene->itemMoved(item , initialPositions );
@@ -222,7 +222,7 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
     }
 
     selectMode = none;
-    nDragHandle = SizeHandleRect::None;
+    nDragHandle = Handle_None;
     m_hoverSizer = false;
     scene->mouseEvent(event);
 
@@ -245,10 +245,10 @@ void RotationTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
 
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
-        GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(items.first());
+        AbstractBasicShape * item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
         if ( item != 0 ){
-            nDragHandle = item->hitTest(event->scenePos());
-            if ( nDragHandle !=SizeHandleRect::None)
+            nDragHandle = item->collidesWithHandle(event->scenePos());
+            if ( nDragHandle !=Handle_None)
             {
                 QPointF origin = item->mapToScene(item->boundingRect().center());
 
@@ -291,8 +291,8 @@ void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
 
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
-        GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(items.first());
-        if ( item != 0  && nDragHandle !=SizeHandleRect::None && selectMode == rotate ){
+        AbstractBasicShape * item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
+        if ( item != 0  && nDragHandle !=Handle_None && selectMode == rotate ){
 
 
              QPointF origin = item->mapToScene(item->boundingRect().center());
@@ -315,8 +315,8 @@ void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
         }
         else if ( item )
         {
-            SizeHandleRect::Direction handle = item->hitTest(event->scenePos());
-            if ( handle != SizeHandleRect::None){
+            int handle = item->collidesWithHandle(event->scenePos());
+            if ( handle != Handle_None){
                 setCursor(scene,QCursor((QPixmap(":/icons/rotate.png"))));
                 m_hoverSizer = true;
             }else{
@@ -334,8 +334,8 @@ void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene 
 
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
-        GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(items.first());
-        if ( item != 0  && nDragHandle !=SizeHandleRect::None && selectMode == rotate ){
+        AbstractBasicShape * item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
+        if ( item != 0  && nDragHandle !=Handle_None && selectMode == rotate ){
 
              QPointF origin = item->mapToScene(item->boundingRect().center());
 
@@ -355,7 +355,7 @@ void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene 
 
     setCursor(scene,Qt::ArrowCursor);
     selectMode = none;
-    nDragHandle = SizeHandleRect::None;
+    nDragHandle = Handle_None;
     lastAngle = 0;
     m_hoverSizer = false;
     if (dashRect ){
@@ -404,7 +404,7 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
             scene, SIGNAL(itemSelected(QGraphicsItem*)));
 
     selectMode = size;
-    nDragHandle = SizeHandleRect::RightBottom;
+    nDragHandle = RightBottom;
 
 }
 
@@ -479,7 +479,7 @@ void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
     item->addPoint(c_down+QPoint(1,0));
     m_nPoints++;
     selectMode = size ;
-    nDragHandle = (SizeHandleRect::Direction)item->getHandleCount();
+    nDragHandle = item->handleCount();
 }
 
 void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)

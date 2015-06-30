@@ -32,7 +32,7 @@ static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, cons
 
 
 GraphicsItem::GraphicsItem(QGraphicsItem *parent)
-    :GraphicsBasicItem(parent)
+    :AbstractShapeItem<QGraphicsItem>(parent)
 {
 //    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
 //    effect->setBlurRadius(8);
@@ -43,7 +43,6 @@ GraphicsItem::GraphicsItem(QGraphicsItem *parent)
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
     this->setAcceptHoverEvents(true);
-
 }
 
 void GraphicsItem::updateGeometry()
@@ -57,83 +56,34 @@ void GraphicsItem::updateGeometry()
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
         SizeHandleRect *hndl = *it;;
         switch (hndl->dir()) {
-        case SizeHandleRect::LeftTop:
+        case LeftTop:
             hndl->move(geom.x() , geom.y() );
             break;
-        case SizeHandleRect::Top:
+        case Top:
             hndl->move(geom.x() + geom.width() / 2 , geom.y() );
             break;
-        case SizeHandleRect::RightTop:
+        case RightTop:
             hndl->move(geom.x() + geom.width() , geom.y() );
             break;
-        case SizeHandleRect::Right:
+        case Right:
             hndl->move(geom.x() + geom.width() , geom.y() + geom.height() / 2 );
             break;
-        case SizeHandleRect::RightBottom:
+        case RightBottom:
             hndl->move(geom.x() + geom.width() , geom.y() + geom.height() );
             break;
-        case SizeHandleRect::Bottom:
+        case Bottom:
             hndl->move(geom.x() + geom.width() / 2 , geom.y() + geom.height() );
             break;
-        case SizeHandleRect::LeftBottom:
+        case LeftBottom:
             hndl->move(geom.x(), geom.y() + geom.height());
             break;
-        case SizeHandleRect::Left:
+        case Left:
             hndl->move(geom.x(), geom.y() + geom.height() / 2);
             break;
         default:
             break;
         }
     }
-}
-
-void GraphicsItem::setState(SelectionHandleState st)
-{
-    const Handles::iterator hend =  m_handles.end();
-    for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
-        (*it)->setState(st);
-}
-
-SizeHandleRect::Direction GraphicsItem::hitTest(const QPointF &point) const
-{
-    const Handles::const_iterator hend =  m_handles.end();
-    for (Handles::const_iterator it = m_handles.begin(); it != hend; ++it)
-    {
-        if ((*it)->hitTest(point) ){
-            return (*it)->dir();
-        }
-    }
-    return SizeHandleRect::None;
-}
-
-Qt::CursorShape GraphicsItem::getCursor(SizeHandleRect::Direction dir)
-{
-    switch (dir) {
-    case SizeHandleRect::Right:
-        return Qt::SizeHorCursor;
-    case SizeHandleRect::RightTop:
-        return Qt::SizeBDiagCursor;
-    case SizeHandleRect::RightBottom:
-        return Qt::SizeFDiagCursor;
-    case SizeHandleRect::LeftBottom:
-        return Qt::SizeBDiagCursor;
-    case SizeHandleRect::Bottom:
-        return Qt::SizeVerCursor;
-    case SizeHandleRect::LeftTop:
-        return Qt::SizeFDiagCursor;
-    case SizeHandleRect::Left:
-        return Qt::SizeHorCursor;
-    case SizeHandleRect::Top:
-        return Qt::SizeVerCursor;
-    default:
-        break;
-    }
-    return Qt::ArrowCursor;
-}
-
-void GraphicsItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
-{
-
 }
 
 void GraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
@@ -166,9 +116,9 @@ GraphicsRectItem::GraphicsRectItem(const QRect & rect ,QGraphicsItem *parent)
 {
 
     // handles
-    m_handles.reserve(SizeHandleRect::None);
-    for (int i = SizeHandleRect::LeftTop; i <= SizeHandleRect::Left; ++i) {
-        SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(i), this);
+    m_handles.reserve(Left);
+    for (int i = LeftTop; i <= Left; ++i) {
+        SizeHandleRect *shr = new SizeHandleRect(this,i, this);
         m_handles.push_back(shr);
     }
     updateGeometry();
@@ -190,7 +140,7 @@ QPainterPath GraphicsRectItem::shape() const
     return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
-void GraphicsRectItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
+void GraphicsRectItem::resizeTo(int dir, const QPointF &point)
 {
     QPointF local = mapFromParent(point);
     QString dirName;
@@ -198,35 +148,35 @@ void GraphicsRectItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &po
     const QRectF &geom = this->boundingRect();
     QRect delta = this->rect().toRect();
     switch (dir) {
-    case SizeHandleRect::Right:
+    case Right:
         dirName = "Rigth";
         delta.setRight(local.x());
         break;
-    case SizeHandleRect::RightTop:
+    case RightTop:
         dirName = "RightTop";
         delta.setTopRight(local.toPoint());
         break;
-    case SizeHandleRect::RightBottom:
+    case RightBottom:
         dirName = "RightBottom";
         delta.setBottomRight(local.toPoint());
         break;
-    case SizeHandleRect::LeftBottom:
+    case LeftBottom:
         dirName = "LeftBottom";
         delta.setBottomLeft(local.toPoint());
         break;
-    case SizeHandleRect::Bottom:
+    case Bottom:
         dirName = "Bottom";
         delta.setBottom(local.y());
         break;
-    case SizeHandleRect::LeftTop:
+    case LeftTop:
         dirName = "LeftTop";
         delta.setTopLeft(local.toPoint());
         break;
-    case SizeHandleRect::Left:
+    case Left:
         dirName = "Left";
         delta.setLeft(local.x());
         break;
-    case SizeHandleRect::Top:
+    case Top:
         dirName = "Top";
         delta.setTop(local.y());
         break;
@@ -333,23 +283,19 @@ GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
     :GraphicsRectItem(QRect(0,0,0,0),parent)
 {
     // handles
-    m_handles.reserve(SizeHandleRect::None);
+    m_handles.reserve(Left);
 
     Handles::iterator hend =  m_handles.end();
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
         delete (*it);
     m_handles.clear();
 
-    SizeHandleRect *shr = new SizeHandleRect(this,SizeHandleRect::LeftTop, this);
+    SizeHandleRect *shr = new SizeHandleRect(this,LeftTop, this);
     m_handles.push_back(shr);
-    shr = new SizeHandleRect(this,SizeHandleRect::RightBottom, this);
+    shr = new SizeHandleRect(this,RightBottom, this);
     m_handles.push_back(shr);
 
     updateGeometry();
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-    this->setAcceptHoverEvents(true);
 }
 
 QPainterPath GraphicsLineItem::shape() const
@@ -367,132 +313,24 @@ void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     painter->drawLine(rect().topLeft(),rect().bottomRight());
 }
 
-
-
 GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
-    :GraphicsItem(parent)
+    :AbstractShapeItem <QGraphicsItemGroup>(parent)
 {
     // handles
-    m_handles.reserve(SizeHandleRect::None);
-    for (int i = SizeHandleRect::LeftTop; i <= SizeHandleRect::Left; ++i) {
-        SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(i), this);
+    m_handles.reserve(Left);
+    for (int i = LeftTop; i <= Left; ++i) {
+        SizeHandleRect *shr = new SizeHandleRect(this, i, this);
         m_handles.push_back(shr);
     }
-    updateGeometry();
-    setHandlesChildEvents(true);
+    setFlag(QGraphicsItem::ItemIsMovable, true);
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    this->setAcceptHoverEvents(true);
 }
 
 GraphicsItemGroup::~GraphicsItemGroup()
 {
 
-}
-
-void GraphicsItemGroup::addToGroup(QGraphicsItem *item)
-{
-    if (!item) {
-        qWarning("QGraphicsItemGroup::addToGroup: cannot add null item");
-        return;
-    }
-    if (item == this) {
-        qWarning("QGraphicsItemGroup::addToGroup: cannot add a group to itself");
-        return;
-    }
-
-    // COMBINE
-    bool ok;
-    QTransform itemTransform = item->itemTransform(this, &ok);
-
-    if (!ok) {
-        qWarning("QGraphicsItemGroup::addToGroup: could not find a valid transformation from item to group coordinates");
-        return;
-    }
-
-    QTransform newItemTransform(itemTransform);
-    item->setPos(mapFromItem(item, 0, 0));
-    item->setParentItem(this);
-
-    item->setFlag(QGraphicsItem::ItemIsMovable, false);
-    item->setFlag(QGraphicsItem::ItemIsSelectable, false);
-    item->setFlag(QGraphicsItem::ItemSendsGeometryChanges, false);
-
-
-    // removing position from translation component of the new transform
-    if (!item->pos().isNull())
-        newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
-
-    // removing additional transformations properties applied with itemTransform()
-    QPointF origin = item->transformOriginPoint();
-    QMatrix4x4 m;
-    QList<QGraphicsTransform*> transformList = item->transformations();
-    for (int i = 0; i < transformList.size(); ++i)
-        transformList.at(i)->applyTo(&m);
-    newItemTransform *= m.toTransform().inverted();
-    newItemTransform.translate(origin.x(), origin.y());
-    newItemTransform.rotate(-item->rotation());
-    newItemTransform.scale(1/item->scale(), 1/item->scale());
-    newItemTransform.translate(-origin.x(), -origin.y());
-
-    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
-
-    item->setTransform(newItemTransform);
-    //item->d_func()->setIsMemberOfGroup(true);
-    prepareGeometryChange();
-    itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
-    updateCoordinate();
-    update();
-}
-
-void GraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
-{
-    if (!item) {
-        qWarning("QGraphicsItemGroup::removeFromGroup: cannot remove null item");
-        return;
-    }
-
-    QGraphicsItem *newParent = parentItem();
-
-    // COMBINE
-    bool ok;
-    QTransform itemTransform;
-    if (newParent)
-        itemTransform = item->itemTransform(newParent, &ok);
-    else
-        itemTransform = item->sceneTransform();
-
-    QPointF oldPos = item->mapToItem(newParent, 0, 0);
-    item->setParentItem(newParent);
-    item->setPos(oldPos);
-
-    // removing position from translation component of the new transform
-    if (!item->pos().isNull())
-        itemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
-
-    // removing additional transformations properties applied
-    // with itemTransform() or sceneTransform()
-    QPointF origin = item->transformOriginPoint();
-    QMatrix4x4 m;
-    QList<QGraphicsTransform*> transformList = item->transformations();
-    for (int i = 0; i < transformList.size(); ++i)
-        transformList.at(i)->applyTo(&m);
-    itemTransform *= m.toTransform().inverted();
-    itemTransform.translate(origin.x(), origin.y());
-    itemTransform.rotate(-item->rotation());
-    itemTransform.scale(1 / item->scale(), 1 / item->scale());
-    itemTransform.translate(-origin.x(), -origin.y());
-
-    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
-
-    item->setTransform(itemTransform);
-
-    item->setFlag(QGraphicsItem::ItemIsMovable, true);
-    item->setFlag(QGraphicsItem::ItemIsSelectable, true);
-    item->setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-
-//    item->d_func()->setIsMemberOfGroup(item->group() != 0);
-
-    // ### Quite expensive. But removeFromGroup() isn't called very often.
-    prepareGeometryChange();
-    itemsBoundingRect = childrenBoundingRect();
 }
 
 void GraphicsItemGroup::updateCoordinate()
@@ -501,48 +339,34 @@ void GraphicsItemGroup::updateCoordinate()
     pt1 = mapToScene(transformOriginPoint());
     pt2 = mapToScene(boundingRect().center());
     delta = pt1 - pt2;
-
     setTransform(transform().translate(delta.x(),delta.y()));
     setTransformOriginPoint(boundingRect().center());
     moveBy(-delta.x(),-delta.y());
     updateGeometry();
 }
 
-QRectF GraphicsItemGroup::boundingRect() const
+QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
-    return itemsBoundingRect;
+    if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
+        qDebug()<<" Item Selected : " << value.toString();
+        setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
+        if( value.toBool()){
+            updateCoordinate();
+            emit selectedChange(this);
+        }
+    }else if ( change == QGraphicsItem::ItemRotationHasChanged ){
+        qDebug()<<"Item Rotation Changed:" << value.toString();
+    }else if ( change == QGraphicsItem::ItemTransformOriginPointHasChanged ){
+        QPointF newPos=boundingRect().center();
+
+        qDebug()<<"ItemTransformOriginPointHasChanged:" << value.toPointF() << newPos;
+    }
+    return QGraphicsItemGroup::itemChange(change, value);
 }
 
 void GraphicsItemGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
 
-#if 0
-    QPointF origin = mapFromScene(pos());
-
-    QPointF origin1 =transformOriginPoint();
-
-    QColor c1 = QColor(Qt::blue);
-  //  c1.setAlpha(180);
-    painter->setBrush(c1);
-    painter->drawEllipse(origin.x() - 3 , origin.y() - 3 ,6,6);
-
-
-    QColor c2 = QColor(Qt::green);
-  //  c2.setAlpha(180);
-    painter->setBrush(c2);
-    painter->drawEllipse(origin1.x() - 3 , origin1.y() - 3 ,6,6);
-#endif
-
-}
-
-bool GraphicsItemGroup::isObscuredBy(const QGraphicsItem *item) const
-{
-    return GraphicsItem::isObscuredBy(item);
-}
-
-QPainterPath GraphicsItemGroup::opaqueArea() const
-{
-    return GraphicsItem::opaqueArea() ;
 }
 
 
@@ -569,7 +393,7 @@ QPainterPath GraphicsBezierCurve::shape() const
 void GraphicsBezierCurve::addPoint(const QPointF &point)
 {
     m_points.append(mapFromScene(point));
-    SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(m_index), this);
+    SizeHandleRect *shr = new SizeHandleRect(this, m_index, this);
     shr->setState(SelectionHandleActive);
     m_handles.push_back(shr);
     m_index++;
@@ -596,30 +420,6 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
     }
 
     painter->drawPath(path);
-}
-
-
-GraphicsBasicItem::GraphicsBasicItem(QGraphicsItem *parent)
-    :QGraphicsObject(parent)
-    ,m_pen(Qt::black)
-    ,m_brush(Qt::NoBrush)
-{
-    m_pen.setColor(Qt::black);
-    m_brush.setColor(Qt::white);
-}
-
-GraphicsBasicItem::GraphicsBasicItem(const QString &name, QGraphicsItem *parent)
-    :QGraphicsObject(parent)
-    ,m_pen(Qt::black)
-    ,m_brush(Qt::NoBrush)
-{
-    m_pen.setColor(Qt::black);
-    m_brush.setColor(Qt::white);
-}
-
-GraphicsBasicItem::~GraphicsBasicItem()
-{
-
 }
 
 
@@ -720,7 +520,7 @@ void GraphicsArcItem::endPoint(const QPointF &point)
     }
 }
 
-void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
+void GraphicsArcItem::resizeTo(int dir, const QPointF &point)
 {
     QPointF local = mapFromScene(point);
     switch( dir )
@@ -731,8 +531,8 @@ void GraphicsArcItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &poi
     case 2:
     {
         m_points[(int)dir] = local;
-        qreal rx = abs(local.x() - m_points.at(0).x());
-        qreal ry = abs(local.y() - m_points.at(0).y());
+        qreal rx = local.x() - m_points.at(0).x();
+        qreal ry = local.y() - m_points.at(0).y();
         qreal r  = sqrt(rx*rx+ry*ry);
         m_Radius = r;
         qreal len_y = local.y() - m_points.at(0).y();
@@ -812,6 +612,8 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     qreal startAngle = m_startAngle <= m_endAngle ? m_startAngle : m_endAngle;
     qreal endAngle = m_startAngle >= m_endAngle ? m_startAngle : m_endAngle;
 
+    painter->setPen(pen());
+    painter->setBrush(brush());
     if(endAngle - startAngle > 360)
         endAngle = startAngle + 360;
     painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
@@ -823,7 +625,7 @@ GraphicsRoundRectItem::GraphicsRoundRectItem(const QRect &rect, QGraphicsItem *p
      m_roundness(16,16)
 {
     m_fRatio = 1/3;
-    SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(SizeHandleRect::Extend), this);
+    SizeHandleRect *shr = new SizeHandleRect(this, 8 , this);
     m_handles.push_back(shr);
 }
 
@@ -835,9 +637,9 @@ QPainterPath GraphicsRoundRectItem::shape() const
 
 }
 
-void GraphicsRoundRectItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
+void GraphicsRoundRectItem::resizeTo(int dir, const QPointF &point)
 {
-    if ( dir == SizeHandleRect::Extend ){
+    if ( dir == 8 ){
         QPointF local = mapFromScene(point);
         QRectF rc = rect();
         rc.normalized();
@@ -876,31 +678,31 @@ void GraphicsRoundRectItem::updateGeometry()
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
         SizeHandleRect *hndl = *it;;
         switch (hndl->dir()) {
-        case SizeHandleRect::LeftTop:
+        case LeftTop:
             hndl->move(geom.x() , geom.y());
             break;
-        case SizeHandleRect::Top:
+        case Top:
             hndl->move(geom.x() + geom.width() / 2 , geom.y() );
             break;
-        case SizeHandleRect::RightTop:
+        case RightTop:
             hndl->move(geom.x() + geom.width() , geom.y() );
             break;
-        case SizeHandleRect::Right:
+        case Right:
             hndl->move(geom.x() + geom.width() , geom.y() + geom.height() / 2 );
             break;
-        case SizeHandleRect::RightBottom:
+        case RightBottom:
             hndl->move(geom.x() + geom.width() , geom.y() + geom.height() );
             break;
-        case SizeHandleRect::Bottom:
+        case Bottom:
             hndl->move(geom.x() + geom.width() / 2 , geom.y() + geom.height() );
             break;
-        case SizeHandleRect::LeftBottom:
+        case LeftBottom:
             hndl->move(geom.x() , geom.y() + geom.height() );
             break;
-        case SizeHandleRect::Left:
+        case Left:
             hndl->move(geom.x() , geom.y() + geom.height() / 2 );
             break;
-        case SizeHandleRect::Extend:
+        case 8:
             hndl->move( geom.bottomRight().x() - m_roundness.x() / 2, geom.bottomRight().y() - m_roundness.y()/2);
             break;
         default:
@@ -933,7 +735,7 @@ GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)
     :GraphicsItem(parent)
 {
     // handles
-    m_handles.reserve(SizeHandleRect::None);
+    m_handles.reserve(Left);
 
     Handles::iterator hend =  m_handles.end();
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
@@ -961,15 +763,15 @@ void GraphicsPolygonItem::addPoint(const QPointF &point)
 {
     m_points.append(mapFromScene(point));
     int dir = m_points.count() - 1 ;
-    SizeHandleRect *shr = new SizeHandleRect(this, static_cast<SizeHandleRect::Direction>(dir), this);
+    SizeHandleRect *shr = new SizeHandleRect(this, dir, this);
     shr->setState(SelectionHandleActive);
     m_handles.push_back(shr);
 }
 
-void GraphicsPolygonItem::resizeTo(SizeHandleRect::Direction dir, const QPointF &point)
+void GraphicsPolygonItem::resizeTo(int dir, const QPointF &point)
 {
     QPointF pt = mapFromScene(point);
-    m_points[(int)dir] = pt;
+    m_points[dir] = pt;
     prepareGeometryChange();
     m_localRect = m_points.boundingRect();
     m_width = m_localRect.width();
@@ -1005,9 +807,9 @@ void GraphicsPolygonItem::updateCoordinate()
 void GraphicsPolygonItem::endPoint(const QPointF & point)
 {
     int nPoints = m_points.count();
-    if( nPoints > 2 && m_points[nPoints-1] == m_points[nPoints-2] ||
+    if( nPoints > 2 && (m_points[nPoints-1] == m_points[nPoints-2] ||
         m_points[nPoints-1].x() - 1 == m_points[nPoints-2].x() &&
-        m_points[nPoints-1].y() == m_points[nPoints-2].y()){
+        m_points[nPoints-1].y() == m_points[nPoints-2].y())){
         delete m_handles[nPoints-1];
         m_points.remove(nPoints-1);
         m_handles.remove(nPoints-1);
@@ -1056,7 +858,5 @@ void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
 
     painter->setPen(pen());
     painter->drawPolygon(m_points);
-
-
 
 }

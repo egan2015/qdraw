@@ -4,19 +4,43 @@
 #include <qgraphicsitem.h>
 #include <QtCore/QObject>
 #include <QGraphicsSceneMouseEvent>
-#include "drawtool.h"
 #include "sizehandle.h"
 #include <QVector>
+#include <QGraphicsScene>
+#include <QList>
+#include <QCursor>
 
-class GraphicsBasicItem : public QGraphicsObject
+template < typename AbstractType = QGraphicsItem >
+class AbstractShapeItem : public AbstractType
 {
-    Q_OBJECT
-    Q_PROPERTY(QColor pen READ penColor WRITE setPen )
-    Q_PROPERTY(QColor brush READ brush WRITE setBrush )
 public:
-    explicit GraphicsBasicItem(QGraphicsItem * parent);
-    explicit GraphicsBasicItem(const QString &name ,QGraphicsItem *parent );
-    virtual ~GraphicsBasicItem();
+   explicit AbstractShapeItem(QGraphicsItem * parent = 0 )
+        :AbstractType(parent)
+    {
+        m_pen.setColor(Qt::black);
+        m_brush.setColor(Qt::white);
+    }
+    virtual ~AbstractShapeItem(){}
+    virtual QString displayName () const { return QString("AbstractType");}
+    virtual void resizeTo(int dir, const QPointF & point ){}
+    virtual QRectF  rect() const { return m_localRect; }
+    virtual void updateCoordinate () {}
+    virtual void move( const QPointF & point ){}
+
+    int handleCount() const { return m_handles.count()-1;}
+
+    int collidesWithHandle( const QPointF & point ) const
+    {
+        const Handles::const_iterator hend =  m_handles.end();
+        for (Handles::const_iterator it = m_handles.begin(); it != hend; ++it)
+        {
+            QPointF pt = (*it)->mapFromScene(point);
+            if ((*it)->contains(pt) ){
+                return (*it)->dir();
+            }
+        }
+        return Handle_None;
+    }
 
     QColor brush() const {return m_brush.color();}
     QPen   pen() const {return m_pen;}
@@ -25,34 +49,42 @@ public:
     void   setBrush( const QBrush & brush ) { m_brush = brush ; }
 
 protected:
+    virtual void updateGeometry(){}
+    void setState(SelectionHandleState st)
+    {
+        const Handles::iterator hend =  m_handles.end();
+        for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
+            (*it)->setState(st);
+    }
+
     QBrush m_brush;
     QPen   m_pen ;
+    typedef QVector<SizeHandleRect*> Handles;
+    Handles m_handles;
+    QRectF m_localRect;
 };
 
-class GraphicsItem : public GraphicsBasicItem
+typedef  AbstractShapeItem< QGraphicsItem > AbstractBasicShape;
+
+class GraphicsItem : public QObject,
+        public AbstractShapeItem<QGraphicsItem>
 {
     Q_OBJECT
+    Q_PROPERTY(QColor pen READ penColor WRITE setPen )
+    Q_PROPERTY(QColor brush READ brush WRITE setBrush )
+
 public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
-    virtual SizeHandleRect::Direction  hitTest( const QPointF & point ) const;
-    virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
-    virtual Qt::CursorShape getCursor(SizeHandleRect::Direction dir );
-    virtual QRectF  rect() const { return m_localRect;}
-    virtual void updateCoordinate () {}
-    virtual void move( const QPointF & point ){}
-    int  getHandleCount() const { return m_handles.count()-1;}
+    QRectF  rect() const { return m_localRect;}
 signals:
     void selectedChange(QGraphicsItem *item);
+
 protected:
-    virtual void updateGeometry();
-    void setState(SelectionHandleState st);
+    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
+    void updateGeometry();
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    typedef QVector<SizeHandleRect*> Handles;
-    Handles m_handles;
-    QRectF m_localRect;
 };
 
 class GraphicsRectItem : public GraphicsItem
@@ -61,11 +93,11 @@ public:
     GraphicsRectItem(const QRect & rect ,QGraphicsItem * parent);
     QRectF boundingRect() const;
     QPainterPath shape() const;
-    virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
+    virtual void resizeTo(int dir, const QPointF & point );
     virtual QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
-
+    QString displayName() const { return tr("rectangle"); }
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 protected:
@@ -78,7 +110,8 @@ class GraphicsRoundRectItem : public GraphicsRectItem
 public:
     GraphicsRoundRectItem( const QRect & rect , QGraphicsItem *parent );
     QPainterPath shape() const;
-    virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
+    virtual void resizeTo(int dir, const QPointF & point );
+    QString displayName() const { return tr("roundrect"); }
 protected:
     void updateGeometry();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -86,22 +119,25 @@ protected:
     float m_fRatio;
 };
 
-class GraphicsItemGroup : public GraphicsItem
+class GraphicsItemGroup : public QObject,
+        public AbstractShapeItem <QGraphicsItemGroup>
 {
-
+    Q_OBJECT
 public:
+    enum {Type = UserType+2};
+    int  type() const { return Type; }
+
     explicit GraphicsItemGroup(QGraphicsItem *parent = 0);
     ~GraphicsItemGroup();
-    void addToGroup(QGraphicsItem *item);
-    void removeFromGroup(QGraphicsItem *item);
     void updateCoordinate();
 
-    QRectF boundingRect() const;
-    bool isObscuredBy(const QGraphicsItem *item) const;
-    QPainterPath opaqueArea() const;
+signals:
+    void selectedChange(QGraphicsItem *item);
+
 protected:
+    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
-     QRectF itemsBoundingRect;
 };
 
 
@@ -120,7 +156,6 @@ public:
     GraphicsLineItem(QGraphicsItem * parent );
     QPainterPath shape() const;
 protected:
-
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 };
@@ -132,7 +167,7 @@ public:
     QRectF boundingRect() const ;
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
-    virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );    
+    virtual void resizeTo(int dir, const QPointF & point );
     void updateCoordinate ();
     virtual void endPoint(const QPointF & point );
 protected:
@@ -163,7 +198,7 @@ public:
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
      void endPoint(const QPointF & point );
-    virtual void resizeTo(SizeHandleRect::Direction dir, const QPointF & point );
+    virtual void resizeTo(int dir, const QPointF & point );
     QRectF boundingRect() const ;
     void updateCoordinate ();
 protected:
@@ -184,7 +219,6 @@ public:
     void paintGrid(QPainter *painter,const QRect & rect );
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
 
     QSize m_sizeGrid;
     QSize m_sizeGridSpace;

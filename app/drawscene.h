@@ -15,6 +15,7 @@ class QGraphicsTextItem;
 class QColor;
 QT_END_NAMESPACE
 
+class GraphicsItemGroup;
 
 class DrawScene : public QGraphicsScene
 {
@@ -24,7 +25,8 @@ public:
     void setView(QGraphicsView * view ) { m_view = view ; }
     QGraphicsView * view() { return m_view; };
     void mouseEvent(QGraphicsSceneMouseEvent *mouseEvent );
-
+    GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items);
+    void destroyGroup(QGraphicsItemGroup *group);
 signals:
     void itemSelected(QGraphicsItem *item);
     void itemMoved( QGraphicsItem * item , const QPointF & oldPosition );

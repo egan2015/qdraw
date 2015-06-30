@@ -26,6 +26,64 @@ void DrawScene::mouseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 }
 
+GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items)
+{
+    // Build a list of the first item's ancestors
+    QList<QGraphicsItem *> ancestors;
+    int n = 0;
+    if (!items.isEmpty()) {
+        QGraphicsItem *parent = items.at(n++);
+        while ((parent = parent->parentItem()))
+            ancestors.append(parent);
+    }
+
+    // Find the common ancestor for all items
+    QGraphicsItem *commonAncestor = 0;
+    if (!ancestors.isEmpty()) {
+        while (n < items.size()) {
+            int commonIndex = -1;
+            QGraphicsItem *parent = items.at(n++);
+            do {
+                int index = ancestors.indexOf(parent, qMax(0, commonIndex));
+                if (index != -1) {
+                    commonIndex = index;
+                    break;
+                }
+            } while ((parent = parent->parentItem()));
+
+            if (commonIndex == -1) {
+                commonAncestor = 0;
+                break;
+            }
+
+            commonAncestor = ancestors.at(commonIndex);
+        }
+    }
+
+    // Create a new group at that level
+    GraphicsItemGroup *group = new GraphicsItemGroup(commonAncestor);
+    if (!commonAncestor)
+        addItem(group);
+    foreach (QGraphicsItem *item, items){
+        item->setSelected(false);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( !g )
+             group->addToGroup(item);
+    }
+    return group;
+}
+
+void DrawScene::destroyGroup(QGraphicsItemGroup *group)
+{
+    group->setSelected(false);
+    foreach (QGraphicsItem *item, group->childItems()){
+        item->setSelected(true);
+        group->removeFromGroup(item);
+    }
+    removeItem(group);
+    delete group;
+}
+
 void DrawScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
 

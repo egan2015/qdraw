@@ -16,25 +16,21 @@ QT_END_NAMESPACE
 
 enum { SELECTION_HANDLE_SIZE = 6, SELECTION_MARGIN = 10 };
 enum SelectionHandleState { SelectionHandleOff, SelectionHandleInactive, SelectionHandleActive };
-
+enum { Handle_None = -1 , LeftTop , Top, RightTop, Right, RightBottom, Bottom, LeftBottom, Left };
 class SizeHandleRect :public QGraphicsRectItem
 {
 public:
-    enum Direction { None = -1 , LeftTop , Top, RightTop, Right, RightBottom, Bottom, LeftBottom, Left , Extend };
 
-    SizeHandleRect(QGraphicsItem* parent , Direction d, QGraphicsItem *resizable);
+    SizeHandleRect(QGraphicsItem* parent , int d, QGraphicsItem *resizable);
 
-    Direction dir() const  { return m_dir; }
-    void updateCursor();
+    int dir() const  { return m_dir; }
     void setState(SelectionHandleState st);
-    bool hitTest( const QPointF & point );
     void move(qreal x, qreal y );
-
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 private:
-    const Direction m_dir;
+    const int m_dir;
     QGraphicsItem *m_resizable;
     SelectionHandleState m_state;
     QColor borderColor;

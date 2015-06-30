@@ -6,7 +6,7 @@
 #include <qdebug.h>
 #include <QtWidgets>
 
-SizeHandleRect::SizeHandleRect(QGraphicsItem* parent , Direction d, QGraphicsItem *resizable)
+SizeHandleRect::SizeHandleRect(QGraphicsItem* parent , int d, QGraphicsItem *resizable)
     :QGraphicsRectItem(-SELECTION_HANDLE_SIZE/2,
                        -SELECTION_HANDLE_SIZE/2,
                        SELECTION_HANDLE_SIZE,
@@ -20,39 +20,6 @@ SizeHandleRect::SizeHandleRect(QGraphicsItem* parent , Direction d, QGraphicsIte
     hide();
 }
 
-void SizeHandleRect::updateCursor()
-{
-    switch (m_dir) {
-    case Right:
-        setCursor(Qt::SizeHorCursor);
-        return;
-    case RightTop:
-        setCursor(Qt::SizeBDiagCursor);
-        return;
-    case RightBottom:
-        setCursor(Qt::SizeFDiagCursor);
-        return;
-    case LeftBottom:
-        setCursor(Qt::SizeBDiagCursor);
-        return;
-    case Bottom:
-        setCursor(Qt::SizeVerCursor);
-        return;
-    case LeftTop:
-        setCursor(Qt::SizeFDiagCursor);
-        return;
-    case Left:
-        setCursor(Qt::SizeHorCursor);
-        return;
-    case Top:
-        setCursor(Qt::SizeVerCursor);
-        return;
-    default:
-        break;
-    }
-    setCursor(Qt::ArrowCursor);
-}
-
 
 void SizeHandleRect::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
@@ -61,7 +28,7 @@ void SizeHandleRect::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     painter->setBrush(QBrush(borderColor));
 
     painter->setRenderHint(QPainter::Antialiasing,false);
-    if ( m_dir >= Extend )
+    if ( m_dir > Left )
     {
         painter->setBrush(Qt::darkBlue);
         //painter->drawEllipse(rect());
@@ -87,17 +54,11 @@ void SizeHandleRect::setState(SelectionHandleState st)
     m_state = st;
 }
 
-bool SizeHandleRect::hitTest(const QPointF &point)
-{
-    QPointF pt = mapFromScene(point);
-    bool result = rect().contains(pt);
-    return result;
-}
-
 void SizeHandleRect::move(qreal x, qreal y)
 {   
     setPos(x,y);
 }
+
 
 
 

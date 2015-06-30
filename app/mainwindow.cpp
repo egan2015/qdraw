@@ -367,27 +367,15 @@ void MainWindow::on_aglin_triggered()
     {
         view->fitInView(scene->sceneRect());
     }else if ( sender() == actionGroup ){
-        //QGraphicsItemGroup test
+        //QGraphicsItemGroup
         QList<QGraphicsItem *> selectedItems = scene->selectedItems();
-        GraphicsItemGroup * group = new GraphicsItemGroup();
-        foreach (QGraphicsItem *item, selectedItems) {
-            item->setSelected(false);
-            group->addToGroup(item);
-        }
+        GraphicsItemGroup * group = scene->createGroup(selectedItems);
         group->setSelected(true);
-        scene->addItem(group);
     } else if ( sender() == actionUnGroup ){
         QGraphicsItem *selectedItem = scene->selectedItems().first();
         GraphicsItemGroup * group = dynamic_cast<GraphicsItemGroup*>(selectedItem);
         if ( group ){
-            group->setSelected(false);
-            QList<QGraphicsItem *> overlapItems = group->childItems();
-            foreach (QGraphicsItem *item, overlapItems) {
-                group->removeFromGroup(item);
-                item->setSelected(true);
-            }
-            scene->removeItem(group);
-            delete group;
+            scene->destroyGroup(group);
         }
     }
 }

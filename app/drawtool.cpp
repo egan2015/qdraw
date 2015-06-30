@@ -165,7 +165,7 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
         if ( item != 0 ){
             if ( nDragHandle != Handle_None && selectMode == size ){
                 QSizeF delta(c_last.x() - c_down.x() , c_last.y() - c_down.y());
-                item->resizeTo(nDragHandle,c_last);
+                item->resize(nDragHandle,c_last);
             }
             else if(nDragHandle == Handle_None && selectMode == selection ){
                  int handle = item->collidesWithHandle(event->scenePos());

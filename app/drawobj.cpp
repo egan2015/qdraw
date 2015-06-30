@@ -140,55 +140,55 @@ QPainterPath GraphicsRectItem::shape() const
     return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
-void GraphicsRectItem::resizeTo(int dir, const QPointF &point)
+void GraphicsRectItem::resize(int dir, const QPointF & delta)
 {
-    QPointF local = mapFromParent(point);
+    QPointF local = mapFromParent(delta);
     QString dirName;
 
     const QRectF &geom = this->boundingRect();
-    QRect delta = this->rect().toRect();
+    QRect delta1 = this->rect().toRect();
     switch (dir) {
     case Right:
         dirName = "Rigth";
-        delta.setRight(local.x());
+        delta1.setRight(local.x());
         break;
     case RightTop:
         dirName = "RightTop";
-        delta.setTopRight(local.toPoint());
+        delta1.setTopRight(local.toPoint());
         break;
     case RightBottom:
         dirName = "RightBottom";
-        delta.setBottomRight(local.toPoint());
+        delta1.setBottomRight(local.toPoint());
         break;
     case LeftBottom:
         dirName = "LeftBottom";
-        delta.setBottomLeft(local.toPoint());
+        delta1.setBottomLeft(local.toPoint());
         break;
     case Bottom:
         dirName = "Bottom";
-        delta.setBottom(local.y());
+        delta1.setBottom(local.y());
         break;
     case LeftTop:
         dirName = "LeftTop";
-        delta.setTopLeft(local.toPoint());
+        delta1.setTopLeft(local.toPoint());
         break;
     case Left:
         dirName = "Left";
-        delta.setLeft(local.x());
+        delta1.setLeft(local.x());
         break;
     case Top:
         dirName = "Top";
-        delta.setTop(local.y());
+        delta1.setTop(local.y());
         break;
    default:
         break;
     }
 
-    m_width = delta.width();
-    m_height = delta.height();
+    m_width = delta1.width();
+    m_height = delta1.height();
 
     prepareGeometryChange();
-    m_localRect = delta;
+    m_localRect = delta1;
 
     updateGeometry();
 }
@@ -314,7 +314,8 @@ void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 }
 
 GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
-    :AbstractShapeItem <QGraphicsItemGroup>(parent)
+    :AbstractShapeItem <QGraphicsItemGroup>(parent),
+      m_parent(parent)
 {
     // handles
     m_handles.reserve(Left);
@@ -326,6 +327,108 @@ GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
     this->setAcceptHoverEvents(true);
+}
+
+void GraphicsItemGroup::addToGroup(QGraphicsItem *item)
+{
+    if (!item) {
+        qWarning("QGraphicsItemGroup::addToGroup: cannot add null item");
+        return;
+    }
+    if (item == this) {
+        qWarning("QGraphicsItemGroup::addToGroup: cannot add a group to itself");
+        return;
+    }
+
+    // COMBINE
+    bool ok;
+    QTransform itemTransform = item->itemTransform(this, &ok);
+
+    if (!ok) {
+        qWarning("QGraphicsItemGroup::addToGroup: could not find a valid transformation from item to group coordinates");
+        return;
+    }
+
+    QTransform newItemTransform(itemTransform);
+    item->setPos(mapFromItem(item, 0, 0));
+    item->setParentItem(this);
+
+    // removing position from translation component of the new transform
+    if (!item->pos().isNull())
+        newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
+    // removing additional transformations properties applied with itemTransform()
+    QPointF origin = item->transformOriginPoint();
+    QMatrix4x4 m;
+    QList<QGraphicsTransform*> transformList = item->transformations();
+    for (int i = 0; i < transformList.size(); ++i)
+        transformList.at(i)->applyTo(&m);
+    newItemTransform *= m.toTransform().inverted();
+    newItemTransform.translate(origin.x(), origin.y());
+    newItemTransform.rotate(-item->rotation());
+    newItemTransform.scale(1/item->scale(), 1/item->scale());
+    newItemTransform.translate(-origin.x(), -origin.y());
+
+    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
+
+    item->setTransform(newItemTransform);
+//    item->d_func()->setIsMemberOfGroup(true);
+    prepareGeometryChange();
+    itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
+    update();
+}
+
+void GraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
+{
+    if (!item) {
+        qWarning("QGraphicsItemGroup::removeFromGroup: cannot remove null item");
+        return;
+    }
+
+    QGraphicsItem *newParent = m_parent;
+
+    // COMBINE
+    bool ok;
+    QTransform itemTransform;
+    if (newParent)
+        itemTransform = item->itemTransform(newParent, &ok);
+    else
+        itemTransform = item->sceneTransform();
+
+    QPointF oldPos = item->mapToItem(newParent, 0, 0);
+    item->setParentItem(newParent);
+    item->setPos(oldPos);
+
+    // removing position from translation component of the new transform
+    if (!item->pos().isNull())
+        itemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
+    // removing additional transformations properties applied
+    // with itemTransform() or sceneTransform()
+    QPointF origin = item->transformOriginPoint();
+    QMatrix4x4 m;
+    QList<QGraphicsTransform*> transformList = item->transformations();
+    for (int i = 0; i < transformList.size(); ++i)
+        transformList.at(i)->applyTo(&m);
+    itemTransform *= m.toTransform().inverted();
+    itemTransform.translate(origin.x(), origin.y());
+    itemTransform.rotate(-item->rotation());
+    itemTransform.scale(1 / item->scale(), 1 / item->scale());
+    itemTransform.translate(-origin.x(), -origin.y());
+
+    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
+
+    item->setTransform(itemTransform);
+//    item->d_func()->setIsMemberOfGroup(item->group() != 0);
+
+    // ### Quite expensive. But removeFromGroup() isn't called very often.
+    prepareGeometryChange();
+    itemsBoundingRect = childrenBoundingRect();
+}
+
+QRectF GraphicsItemGroup::boundingRect() const
+{
+    return itemsBoundingRect;
 }
 
 GraphicsItemGroup::~GraphicsItemGroup()
@@ -343,6 +446,48 @@ void GraphicsItemGroup::updateCoordinate()
     setTransformOriginPoint(boundingRect().center());
     moveBy(-delta.x(),-delta.y());
     updateGeometry();
+    qDebug()<<"group update :" << pt1 << pt2 << delta;
+}
+
+void GraphicsItemGroup::updateGeometry()
+{
+    const QRectF &geom = this->boundingRect();
+
+    const int w = SELECTION_HANDLE_SIZE;
+    const int h = SELECTION_HANDLE_SIZE;
+
+    const Handles::iterator hend =  m_handles.end();
+    for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
+        SizeHandleRect *hndl = *it;;
+        switch (hndl->dir()) {
+        case LeftTop:
+            hndl->move(geom.x() , geom.y() );
+            break;
+        case Top:
+            hndl->move(geom.x() + geom.width() / 2 , geom.y() );
+            break;
+        case RightTop:
+            hndl->move(geom.x() + geom.width() , geom.y() );
+            break;
+        case Right:
+            hndl->move(geom.x() + geom.width() , geom.y() + geom.height() / 2 );
+            break;
+        case RightBottom:
+            hndl->move(geom.x() + geom.width() , geom.y() + geom.height() );
+            break;
+        case Bottom:
+            hndl->move(geom.x() + geom.width() / 2 , geom.y() + geom.height() );
+            break;
+        case LeftBottom:
+            hndl->move(geom.x(), geom.y() + geom.height());
+            break;
+        case Left:
+            hndl->move(geom.x(), geom.y() + geom.height() / 2);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
@@ -520,9 +665,9 @@ void GraphicsArcItem::endPoint(const QPointF &point)
     }
 }
 
-void GraphicsArcItem::resizeTo(int dir, const QPointF &point)
+void GraphicsArcItem::resize(int dir, const QPointF & delta)
 {
-    QPointF local = mapFromScene(point);
+    QPointF local = mapFromScene(delta);
     switch( dir )
     {
     case 0:
@@ -637,10 +782,10 @@ QPainterPath GraphicsRoundRectItem::shape() const
 
 }
 
-void GraphicsRoundRectItem::resizeTo(int dir, const QPointF &point)
+void GraphicsRoundRectItem::resize(int dir, const QPointF & delta)
 {
     if ( dir == 8 ){
-        QPointF local = mapFromScene(point);
+        QPointF local = mapFromScene(delta);
         QRectF rc = rect();
         rc.normalized();
         if (local.x() > rc.right() - 1)
@@ -664,7 +809,7 @@ void GraphicsRoundRectItem::resizeTo(int dir, const QPointF &point)
 
     }
 
-    GraphicsRectItem::resizeTo(dir,point);
+    GraphicsRectItem::resize(dir,delta);
 }
 
 void GraphicsRoundRectItem::updateGeometry()
@@ -768,9 +913,9 @@ void GraphicsPolygonItem::addPoint(const QPointF &point)
     m_handles.push_back(shr);
 }
 
-void GraphicsPolygonItem::resizeTo(int dir, const QPointF &point)
+void GraphicsPolygonItem::resize(int dir, const QPointF &delta)
 {
-    QPointF pt = mapFromScene(point);
+    QPointF pt = mapFromScene(delta);
     m_points[dir] = pt;
     prepareGeometryChange();
     m_localRect = m_points.boundingRect();
@@ -814,23 +959,6 @@ void GraphicsPolygonItem::endPoint(const QPointF & point)
         m_points.remove(nPoints-1);
         m_handles.remove(nPoints-1);
     }
-}
-
-QRectF GraphicsPolygonItem::RecalcBounds()
-{
-    QRectF bounds(m_points[0],QSize(0,0));
-    for (int i = 1; i < m_points.count(); ++i)
-    {
-        if (m_points[i].x() < bounds.left())
-            bounds.setLeft(m_points[i].x());
-        if (m_points[i].x() > bounds.right())
-            bounds.setRight(m_points[i].x());
-        if (m_points[i].y() < bounds.top())
-            bounds.setTop(m_points[i].y());
-        if (m_points[i].y() > bounds.bottom())
-            bounds.setBottom(m_points[i].y());
-    }
-    return bounds;
 }
 
 void GraphicsPolygonItem::updateGeometry()

@@ -30,6 +30,7 @@ class QMdiArea;
 class QMdiSubWindow;
 class QSignalMapper;
 class QUndoStack;
+class QUndoView;
 QT_END_NAMESPACE
 
 class QtVariantProperty;
@@ -120,6 +121,7 @@ private:
     QListView      *listView;
 
     QUndoStack *undoStack;
+    QUndoView *undoView;
 };
 
 #endif // MAINWINDOW_H

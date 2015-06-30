@@ -22,7 +22,7 @@ public:
     }
     virtual ~AbstractShapeItem(){}
     virtual QString displayName () const { return QString("AbstractType");}
-    virtual void resizeTo(int dir, const QPointF & point ){}
+    virtual void resize(int dir, const QPointF & delta ){}
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){}
@@ -77,7 +77,6 @@ public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
-    QRectF  rect() const { return m_localRect;}
 signals:
     void selectedChange(QGraphicsItem *item);
 
@@ -93,7 +92,7 @@ public:
     GraphicsRectItem(const QRect & rect ,QGraphicsItem * parent);
     QRectF boundingRect() const;
     QPainterPath shape() const;
-    virtual void resizeTo(int dir, const QPointF & point );
+    virtual void resize(int dir, const QPointF & delta);
     virtual QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
@@ -110,7 +109,7 @@ class GraphicsRoundRectItem : public GraphicsRectItem
 public:
     GraphicsRoundRectItem( const QRect & rect , QGraphicsItem *parent );
     QPainterPath shape() const;
-    virtual void resizeTo(int dir, const QPointF & point );
+    virtual void resize(int dir, const QPointF & delta);
     QString displayName() const { return tr("roundrect"); }
 protected:
     void updateGeometry();
@@ -126,20 +125,22 @@ class GraphicsItemGroup : public QObject,
 public:
     enum {Type = UserType+2};
     int  type() const { return Type; }
-
     explicit GraphicsItemGroup(QGraphicsItem *parent = 0);
+    void addToGroup(QGraphicsItem *item);
+    void removeFromGroup(QGraphicsItem *item);
+    QRectF boundingRect() const;
     ~GraphicsItemGroup();
     void updateCoordinate();
-
 signals:
     void selectedChange(QGraphicsItem *item);
 
 protected:
+    void updateGeometry();
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
-
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+    QGraphicsItem * m_parent;
+    QRectF itemsBoundingRect;
 };
-
 
 class GraphicsEllipseItem : public GraphicsRectItem
 {
@@ -167,11 +168,10 @@ public:
     QRectF boundingRect() const ;
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
-    virtual void resizeTo(int dir, const QPointF & point );
+    virtual void resize(int dir, const QPointF & delta);
     void updateCoordinate ();
     virtual void endPoint(const QPointF & point );
 protected:
-    QRectF RecalcBounds();
     void updateGeometry();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPolygonF m_points;
@@ -198,7 +198,7 @@ public:
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
      void endPoint(const QPointF & point );
-    virtual void resizeTo(int dir, const QPointF & point );
+    virtual void resize(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
     void updateCoordinate ();
 protected:

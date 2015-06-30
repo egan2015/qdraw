@@ -14,6 +14,16 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     undoStack = new QUndoStack(this);
+    undoView = new QUndoView(undoStack);
+    undoView->setWindowTitle(tr("Command List"));
+    undoView->show();
+    undoView->setAttribute(Qt::WA_QuitOnClose, false);
+
+    QDockWidget *dock = new QDockWidget(this);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    dock->setWidget(undoView);
+
 
     createActions();
     createToolbars();
@@ -285,7 +295,8 @@ void MainWindow::itemSelected(QGraphicsItem *item)
 
 void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
 {
-    undoStack->push(new MoveCommand(item, oldPosition));
+    QUndoCommand *moveCommand = new MoveCommand(item, oldPosition);
+    undoStack->push(moveCommand);
 }
 
 void MainWindow::itemAdded(QGraphicsItem *item)
@@ -368,14 +379,19 @@ void MainWindow::on_aglin_triggered()
         view->fitInView(scene->sceneRect());
     }else if ( sender() == actionGroup ){
         //QGraphicsItemGroup
-        QList<QGraphicsItem *> selectedItems = scene->selectedItems();
-        GraphicsItemGroup * group = scene->createGroup(selectedItems);
-        group->setSelected(true);
+        QList<QGraphicsItem *> selectedItems = scene->selectedItems();        
+        // Create a new group at that level
+        if ( selectedItems.count() < 2) return;
+        GraphicsItemGroup *group = scene->createGroup(selectedItems);
+        QUndoCommand *groupCommand = new GroupCommand(group,scene);
+        undoStack->push(groupCommand);
+
     } else if ( sender() == actionUnGroup ){
         QGraphicsItem *selectedItem = scene->selectedItems().first();
         GraphicsItemGroup * group = dynamic_cast<GraphicsItemGroup*>(selectedItem);
         if ( group ){
-            scene->destroyGroup(group);
+            QUndoCommand *unGroupCommand = new UnGroupCommand(group,scene);
+            undoStack->push(unGroupCommand);
         }
     }
 }

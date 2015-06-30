@@ -8,20 +8,6 @@ MoveCommand::MoveCommand(QGraphicsItem *item, const QPointF &oldPos, QUndoComman
     newPos = item->pos();
 }
 
-bool MoveCommand::mergeWith(const QUndoCommand *command)
-{
-    const MoveCommand *moveCommand = static_cast<const MoveCommand *>(command);
-    QGraphicsItem *item = moveCommand->myItem;
-
-    if (myItem != item)
-    return false;
-
-    newPos = item->pos();
-    setText(QObject::tr("Move %1")
-        .arg(createCommandString(myItem, newPos)));
-
-    return true;
-}
 //! [2]
 void MoveCommand::undo()
 {
@@ -122,6 +108,7 @@ RotateCommand::RotateCommand(QGraphicsItem *item, const qreal oldAngle, QUndoCom
     myItem = item;
     myOldAngle = oldAngle;
     newAngle = item->rotation();
+    setText(QObject::tr("Rotate %1").arg(newAngle));
 }
 
 void RotateCommand::undo()
@@ -134,4 +121,83 @@ void RotateCommand::redo()
 {
     myItem->setRotation(newAngle);
     myItem->update();
+}
+
+
+GroupCommand::GroupCommand(QGraphicsItemGroup * group,
+                           QGraphicsScene *graphicsScene,
+                           QUndoCommand *parent)
+: QUndoCommand(parent)
+{
+    myGraphicsScene = graphicsScene;
+    myGroup = group;
+    items = group->childItems();
+    b_undo = false;
+    setText(QObject::tr("Group %1").arg(items.count()));
+}
+
+void GroupCommand::undo()
+{
+    myGroup->setSelected(false);
+    QList<QGraphicsItem*> plist = myGroup->childItems();
+    foreach (QGraphicsItem *item, plist){
+        item->setSelected(true);
+        myGroup->removeFromGroup(item);
+    }
+    myGraphicsScene->removeItem(myGroup);
+    myGraphicsScene->update();
+    b_undo = true;
+}
+
+void GroupCommand::redo()
+{
+    if (b_undo){
+        foreach (QGraphicsItem *item, items){
+            item->setSelected(false);
+            QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+            if ( !g )
+                myGroup->addToGroup(item);
+        }
+    }
+    myGroup->setSelected(true);
+    if ( myGroup->scene() == NULL )
+        myGraphicsScene->addItem(myGroup);
+    myGraphicsScene->update();
+}
+
+
+UnGroupCommand::UnGroupCommand(QGraphicsItemGroup *group,
+                               QGraphicsScene *graphicsScene,
+                               QUndoCommand *parent)
+    :QUndoCommand(parent)
+{
+    myGraphicsScene = graphicsScene;
+    myGroup = group;
+    items = group->childItems();
+    setText(QObject::tr("UnGroup %1").arg(items.count()));
+}
+
+void UnGroupCommand::undo()
+{
+    foreach (QGraphicsItem *item, items){
+        item->setSelected(false);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( !g )
+             myGroup->addToGroup(item);
+    }
+    myGroup->setSelected(true);
+    if ( myGroup->scene() == NULL )
+        myGraphicsScene->addItem(myGroup);
+    myGraphicsScene->update();
+}
+
+void UnGroupCommand::redo()
+{
+    myGroup->setSelected(false);
+    foreach (QGraphicsItem *item, myGroup->childItems()){
+        item->setSelected(true);
+        myGroup->removeFromGroup(item);
+    }
+    myGraphicsScene->removeItem(myGroup);
+    myGraphicsScene->update();
 }

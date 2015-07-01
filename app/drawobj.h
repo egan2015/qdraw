@@ -19,6 +19,8 @@ public:
     {
         m_pen.setColor(Qt::black);
         m_brush.setColor(Qt::white);
+
+        m_width = m_height = 0;
     }
     virtual ~AbstractShapeItem(){}
     virtual QString displayName () const { return QString("AbstractType");}
@@ -47,6 +49,10 @@ public:
     QColor penColor() const {return m_pen.color();}
     void   setPen(const QPen & pen ) { m_pen = pen;}
     void   setBrush( const QBrush & brush ) { m_brush = brush ; }
+    qreal  width() const { return m_width ; }
+    void   setWidth( qreal width ) { m_width = width ; }
+    qreal  height() const {return m_height;}
+    void   setHeight ( qreal height ) { m_height = height ;}
 
 protected:
     virtual void updateGeometry(){}
@@ -62,6 +68,9 @@ protected:
     typedef QVector<SizeHandleRect*> Handles;
     Handles m_handles;
     QRectF m_localRect;
+    qreal m_width;
+    qreal m_height;
+
 };
 
 typedef  AbstractShapeItem< QGraphicsItem > AbstractBasicShape;
@@ -72,6 +81,9 @@ class GraphicsItem : public QObject,
     Q_OBJECT
     Q_PROPERTY(QColor pen READ penColor WRITE setPen )
     Q_PROPERTY(QColor brush READ brush WRITE setBrush )
+    Q_PROPERTY(qreal  width READ width WRITE setWidth )
+    Q_PROPERTY(qreal  height READ height WRITE setHeight )
+    Q_PROPERTY(QPointF  position READ pos WRITE setPos )
 
 public:
     GraphicsItem(QGraphicsItem * parent );
@@ -99,9 +111,6 @@ public:
     QString displayName() const { return tr("rectangle"); }
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-protected:
-    qreal m_width;
-    qreal m_height;
 };
 
 class GraphicsRoundRectItem : public GraphicsRectItem

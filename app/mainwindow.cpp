@@ -36,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     scene = new DrawScene(this);
     scene->setSceneRect(QRectF(0 , 0 , 800, 600));
 
-    connect(scene, SIGNAL(itemSelected(QGraphicsItem*)),
-            this, SLOT(itemSelected(QGraphicsItem*)));
+    connect(scene, SIGNAL(selectionChanged()),
+            this, SLOT(itemSelected()));
 
     connect(scene,SIGNAL(itemAdded(QGraphicsItem*)),
             this, SLOT(itemAdded(QGraphicsItem*)));
@@ -319,13 +319,18 @@ void MainWindow::updateUI()
 
 }
 
-void MainWindow::itemSelected(QGraphicsItem *item)
+void MainWindow::itemSelected()
 {
-    theControlledObject = dynamic_cast<QObject*>(item);
+    if ( scene->selectedItems().count() > 0
+         && scene->selectedItems().first()->isSelected())
+    {
+        QGraphicsItem *item = scene->selectedItems().first();
+        theControlledObject = dynamic_cast<QObject*>(item);
+
+    }
     if ( theControlledObject ){
         propertyEditor->setObject(theControlledObject);
     }
-
 }
 
 void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)

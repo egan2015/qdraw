@@ -238,5 +238,31 @@ void QtPenPropertyManager::initializeProperty(QtProperty *property)
 
 void QtPenPropertyManager::uninitializeProperty(QtProperty *property)
 {
+    QtProperty *Prop = m_propertyToWidth[property];
+    if (Prop) {
+        m_widthToProperty.remove(Prop);
+        delete Prop;
+    }
+    m_propertyToWidth.remove(property);
 
+    Prop = m_propertyToStyle[property];
+    if (Prop) {
+        m_styleToProperty.remove(Prop);
+        delete Prop;
+    }
+    m_propertyToStyle.remove(property);
+
+    Prop = m_propertyToCapStyle[property];
+    if (Prop) {
+        m_capStyleToProperty.remove(Prop);
+        delete Prop;
+    }
+    m_propertyToCapStyle.remove(property);
+
+    Prop = m_propertyToJoinStyle[property];
+    if (Prop) {
+        m_joinStyleToProperty.remove(Prop);
+        delete Prop;
+    }
+    m_propertyToJoinStyle.remove(property);
 }

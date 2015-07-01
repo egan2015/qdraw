@@ -47,7 +47,6 @@ public:
     GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items);
     void destroyGroup(QGraphicsItemGroup *group);
 signals:
-    void itemSelected(QGraphicsItem *item);
     void itemMoved( QGraphicsItem * item , const QPointF & oldPosition );
     void itemRotate(QGraphicsItem * item , const qreal oldAngle );
     void itemAdded(QGraphicsItem * item );

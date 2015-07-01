@@ -403,9 +403,6 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
     scene->addItem(item);
     item->setSelected(true);
 
-    scene->connect(item, SIGNAL(selectedChange(QGraphicsItem*)),
-            scene, SIGNAL(itemSelected(QGraphicsItem*)));
-
     selectMode = size;
     nDragHandle = RightBottom;
 
@@ -463,8 +460,6 @@ void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
         item->addPoint(c_down);
         item->setSelected(true);
         m_nPoints++;
-        scene->connect(item, SIGNAL(selectedChange(QGraphicsItem*)),
-                scene, SIGNAL(itemSelected(QGraphicsItem*)));
 
     }else if ( c_down == c_last ){
         /*

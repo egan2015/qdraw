@@ -48,7 +48,7 @@ public slots:
     void addShape();
     void updateUI();
     void deleteItem();
-    void itemSelected(QGraphicsItem *item);
+    void itemSelected();
     void itemMoved(QGraphicsItem * item , const QPointF & oldPosition );
     void itemAdded(QGraphicsItem * item );
     void itemRotate(QGraphicsItem * item , const qreal oldAngle );

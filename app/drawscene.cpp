@@ -22,14 +22,29 @@ void DrawScene::align(AlignType alignType)
     nLeft=nRight=rectref.center().x();
     nTop=nBottom=rectref.center().y();
     QPointF pt = rectref.center();
+    QRectF itemBoundRect ;
+    QRectF lastRect = rectref;
+    float fIteration = 0.0f;
+    foreach (QGraphicsItem *item , selectedItems()) {
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( g )
+            continue;
+        itemBoundRect |= item->mapRectToScene(item->boundingRect());
+    }
+    if(alignType==HORZEVEN_ALIGN )
+        fIteration = itemBoundRect.width()/((float)selectedItems().count());
+    else
+        fIteration = itemBoundRect.height()/((float)selectedItems().count());
 
+
+    int i = 0;
     foreach (QGraphicsItem *item , selectedItems()) {
         QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
         if ( g )
             continue;
         QRectF rectItem = item->mapRectToScene( item->boundingRect() );
         QPointF ptNew = rectItem.center();
-        switch ( alignType ){
+       switch ( alignType ){
         case UP_ALIGN:
             ptNew.setY(nTop + (rectItem.height()-rectref.height())/2);
             break;
@@ -52,17 +67,21 @@ void DrawScene::align(AlignType alignType)
             ptNew=pt;
             break;
         case HORZEVEN_ALIGN:
+            ptNew.setX(nLeft +  fIteration * i );
             break;
         case VERTEVEN_ALIGN:
+            ptNew.setY(nTop  + fIteration* i );
             break;
         case WIDTH_ALIGN:
             break;
         case HEIGHT_ALIGN:
             break;
         }
+        lastRect = rectItem;
         QPointF ptLast= rectItem.center();
         QPointF ptMove = ptNew - ptLast;
         item->moveBy(ptMove.x(),ptMove.y());
+        i++;
     }
 
 }

@@ -95,8 +95,6 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
 {
     if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
         setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
-        if( value.toBool())
-            emit selectedChange(this);
     }
     return QGraphicsItem::itemChange(change, value);
 }
@@ -104,9 +102,10 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
 
 GraphicsRectItem::GraphicsRectItem(const QRect & rect ,QGraphicsItem *parent)
     :GraphicsItem(parent)
-    ,m_width(rect.width())
-    ,m_height(rect.height())
 {
+
+    m_width = rect.width();
+    m_height = rect.height();
 
     // handles
     m_handles.reserve(Left);
@@ -488,7 +487,6 @@ QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change,
         setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
         if( value.toBool()){
             updateCoordinate();
-            emit selectedChange(this);
         }
     }
     return QGraphicsItemGroup::itemChange(change, value);

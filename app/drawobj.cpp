@@ -94,16 +94,9 @@ void GraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
-        qDebug()<<" Item Selected : " << value.toString();
         setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
         if( value.toBool())
             emit selectedChange(this);
-    }else if ( change == QGraphicsItem::ItemRotationHasChanged ){
-        qDebug()<<"Item Rotation Changed:" << value.toString();
-    }else if ( change == QGraphicsItem::ItemTransformOriginPointHasChanged ){
-        QPointF newPos=boundingRect().center();
-
-        qDebug()<<"ItemTransformOriginPointHasChanged:" << value.toPointF() << newPos;
     }
     return QGraphicsItem::itemChange(change, value);
 }
@@ -446,7 +439,6 @@ void GraphicsItemGroup::updateCoordinate()
     setTransformOriginPoint(boundingRect().center());
     moveBy(-delta.x(),-delta.y());
     updateGeometry();
-    qDebug()<<"group update :" << pt1 << pt2 << delta;
 }
 
 void GraphicsItemGroup::updateGeometry()
@@ -493,18 +485,11 @@ void GraphicsItemGroup::updateGeometry()
 QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
-        qDebug()<<" Item Selected : " << value.toString();
         setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
         if( value.toBool()){
             updateCoordinate();
             emit selectedChange(this);
         }
-    }else if ( change == QGraphicsItem::ItemRotationHasChanged ){
-        qDebug()<<"Item Rotation Changed:" << value.toString();
-    }else if ( change == QGraphicsItem::ItemTransformOriginPointHasChanged ){
-        QPointF newPos=boundingRect().center();
-
-        qDebug()<<"ItemTransformOriginPointHasChanged:" << value.toPointF() << newPos;
     }
     return QGraphicsItemGroup::itemChange(change, value);
 }
@@ -513,7 +498,6 @@ void GraphicsItemGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem 
 {
 
 }
-
 
 GraphicsBezierCurve::GraphicsBezierCurve(QGraphicsItem *parent)
     :GraphicsPolygonItem(parent)

@@ -123,7 +123,8 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
         setCursor(scene,Qt::ClosedHandCursor);
 
-    }
+    }else if ( items.count() > 1 )
+        selectMode =  move;
 
     if( selectMode == none ){
         selectMode = netSelect;
@@ -201,11 +202,13 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
         AbstractBasicShape * item = qgraphicsitem_cast<AbstractBasicShape*>(items.first());
         if ( item != 0  && selectMode == move && c_last != c_down ){
              item->setPos(initialPositions + c_last - c_down);
-             emit scene->itemMoved(item , initialPositions );
+             emit scene->itemMoved(item , c_last - c_down );
          }else if ( item !=0 && selectMode == size && c_last != c_down ){
             item->updateCoordinate();
         }
-    }
+    }else if ( items.count() > 1 && selectMode == move && c_last != c_down )
+        emit scene->itemMoved(NULL , c_last - c_down );
+
 
     if (selectMode == netSelect ){
 

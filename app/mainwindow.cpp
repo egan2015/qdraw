@@ -99,8 +99,12 @@ void MainWindow::createActions()
     actionLeft    = new QAction(QIcon(":/icons/align_left.png"),tr("align left"),this);
     actionVCenter = new QAction(QIcon(":/icons/align_vcenter.png"),tr("align vcenter"),this);
     actionHCenter = new QAction(QIcon(":/icons/align_hcenter.png"),tr("align hcenter"),this);
-    actionTop     = new QAction(QIcon(":/icons/align_top.png"),tr("align top"),this);
-    actionBottom  = new QAction(QIcon(":/icons/align_bottom.png"),tr("align bottom"),this);
+    actionUp     = new QAction(QIcon(":/icons/align_top.png"),tr("align top"),this);
+    actionDown  = new QAction(QIcon(":/icons/align_bottom.png"),tr("align bottom"),this);
+    actionHorz = new QAction(QIcon(":/icons/align_horzeven.png"),tr("align horzeven"),this);
+    actionVert = new QAction(QIcon(":/icons/align_verteven.png"),tr("align verteven"),this);
+    actionHeight = new QAction(QIcon(":/icons/align_height.png"),tr("align height"),this);
+    actionWidth  = new QAction(QIcon(":/icons/align_width.png"),tr("align width"),this);
     actionBringToFront = new QAction(QIcon(":/icons/bringtofront.png"),tr("bring to front"),this);
     actionSendToBack   = new QAction(QIcon(":/icons/sendtoback.png"),tr("send to back"),this);
     actionGroup        = new QAction(QIcon(":/icons/group.png"),tr("group"),this);
@@ -109,8 +113,19 @@ void MainWindow::createActions()
     connect(actionBringToFront,SIGNAL(triggered()),this,SLOT(on_actionBringToFront_triggered()));
     connect(actionSendToBack,SIGNAL(triggered()),this,SLOT(on_actionSendToBack_triggered()));
     connect(actionRight,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionGroup,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionUnGroup,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionLeft,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionVCenter,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionHCenter,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionUp,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionDown,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+
+    connect(actionHorz,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionVert,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionHeight,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionWidth,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+
+    connect(actionGroup,SIGNAL(triggered()),this,SLOT(on_group_triggered()));
+    connect(actionUnGroup,SIGNAL(triggered()),this,SLOT(on_unGroup_triggered()));
 
 
     //create draw actions
@@ -193,6 +208,7 @@ void MainWindow::createToolbars()
 {
     // create edit toolbar
     editToolBar = addToolBar(tr("edit"));
+    editToolBar->setIconSize(QSize(24,24));
     editToolBar->addAction(undoAction);
     editToolBar->addAction(redoAction);
     editToolBar->addAction(zoomInAction);
@@ -215,12 +231,18 @@ void MainWindow::createToolbars()
     // create align toolbar
     alignToolBar = addToolBar(tr("align"));
     alignToolBar->setIconSize(QSize(24,24));
+    alignToolBar->addAction(actionUp);
+    alignToolBar->addAction(actionDown);
     alignToolBar->addAction(actionRight);
     alignToolBar->addAction(actionLeft);
     alignToolBar->addAction(actionVCenter);
     alignToolBar->addAction(actionHCenter);
-    alignToolBar->addAction(actionTop);
-    alignToolBar->addAction(actionBottom);
+
+    alignToolBar->addAction(actionHorz);
+    alignToolBar->addAction(actionVert);
+    alignToolBar->addAction(actionHeight);
+    alignToolBar->addAction(actionWidth);
+
     alignToolBar->addAction(actionBringToFront);
     alignToolBar->addAction(actionSendToBack);
     alignToolBar->addAction(actionGroup);
@@ -282,6 +304,19 @@ void MainWindow::updateUI()
     actionUnGroup->setEnabled(scene->selectedItems().count() > 0 &&
                               dynamic_cast<GraphicsItemGroup*>(scene->selectedItems().first()));
 
+    actionLeft->setEnabled(scene->selectedItems().count() > 1);
+    actionRight->setEnabled(scene->selectedItems().count() > 1);
+    actionLeft->setEnabled(scene->selectedItems().count() > 1);
+    actionVCenter->setEnabled(scene->selectedItems().count() > 1);
+    actionHCenter->setEnabled(scene->selectedItems().count() > 1);
+    actionUp->setEnabled(scene->selectedItems().count() > 1);
+    actionDown->setEnabled(scene->selectedItems().count() > 1);
+
+    actionHeight->setEnabled(scene->selectedItems().count() > 1);
+    actionWidth->setEnabled(scene->selectedItems().count() > 1);
+    actionHorz->setEnabled(scene->selectedItems().count() > 1);
+    actionVert->setEnabled(scene->selectedItems().count() > 1);
+
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item)
@@ -295,7 +330,7 @@ void MainWindow::itemSelected(QGraphicsItem *item)
 
 void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
 {
-    QUndoCommand *moveCommand = new MoveCommand(item, oldPosition);
+    QUndoCommand *moveCommand = new MoveCommand(scene, oldPosition);
     undoStack->push(moveCommand);
 }
 
@@ -376,24 +411,26 @@ void MainWindow::on_aglin_triggered()
 */
     if ( sender() == actionRight )
     {
-        view->fitInView(scene->sceneRect());
-    }else if ( sender() == actionGroup ){
-        //QGraphicsItemGroup
-        QList<QGraphicsItem *> selectedItems = scene->selectedItems();        
-        // Create a new group at that level
-        if ( selectedItems.count() < 2) return;
-        GraphicsItemGroup *group = scene->createGroup(selectedItems);
-        QUndoCommand *groupCommand = new GroupCommand(group,scene);
-        undoStack->push(groupCommand);
-
-    } else if ( sender() == actionUnGroup ){
-        QGraphicsItem *selectedItem = scene->selectedItems().first();
-        GraphicsItemGroup * group = dynamic_cast<GraphicsItemGroup*>(selectedItem);
-        if ( group ){
-            QUndoCommand *unGroupCommand = new UnGroupCommand(group,scene);
-            undoStack->push(unGroupCommand);
-        }
-    }
+        scene->align(RIGHT_ALIGN);
+    }else if ( sender() == actionLeft){
+        scene->align(LEFT_ALIGN);
+    }else if ( sender() == actionUp ){
+        scene->align(UP_ALIGN);
+    }else if ( sender() == actionDown ){
+        scene->align(DOWN_ALIGN);
+    }else if ( sender() == actionVCenter ){
+        scene->align(VERT_ALIGN);
+    }else if ( sender() == actionHCenter)
+    {
+        scene->align(HORZ_ALIGN);
+    }else if ( sender() == actionHeight )
+        scene->align(HEIGHT_ALIGN);
+    else if ( sender()==actionWidth )
+        scene->align(WIDTH_ALIGN);
+    else if ( sender() == actionHorz )
+        scene->align(HORZEVEN_ALIGN);
+    else if ( sender() == actionVert )
+        scene->align(VERTEVEN_ALIGN);
 }
 
 void MainWindow::zoomIn()
@@ -404,4 +441,25 @@ void MainWindow::zoomIn()
 void MainWindow::zoomOut()
 {
     view->scale(1 / 1.2, 1 / 1.2);
+}
+
+void MainWindow::on_group_triggered()
+{
+    //QGraphicsItemGroup
+    QList<QGraphicsItem *> selectedItems = scene->selectedItems();
+    // Create a new group at that level
+    if ( selectedItems.count() < 2) return;
+    GraphicsItemGroup *group = scene->createGroup(selectedItems);
+    QUndoCommand *groupCommand = new GroupCommand(group,scene);
+    undoStack->push(groupCommand);
+}
+
+void MainWindow::on_unGroup_triggered()
+{
+    QGraphicsItem *selectedItem = scene->selectedItems().first();
+    GraphicsItemGroup * group = dynamic_cast<GraphicsItemGroup*>(selectedItem);
+    if ( group ){
+        QUndoCommand *unGroupCommand = new UnGroupCommand(group,scene);
+        undoStack->push(unGroupCommand);
+    }
 }

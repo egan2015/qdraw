@@ -24,5 +24,9 @@
         <file>icons/arc.png</file>
         <file>icons/zoomin.png</file>
         <file>icons/zoomout.png</file>
+        <file>icons/align_horzeven.png</file>
+        <file>icons/align_verteven.png</file>
+        <file>icons/align_width.png</file>
+        <file>icons/align_height.png</file>
     </qresource>
 </RCC>

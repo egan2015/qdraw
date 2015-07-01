@@ -7,14 +7,15 @@
 class MoveCommand : public QUndoCommand
 {
 public:
-    MoveCommand(QGraphicsItem *item , const QPointF & oldPos ,
+    MoveCommand(QGraphicsScene *graphicsScene, const QPointF & delta ,
                 QUndoCommand * parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 private:
-    QGraphicsItem *myItem;
-    QPointF myOldPos;
-    QPointF newPos;
+    QList<QGraphicsItem *> items;
+    QGraphicsScene *myGraphicsScene;
+    QPointF myDelta;
+    bool bMoved;
 };
 
 class RotateCommand : public QUndoCommand

@@ -16,6 +16,23 @@ class QColor;
 class QKeyEvent;
 QT_END_NAMESPACE
 
+
+enum AlignType
+{
+    UP_ALIGN=0,
+    HORZ_ALIGN,
+    VERT_ALIGN,
+    DOWN_ALIGN,
+    LEFT_ALIGN,
+    RIGHT_ALIGN,
+    CENTER_ALIGN,
+    HORZEVEN_ALIGN,
+    VERTEVEN_ALIGN,
+    WIDTH_ALIGN,
+    HEIGHT_ALIGN,
+    ALL_ALIGN
+};
+
 class GraphicsItemGroup;
 
 class DrawScene : public QGraphicsScene
@@ -24,7 +41,8 @@ class DrawScene : public QGraphicsScene
 public:
     explicit DrawScene(QObject *parent = 0);
     void setView(QGraphicsView * view ) { m_view = view ; }
-    QGraphicsView * view() { return m_view; };
+    QGraphicsView * view() { return m_view; }
+    void align(AlignType alignType );
     void mouseEvent(QGraphicsSceneMouseEvent *mouseEvent );
     GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items);
     void destroyGroup(QGraphicsItemGroup *group);
@@ -43,6 +61,9 @@ protected:
     void keyReleaseEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
     QGraphicsView * m_view;
 
+    qreal m_dx;
+    qreal m_dy;
+    bool  m_moved;
 };
 
 #endif // DRAWSCENE

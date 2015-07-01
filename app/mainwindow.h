@@ -57,6 +57,8 @@ public slots:
     void on_aglin_triggered();
     void zoomIn();
     void zoomOut();
+    void on_group_triggered();
+    void on_unGroup_triggered();
 private:
     void createActions();
     void createMenus();
@@ -66,14 +68,10 @@ private:
 
 
     QMdiArea *mdiArea;
-    QSignalMapper *windowMapper;
-
     // update ui
     QTimer      m_timer;
-
     // toolbox
     QToolBox *toolBox;
-
     // edit toolbar;
     QToolBar * editToolBar;
     // align toolbar
@@ -82,8 +80,12 @@ private:
     QAction  * actionLeft;
     QAction  * actionVCenter;
     QAction  * actionHCenter;
-    QAction  * actionTop;
-    QAction  * actionBottom;
+    QAction  * actionUp;
+    QAction  * actionDown;
+    QAction  * actionHorz;
+    QAction  * actionVert;
+    QAction  * actionHeight;
+    QAction  * actionWidth;
     QAction  * actionBringToFront;
     QAction  * actionSendToBack;
 

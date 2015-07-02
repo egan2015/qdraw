@@ -7,7 +7,7 @@
 #include <QGraphicsEffect>
 #include <QMatrix4x4>
 #include <QGraphicsTransform>
-#include <math.h>
+#include <cmath>
 
 static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, const QPen &pen)
 {
@@ -767,7 +767,13 @@ GraphicsRoundRectItem::GraphicsRoundRectItem(const QRect &rect, QGraphicsItem *p
 QPainterPath GraphicsRoundRectItem::shape() const
 {
     QPainterPath path;
-    path.addRoundRect(rect(),m_roundness.x(),m_roundness.y());
+    double r;
+    if(m_fRatio<=0)
+       r=0;
+    else {
+        r = m_height * m_fRatio + 0.5;
+    }
+    path.addRoundRect(rect(),r,r);
     return path;
 
 }
@@ -785,9 +791,7 @@ void GraphicsRoundRectItem::resize(int dir, const QPointF & delta)
         int H= rc.height();
         if(H==0)
             H=1;
-        m_fRatio= ((float)(rc.top()-y))/H;
-        if ( m_fRatio < 0 )
-            m_fRatio*=-1;
+        m_fRatio= std::abs(((float)(rc.top()-y)))/H;
     }
 
     GraphicsRectItem::resize(dir,delta);
@@ -851,14 +855,11 @@ void GraphicsRoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsI
     painter->setBrush(result);
     */
 
-    int width = rect().width();
-    int height = rect().height();
     double r;
     if(m_fRatio<=0)
        r=0;
     else {
-        if(m_fRatio>0.5) m_fRatio=0.5;
-        r = (width > height ? height : width)*m_fRatio + 0.5;
+        r = m_height * m_fRatio + 0.5;
     }
 
     painter->setBrush(brush());

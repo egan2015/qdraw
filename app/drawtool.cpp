@@ -309,6 +309,8 @@ void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
 
              if ( angle > 360 )
                  angle -= 360;
+             if ( angle < -360 )
+                 angle+=360;
 
              if ( dashRect ){
                  dashRect->setRotation( angle );
@@ -350,6 +352,9 @@ void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene 
 
              if ( angle > 360 )
                  angle -= 360;
+             if ( angle < -360 )
+                 angle+=360;
+
              item->setRotation( angle );
              emit scene->itemRotate(item , oldAngle);
              qDebug()<<"rotate:"<<angle<<item->boundingRect();

@@ -28,5 +28,8 @@
         <file>icons/align_verteven.png</file>
         <file>icons/align_width.png</file>
         <file>icons/align_height.png</file>
+        <file>icons/align_height.svg</file>
+        <file>icons/align_width.svg</file>
+        <file>icons/align_all.png</file>
     </qresource>
 </RCC>

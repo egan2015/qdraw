@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include "drawobj.h"
-
+#include <vector>
 
 
 DrawScene::DrawScene(QObject *parent)
@@ -14,6 +14,35 @@ DrawScene::DrawScene(QObject *parent)
     m_dx=m_dy=0;
 }
 
+class BBoxSort
+{
+public:
+    BBoxSort( QGraphicsItem * item , const QRectF & rect , AlignType alignType )
+        :item_(item),box(rect),align(alignType)
+    {
+        min_ = alignType == HORZEVEN_ALIGN ? box.topLeft().x() : box.topLeft().y();
+        max_ = alignType == HORZEVEN_ALIGN ? box.bottomRight().x() : box.bottomRight().y();
+        extent_ = alignType == HORZEVEN_ALIGN ? box.width() : box.height();
+        anchor =  min_*0.5 + max_ * 0.5;
+    }
+    qreal min() { return min_;}
+    qreal max() { return max_;}
+    qreal extent() { return extent_;}
+    QGraphicsItem * item_;
+    qreal anchor;
+    qreal min_;
+    qreal max_;
+    qreal extent_;
+    QRectF box;
+    AlignType align ;
+};
+
+bool operator< (const BBoxSort &a, const BBoxSort &b)
+{
+    return (a.anchor < b.anchor);
+}
+
+
 void DrawScene::align(AlignType alignType)
 {
     QGraphicsItem * firstItem = selectedItems().first();
@@ -22,20 +51,49 @@ void DrawScene::align(AlignType alignType)
     nLeft=nRight=rectref.center().x();
     nTop=nBottom=rectref.center().y();
     QPointF pt = rectref.center();
-    QRectF itemBoundRect ;
-    QRectF lastRect = rectref;
-    float fIteration = 0.0f;
-    foreach (QGraphicsItem *item , selectedItems()) {
-        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
-        if ( g )
-            continue;
-        itemBoundRect |= item->mapRectToScene(item->boundingRect());
-    }
-    if(alignType==HORZEVEN_ALIGN )
-        fIteration = itemBoundRect.width()/((float)selectedItems().count());
-    else
-        fIteration = itemBoundRect.height()/((float)selectedItems().count());
+    if ( alignType == HORZEVEN_ALIGN || alignType == VERTEVEN_ALIGN ){
+        std::vector< BBoxSort  > sorted;
+        foreach (QGraphicsItem *item , selectedItems()) {
+            QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+            if ( g )
+                continue;
+            sorted.push_back(BBoxSort(item,item->mapRectToScene(item->boundingRect()),alignType));
+        }
+        //sort bbox by anchors
+        std::sort(sorted.begin(), sorted.end());
 
+        unsigned int len = sorted.size();
+        bool changed = false;
+        //overall bboxes span
+        float dist = (sorted.back().max()-sorted.front().min());
+        //space eaten by bboxes
+        float span = 0;
+        for (unsigned int i = 0; i < len; i++)
+        {
+            span += sorted[i].extent();
+        }
+        //new distance between each bbox
+        float step = (dist - span) / (len - 1);
+        float pos = sorted.front().min();
+        for ( std::vector<BBoxSort> ::iterator it (sorted.begin());
+              it < sorted.end();
+              ++it )
+        {
+            {
+                QPointF t;
+                if ( alignType == HORZEVEN_ALIGN )
+                    t.setX( pos - it->min() );
+                else
+                    t.setY(pos - it->min());
+                it->item_->moveBy(t.x(),t.y());
+                changed = true;
+            }
+            pos += it->extent();
+            pos += step;
+        }
+
+        return;
+    }
 
     int i = 0;
     foreach (QGraphicsItem *item , selectedItems()) {
@@ -66,18 +124,31 @@ void DrawScene::align(AlignType alignType)
         case CENTER_ALIGN:
             ptNew=pt;
             break;
-        case HORZEVEN_ALIGN:
-            ptNew.setX(nLeft +  fIteration * i );
-            break;
-        case VERTEVEN_ALIGN:
-            ptNew.setY(nTop  + fIteration* i );
-            break;
+       case ALL_ALIGN:
+       {
+           AbstractBasicShape * aitem = qgraphicsitem_cast<AbstractBasicShape*>(item);
+           if ( aitem ){
+               aitem->setWidth(rectref.width());
+               aitem->setHeight(rectref.height());
+           }
+       }
+           break;
         case WIDTH_ALIGN:
+       {
+            AbstractBasicShape * aitem = qgraphicsitem_cast<AbstractBasicShape*>(item);
+            if ( aitem )
+                aitem->setWidth(rectref.width());
+       }
             break;
+
         case HEIGHT_ALIGN:
+       {
+            AbstractBasicShape * aitem = qgraphicsitem_cast<AbstractBasicShape*>(item);
+            if ( aitem )
+                aitem->setHeight(rectref.height());
+       }
             break;
         }
-        lastRect = rectItem;
         QPointF ptLast= rectItem.center();
         QPointF ptMove = ptNew - ptLast;
         item->moveBy(ptMove.x(),ptMove.y());

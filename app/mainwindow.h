@@ -46,7 +46,7 @@ public:
 
 public slots:
     void addShape();
-    void updateUI();
+    void updateActions();
     void deleteItem();
     void itemSelected();
     void itemMoved(QGraphicsItem * item , const QPointF & oldPosition );
@@ -86,6 +86,7 @@ private:
     QAction  * actionVert;
     QAction  * actionHeight;
     QAction  * actionWidth;
+    QAction  * actionAll;
     QAction  * actionBringToFront;
     QAction  * actionSendToBack;
 

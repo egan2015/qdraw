@@ -45,6 +45,7 @@ GraphicsItem::GraphicsItem(QGraphicsItem *parent)
     this->setAcceptHoverEvents(true);
 }
 
+
 void GraphicsItem::updateGeometry()
 {
     const QRectF &geom = this->boundingRect();
@@ -643,7 +644,7 @@ void GraphicsArcItem::endPoint(const QPointF &point)
     if ( m_points.count() > 3) {
         m_points.remove(3);
         delete m_handles.at(3);
-        m_handles.remove(3);
+        m_handles.resize(3);
     }
 }
 
@@ -741,9 +742,16 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
 
     painter->setPen(pen());
     painter->setBrush(brush());
+
     if(endAngle - startAngle > 360)
         endAngle = startAngle + 360;
-    painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
+
+    path.moveTo(m_points.at(0));
+    path.arcTo(m_localRect,startAngle,endAngle-startAngle);
+    path.closeSubpath();
+
+    painter->drawPath(path);
+//    painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
 }
 
 
@@ -751,7 +759,7 @@ GraphicsRoundRectItem::GraphicsRoundRectItem(const QRect &rect, QGraphicsItem *p
     :GraphicsRectItem(rect,parent),
      m_roundness(16,16)
 {
-    m_fRatio = 1/3;
+    m_fRatio = 1/3.0f;
     SizeHandleRect *shr = new SizeHandleRect(this, 8 , this);
     m_handles.push_back(shr);
 }
@@ -769,26 +777,17 @@ void GraphicsRoundRectItem::resize(int dir, const QPointF & delta)
     if ( dir == 8 ){
         QPointF local = mapFromScene(delta);
         QRectF rc = rect();
-        rc.normalized();
-        if (local.x() > rc.right() - 1)
-            local.setX(rc.right() - 1);
-
-        else if (local.x() < rc.left() + rc.width() / 2)
-
-            local.setX(rc.left() + rc.width() / 2);
-
-        if (local.y() > rc.bottom() - 1)
-
-            local.setY( rc.bottom() - 1 );
-
-        else if (local.y() < rc.top() + rc.height() / 2)
-
-            local.setY( rc.top() + rc.height() / 2);
-
-        m_roundness.setX( 2 * (rc.right() - local.x()));
-
-        m_roundness.setY( 2 * (rc.bottom() - local.y()));
-
+        int y = local.y();
+        if(y> rc.center().y() )
+            y = rc.center().y();
+        if(y<rc.top())
+            y=rc.top();
+        int H= rc.height();
+        if(H==0)
+            H=1;
+        m_fRatio= ((float)(rc.top()-y))/H;
+        if ( m_fRatio < 0 )
+            m_fRatio*=-1;
     }
 
     GraphicsRectItem::resize(dir,delta);
@@ -830,7 +829,9 @@ void GraphicsRoundRectItem::updateGeometry()
             hndl->move(geom.x() , geom.y() + geom.height() / 2 );
             break;
         case 8:
-            hndl->move( geom.bottomRight().x() - m_roundness.x() / 2, geom.bottomRight().y() - m_roundness.y()/2);
+         {
+            hndl->move( geom.right() , geom.top() + geom.height() * m_fRatio );
+         }
             break;
         default:
             break;
@@ -849,11 +850,22 @@ void GraphicsRoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsI
     result.setColorAt(1, c.dark(150));
     painter->setBrush(result);
     */
+
+    int width = rect().width();
+    int height = rect().height();
+    double r;
+    if(m_fRatio<=0)
+       r=0;
+    else {
+        if(m_fRatio>0.5) m_fRatio=0.5;
+        r = (width > height ? height : width)*m_fRatio + 0.5;
+    }
+
     painter->setBrush(brush());
 
     painter->setPen(pen());
 
-    painter->drawRoundRect(rect(),m_roundness.x(),m_roundness.y());
+    painter->drawRoundRect(rect(),r,r);
 
 }
 
@@ -939,7 +951,7 @@ void GraphicsPolygonItem::endPoint(const QPointF & point)
         m_points[nPoints-1].y() == m_points[nPoints-2].y())){
         delete m_handles[nPoints-1];
         m_points.remove(nPoints-1);
-        m_handles.remove(nPoints-1);
+        m_handles.resize(nPoints-1);
     }
 }
 

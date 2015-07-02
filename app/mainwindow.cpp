@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
     undoStack = new QUndoStack(this);
     undoView = new QUndoView(undoStack);
     undoView->setWindowTitle(tr("Command List"));
-    undoView->show();
     undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
     QDockWidget *dock = new QDockWidget(this);
@@ -66,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Qt Drawing"));
     setUnifiedTitleAndToolBarOnMac(true);
 
-    connect(&m_timer,SIGNAL(timeout()),this,SLOT(updateUI()));
+    connect(&m_timer,SIGNAL(timeout()),this,SLOT(updateActions()));
     m_timer.start(100);
     theControlledObject = NULL;
 
@@ -105,6 +104,8 @@ void MainWindow::createActions()
     actionVert = new QAction(QIcon(":/icons/align_verteven.png"),tr("align verteven"),this);
     actionHeight = new QAction(QIcon(":/icons/align_height.png"),tr("align height"),this);
     actionWidth  = new QAction(QIcon(":/icons/align_width.png"),tr("align width"),this);
+    actionAll    = new QAction(QIcon(":/icons/align_all.png"),tr("align width and height"),this);
+
     actionBringToFront = new QAction(QIcon(":/icons/bringtofront.png"),tr("bring to front"),this);
     actionSendToBack   = new QAction(QIcon(":/icons/sendtoback.png"),tr("send to back"),this);
     actionGroup        = new QAction(QIcon(":/icons/group.png"),tr("group"),this);
@@ -123,6 +124,7 @@ void MainWindow::createActions()
     connect(actionVert,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
     connect(actionHeight,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
     connect(actionWidth,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(actionAll,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
 
     connect(actionGroup,SIGNAL(triggered()),this,SLOT(on_group_triggered()));
     connect(actionUnGroup,SIGNAL(triggered()),this,SLOT(on_unGroup_triggered()));
@@ -242,6 +244,7 @@ void MainWindow::createToolbars()
     alignToolBar->addAction(actionVert);
     alignToolBar->addAction(actionHeight);
     alignToolBar->addAction(actionWidth);
+    alignToolBar->addAction(actionAll);
 
     alignToolBar->addAction(actionBringToFront);
     alignToolBar->addAction(actionSendToBack);
@@ -283,7 +286,7 @@ void MainWindow::addShape()
         scene->clearSelection();
 }
 
-void MainWindow::updateUI()
+void MainWindow::updateActions()
 {
     actionSelect->setChecked(DrawTool::c_drawShape == selection);
     actionLine->setChecked(DrawTool::c_drawShape == line);
@@ -314,8 +317,9 @@ void MainWindow::updateUI()
 
     actionHeight->setEnabled(scene->selectedItems().count() > 1);
     actionWidth->setEnabled(scene->selectedItems().count() > 1);
-    actionHorz->setEnabled(scene->selectedItems().count() > 1);
-    actionVert->setEnabled(scene->selectedItems().count() > 1);
+    actionAll->setEnabled(scene->selectedItems().count()>1);
+    actionHorz->setEnabled(scene->selectedItems().count() > 2);
+    actionVert->setEnabled(scene->selectedItems().count() > 2);
 
 }
 
@@ -436,6 +440,8 @@ void MainWindow::on_aglin_triggered()
         scene->align(HORZEVEN_ALIGN);
     else if ( sender() == actionVert )
         scene->align(VERTEVEN_ALIGN);
+    else if ( sender () == actionAll )
+        scene->align(ALL_ALIGN);
 }
 
 void MainWindow::zoomIn()

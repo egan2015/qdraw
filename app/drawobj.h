@@ -9,6 +9,7 @@
 #include <QGraphicsScene>
 #include <QList>
 #include <QCursor>
+#include <vector>
 
 template < typename AbstractType = QGraphicsItem >
 class AbstractShapeItem : public AbstractType
@@ -19,7 +20,6 @@ public:
     {
         m_pen.setColor(Qt::black);
         m_brush.setColor(Qt::white);
-
         m_width = m_height = 0;
     }
     virtual ~AbstractShapeItem(){}
@@ -29,12 +29,12 @@ public:
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){}
 
-    int handleCount() const { return m_handles.count()-1;}
+    int handleCount() const { return m_handles.size()-1;}
 
     int collidesWithHandle( const QPointF & point ) const
     {
-        const Handles::const_iterator hend =  m_handles.end();
-        for (Handles::const_iterator it = m_handles.begin(); it != hend; ++it)
+        const Handles::const_reverse_iterator hend =  m_handles.rend();
+        for (Handles::const_reverse_iterator it = m_handles.rbegin(); it != hend; ++it)
         {
             QPointF pt = (*it)->mapFromScene(point);
             if ((*it)->contains(pt) ){
@@ -43,16 +43,23 @@ public:
         }
         return Handle_None;
     }
-
     QColor brush() const {return m_brush.color();}
     QPen   pen() const {return m_pen;}
     QColor penColor() const {return m_pen.color();}
     void   setPen(const QPen & pen ) { m_pen = pen;}
     void   setBrush( const QBrush & brush ) { m_brush = brush ; }
     qreal  width() const { return m_width ; }
-    void   setWidth( qreal width ) { m_width = width ; }
+    void   setWidth( qreal width )
+    {
+        m_width = width ;
+        updateCoordinate();
+    }
     qreal  height() const {return m_height;}
-    void   setHeight ( qreal height ) { m_height = height ;}
+    void   setHeight ( qreal height )
+    {
+        m_height = height ;
+        updateCoordinate();
+    }
 
 protected:
     virtual void updateGeometry(){}
@@ -65,7 +72,7 @@ protected:
 
     QBrush m_brush;
     QPen   m_pen ;
-    typedef QVector<SizeHandleRect*> Handles;
+    typedef std::vector<SizeHandleRect*> Handles;
     Handles m_handles;
     QRectF m_localRect;
     qreal m_width;
@@ -89,6 +96,7 @@ public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
+
 signals:
     void selectedChange(QGraphicsItem *item);
 
@@ -124,7 +132,7 @@ protected:
     void updateGeometry();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPoint m_roundness;
-    float m_fRatio;
+    qreal m_fRatio;
 };
 
 class GraphicsItemGroup : public QObject,

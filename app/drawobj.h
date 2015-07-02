@@ -62,7 +62,7 @@ public:
     }
 
 protected:
-    virtual void updateGeometry(){}
+    virtual void updatehandles(){}
     void setState(SelectionHandleState st)
     {
         const Handles::iterator hend =  m_handles.end();
@@ -102,7 +102,7 @@ signals:
 
 protected:
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
-    void updateGeometry();
+    void updatehandles();
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 };
 
@@ -129,7 +129,7 @@ public:
     virtual void resize(int dir, const QPointF & delta);
     QString displayName() const { return tr("roundrect"); }
 protected:
-    void updateGeometry();
+    void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPoint m_roundness;
     qreal m_fRatio;
@@ -152,7 +152,7 @@ signals:
     void selectedChange(QGraphicsItem *item);
 
 protected:
-    void updateGeometry();
+    void updatehandles();
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
     QGraphicsItem * m_parent;
@@ -189,7 +189,7 @@ public:
     void updateCoordinate ();
     virtual void endPoint(const QPointF & point );
 protected:
-    void updateGeometry();
+    void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPolygonF m_points;
     qreal m_width;
@@ -219,7 +219,7 @@ public:
     QRectF boundingRect() const ;
     void updateCoordinate ();
 protected:
-    void updateGeometry();
+    void updatehandles();
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     qreal m_Radius;

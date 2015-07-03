@@ -1,99 +1,254 @@
 #include "customproperty.h"
 #include <QtWidgets>
-#include <qitemdelegate.h>
+#include <qlistview.h>
+#include <qpainter.h>
+#include <qevent.h>
+#include <QLinearGradient>
 
 static
 QIcon createColorIcon(const QColor & color )
 {
-    QRect r (0,0,100,10);
-    QPixmap pixmap(100, 10);
+    QRect r (0,0,60,10);
+    QPixmap pixmap(60, 10);
     QPainter painter(&pixmap);
     painter.setPen(Qt::black);
     painter.setBrush(color);
-    painter.drawRect(QRect(0,0,99,9));
+    painter.drawRect(QRect(0,0,59,9));
     QIcon icon = pixmap;
     icon.paint(&painter,r,Qt::AlignHCenter|Qt::AlignVCenter);
     return icon;
 }
 
-class ColorItemDelegate :public QAbstractItemDelegate
+static
+QIcon createGradientIcon( int type , const QColor & c )
 {
-    Q_OBJECT
-public:
-    explicit ColorItemDelegate(QObject *parent );
-    // painting
-    void paint(QPainter *painter,
-               const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+    QPixmap pixmap(40, 20);
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::NoPen);
 
-    QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const;
-};
+    QBrush brush;
+    if ( type == 0 ){
+        brush = c.dark(150);
+    }else if ( type == 1){
+        QLinearGradient result(0,0,40,0);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.light(200));
+        result.setColorAt(1, c.dark(150));
+        brush = result;
+    }else if ( type == 2){
+        QLinearGradient result(0,0,0,20);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.light(200));
+        result.setColorAt(1, c.dark(150));
+        brush = result;
+    }else if ( type == 3 ){
+        QLinearGradient result(0,0,40,20);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.dark(200));
+        result.setColorAt(1, c.dark(250));
+        brush = result;
+    }else if ( type == 4 ){
+        QLinearGradient result(40,20,20,0);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.dark(200));
+        result.setColorAt(1, c.dark(250));
+        brush = result;
+    }else if ( type == 5 ){
+        QLinearGradient result(40,20,20,0);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.dark(200));
+        result.setColorAt(1, c.dark(250));
+        brush = result;
+    }else if ( type == 6 ){
+        QLinearGradient result(40,20,20,0);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.dark(200));
+        result.setColorAt(1, c.dark(250));
+        brush = result;
+    }else if ( type == 7 ){
+        QRadialGradient result(20,10,20);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.light(200));
+        result.setColorAt(1, c.dark(150));
+        brush = result;
+    } else {
+        QConicalGradient result(20,10,45);
+        result.setColorAt(0, c.dark(150));
+        result.setColorAt(0.5, c.light(200));
+        result.setColorAt(1, c.dark(150));
+        brush = result;
 
-ColorItemDelegate::ColorItemDelegate(QObject *parent)
-    :QAbstractItemDelegate(parent)
-{
+    }
+    painter.setBrush(brush);
+    painter.drawRect(QRect(0,0,40,20));
 
+    QIcon icon = pixmap;
+    return icon;
 }
 
-void ColorItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+ColorButton::ColorButton(QWidget *parent)
+    :QPushButton(parent),
+      m_color(Qt::white)
 {
-
+    setFixedHeight(20);
 }
 
-QSize ColorItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+void ColorButton::paintEvent(QPaintEvent *)
 {
-    return QSize(80,10);
+    QPainter painter (this);
+    QRect r = rect().adjusted(2,2,-2,-2);
+    painter.setPen(Qt::black);
+    painter.setBrush(m_color);
+    painter.drawRect(r.adjusted(1,1,-1,-1));
 }
 
 ShadeWidget::ShadeWidget(QWidget *parent)
     :QWidget(parent)
 {
+    m_colorBegin = m_colorMiddle = m_colorEnd = Qt::white;
+    m_type = 0;
+    m_midpoint = 50 ;
 
+    QPixmap pm(20, 20);
+    QPainter pmp(&pm);
+    pmp.fillRect(0, 0, 10, 10, Qt::lightGray);
+    pmp.fillRect(10, 10, 10, 10, Qt::lightGray);
+    pmp.fillRect(0, 10, 10, 10, Qt::darkGray);
+    pmp.fillRect(10, 0, 10, 10, Qt::darkGray);
+    pmp.end();
+    QPalette pal = palette();
+    pal.setBrush(backgroundRole(), QBrush(pm));
+    setAutoFillBackground(true);
+    setPalette(pal);
+
+
+}
+
+void ShadeWidget::colorChanged(const QColor &begin, const QColor &middle, const QColor &end)
+{
+    m_colorBegin = begin;
+    m_colorMiddle = middle;
+    m_colorEnd = end;
+
+    update();
+}
+
+void ShadeWidget::positionChanged(int position)
+{
+    m_midpoint = position;
+     update();
+}
+
+void ShadeWidget::typeChanged(int type)
+{
+    m_type = type;
+     update();
 }
 
 void ShadeWidget::paintEvent(QPaintEvent *event)
 {
     QPainter p(this);
+    QRect r;
+    int h = rect().height() - 10;
+    qreal pos = m_midpoint / 100.0;
+    r.setRect(-h/2,-h/2,h,h);
     p.drawRect(rect().adjusted(1,1,-1,-1));
+    QBrush brush;
+    if ( m_type == 0 ){
+        brush = m_colorBegin.dark(150);
+    }else if ( m_type == 1){
+        QLinearGradient result(r.topLeft(),r.topRight());
+        result.setColorAt(0, m_colorBegin);
+        result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(1, m_colorEnd);
+        brush = result;
+    } else if ( m_type == 2){
+        QLinearGradient result(r.topLeft(),r.bottomLeft());
+        result.setColorAt(0, m_colorBegin);
+        result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(1, m_colorEnd);
+        brush = result;
+    } else if ( m_type == 3 ){
+        QLinearGradient result(r.topLeft(),r.bottomRight());
+        result.setColorAt(0, m_colorBegin);
+        //result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(pos, m_colorEnd);
+        brush = result;
+    }else if ( m_type == 4 ){
+        QLinearGradient result(r.bottomLeft(),r.topRight());
+        result.setColorAt(0, m_colorBegin);
+        //result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(pos, m_colorEnd);
+        brush = result;
+    }else if ( m_type == 5){
+        QLinearGradient result(r.topRight(),r.bottomLeft());
+        result.setColorAt(0, m_colorBegin);
+        //result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(pos, m_colorEnd);
+        brush = result;
+    }else if ( m_type == 6){
+        QLinearGradient result(r.bottomRight(),r.topLeft());
+        result.setColorAt(0, m_colorBegin);
+        //result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(pos, m_colorEnd);
+        brush = result;
+    }else if ( m_type == 7){
+        QRadialGradient result(r.center(),h);
+        result.setColorAt(0, m_colorBegin);
+        result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(1, m_colorEnd);
+        brush = result;
+    } else {
+        QConicalGradient result(r.center(),45);
+        result.setColorAt(0, m_colorBegin);
+        result.setColorAt(pos, m_colorMiddle);
+        result.setColorAt(1, m_colorEnd);
+        brush = result;
+
+    }
+
+    p.save();
+    p.translate(rect().center().x(),rect().center().y());
+    p.setBrush(brush);
+    p.drawRect(r);
+    p.restore();
 }
+
+QStringList colorList = QColor::colorNames();
 
 QtGradientEditor::QtGradientEditor(QWidget *parent)
     :QWidget(parent)
 {
-    QStringList colorList = QColor::colorNames();
 
     QVBoxLayout *layout = new QVBoxLayout();
-    m_colorBegin = new QComboBox(this);
-    m_colorMiddle = new QComboBox(this);
-    m_colorEnd = new QComboBox(this);
-    m_colorBegin->setIconSize(QSize(80,10));
+    m_colorBegin = new ColorButton(this);
+    m_colorMiddle = new ColorButton(this);
+    m_colorEnd = new ColorButton(this);
     m_colorBegin->setToolTip(tr("Gradient Beginning color"));
-    m_colorMiddle->setIconSize(QSize(80,10));
     m_colorMiddle->setToolTip(tr("Gradient middle color"));
-    m_colorEnd->setIconSize(QSize(80,10));
     m_colorEnd->setToolTip(tr("Gradient ending color"));
 
-
-    m_colorBegin->setItemDelegate(new ColorItemDelegate(m_colorBegin));
-
-    for (int i = 0; i < colorList.count(); ++i) {
-       m_colorBegin->addItem(createColorIcon(colorList.at(i)),NULL);
-       m_colorMiddle->addItem(createColorIcon(colorList.at(i)),NULL);
-       m_colorEnd->addItem(createColorIcon(colorList.at(i)),NULL);
-    }
 
     layout->addWidget(m_colorBegin);
     layout->addWidget(m_colorMiddle);
     layout->addWidget(m_colorEnd);
     QVBoxLayout *layout1 = new QVBoxLayout();
     m_gradientMode = new QComboBox(this);
+    m_gradientMode->setToolTip(tr("Gradient mode"));
     m_shadewidget  = new ShadeWidget(this);
 
+    m_gradientMode->setIconSize(QSize(40,20));
+    for ( int i= 0 ; i < 9 ; ++i ){
+        m_gradientMode->addItem(createGradientIcon(i,colorList[18]),NULL);
+    }
     layout1->addWidget(m_gradientMode);
     layout1->addWidget(m_shadewidget);
+
     QVBoxLayout *layout2 = new QVBoxLayout();
     m_midpoint = new QSlider(this);
+    m_midpoint->setRange(0,100);
+    m_midpoint->setValue(50);
+    m_midpoint->setToolTip(tr("Set Middle Position (0~100)"));
     layout2->addWidget(m_midpoint);
 
     QHBoxLayout *ly = new QHBoxLayout();
@@ -102,9 +257,43 @@ QtGradientEditor::QtGradientEditor(QWidget *parent)
     ly->addLayout(layout1);
 
     setLayout(ly);
+
+    connect(m_colorBegin,SIGNAL(clicked(bool)),this,SLOT(clicked()));
+    connect(m_colorMiddle,SIGNAL(clicked(bool)),this,SLOT(clicked()));
+    connect(m_colorEnd,SIGNAL(clicked(bool)),this,SLOT(clicked()));
+    connect(this,SIGNAL(colorChanged(QColor,QColor,QColor)),m_shadewidget,SLOT(colorChanged(QColor,QColor,QColor)));
+    connect(m_gradientMode,SIGNAL(currentIndexChanged(int)),m_shadewidget,SLOT(typeChanged(int)));
+    connect(m_midpoint,SIGNAL(valueChanged(int)),m_shadewidget,SLOT(positionChanged(int)));
+    setFixedHeight(150);
+    setFixedWidth(300);
+    setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
+    setWindowTitle(tr("GradientEditor"));
 }
 
+void QtGradientEditor::colorChanged(int)
+{
 
+}
+
+void QtGradientEditor::clicked()
+{
+    ColorButton * button = dynamic_cast<ColorButton*>(sender());
+
+    bool ok = false;
+    QRgb oldRgba = button->value().rgba();
+    QRgb newRgba = QColorDialog::getRgba(oldRgba, &ok, this);
+    if (ok && newRgba != oldRgba) {
+        button->setValue(QColor::fromRgba(newRgba));
+        button->update();
+        if ( button == m_colorBegin ){
+            m_gradientMode->clear();
+            for ( int i= 0 ; i < 9 ; ++i ){
+                m_gradientMode->addItem(createGradientIcon(i,m_colorBegin->value()),NULL);
+            }
+        }
+        emit colorChanged(m_colorBegin->value(),m_colorMiddle->value(),m_colorEnd->value());
+    }
+}
 
 QtPenPropertyManager::QtPenPropertyManager(QObject *parent)
     :QtAbstractPropertyManager(parent)
@@ -371,5 +560,3 @@ void QtPenPropertyManager::uninitializeProperty(QtProperty *property)
     }
     m_propertyToJoinStyle.remove(property);
 }
-
-

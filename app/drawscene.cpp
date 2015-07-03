@@ -42,7 +42,6 @@ bool operator< (const BBoxSort &a, const BBoxSort &b)
     return (a.anchor < b.anchor);
 }
 
-
 void DrawScene::align(AlignType alignType)
 {
     QGraphicsItem * firstItem = selectedItems().first();
@@ -154,7 +153,6 @@ void DrawScene::align(AlignType alignType)
         item->moveBy(ptMove.x(),ptMove.y());
         i++;
     }
-
 }
 
 void DrawScene::mouseEvent(QGraphicsSceneMouseEvent *mouseEvent)

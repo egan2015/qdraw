@@ -3,9 +3,14 @@
 
 #include <qtpropertymanager.h>
 #include <qteditorfactory.h>
+#include <QAbstractItemDelegate>
+#include <QPushButton>
 QT_BEGIN_NAMESPACE
 class QComboBox;
 class QSlider;
+class QStyleOptionViewItem;
+class QAbstractItemDelegate;
+class QPushButton;
 QT_END_NAMESPACE
 
 class ShadeWidget : public QWidget
@@ -13,22 +18,47 @@ class ShadeWidget : public QWidget
     Q_OBJECT
 public:
     ShadeWidget(QWidget *parent);
+public slots:
+    void colorChanged( const QColor & begin,const QColor & middle,const QColor & end) ;
+    void positionChanged( int position );
+    void typeChanged( int type );
 protected:
     void paintEvent(QPaintEvent * event);
+    int m_type;
+    QColor m_colorBegin;
+    QColor m_colorMiddle;
+    QColor m_colorEnd;
+    int m_midpoint;
 };
 
-static QIcon createColorIcon(const QColor & color );
+class ColorButton :public QPushButton
+{
+    Q_OBJECT
+public:
+    explicit ColorButton( QWidget * parent );
+    void setValue( const QColor & color ) { m_color = color; }
+    QColor value() const { return m_color;}
+protected:
+    void paintEvent(QPaintEvent *);
+private:
+    QColor m_color;
+};
 
 class QtGradientEditor :public QWidget
 {
     Q_OBJECT
 public:
     QtGradientEditor( QWidget * parent );
+public slots:
+    void colorChanged( int ) ;
+    void clicked() ;
+signals:
+    void colorChanged( const QColor & begin,const QColor & middle,const QColor & end) ;
 private:
     QComboBox *m_gradientMode;
-    QComboBox *m_colorBegin;
-    QComboBox *m_colorMiddle;
-    QComboBox *m_colorEnd;
+    ColorButton *m_colorBegin;
+    ColorButton *m_colorMiddle;
+    ColorButton *m_colorEnd;
     QSlider   *m_midpoint;
     ShadeWidget * m_shadewidget;
 };

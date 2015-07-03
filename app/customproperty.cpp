@@ -1,5 +1,110 @@
 #include "customproperty.h"
 #include <QtWidgets>
+#include <qitemdelegate.h>
+
+static
+QIcon createColorIcon(const QColor & color )
+{
+    QRect r (0,0,100,10);
+    QPixmap pixmap(100, 10);
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::black);
+    painter.setBrush(color);
+    painter.drawRect(QRect(0,0,99,9));
+    QIcon icon = pixmap;
+    icon.paint(&painter,r,Qt::AlignHCenter|Qt::AlignVCenter);
+    return icon;
+}
+
+class ColorItemDelegate :public QAbstractItemDelegate
+{
+    Q_OBJECT
+public:
+    explicit ColorItemDelegate(QObject *parent );
+    // painting
+    void paint(QPainter *painter,
+               const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
+
+    QSize sizeHint(const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const;
+};
+
+ColorItemDelegate::ColorItemDelegate(QObject *parent)
+    :QAbstractItemDelegate(parent)
+{
+
+}
+
+void ColorItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+
+}
+
+QSize ColorItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    return QSize(80,10);
+}
+
+ShadeWidget::ShadeWidget(QWidget *parent)
+    :QWidget(parent)
+{
+
+}
+
+void ShadeWidget::paintEvent(QPaintEvent *event)
+{
+    QPainter p(this);
+    p.drawRect(rect().adjusted(1,1,-1,-1));
+}
+
+QtGradientEditor::QtGradientEditor(QWidget *parent)
+    :QWidget(parent)
+{
+    QStringList colorList = QColor::colorNames();
+
+    QVBoxLayout *layout = new QVBoxLayout();
+    m_colorBegin = new QComboBox(this);
+    m_colorMiddle = new QComboBox(this);
+    m_colorEnd = new QComboBox(this);
+    m_colorBegin->setIconSize(QSize(80,10));
+    m_colorBegin->setToolTip(tr("Gradient Beginning color"));
+    m_colorMiddle->setIconSize(QSize(80,10));
+    m_colorMiddle->setToolTip(tr("Gradient middle color"));
+    m_colorEnd->setIconSize(QSize(80,10));
+    m_colorEnd->setToolTip(tr("Gradient ending color"));
+
+
+    m_colorBegin->setItemDelegate(new ColorItemDelegate(m_colorBegin));
+
+    for (int i = 0; i < colorList.count(); ++i) {
+       m_colorBegin->addItem(createColorIcon(colorList.at(i)),NULL);
+       m_colorMiddle->addItem(createColorIcon(colorList.at(i)),NULL);
+       m_colorEnd->addItem(createColorIcon(colorList.at(i)),NULL);
+    }
+
+    layout->addWidget(m_colorBegin);
+    layout->addWidget(m_colorMiddle);
+    layout->addWidget(m_colorEnd);
+    QVBoxLayout *layout1 = new QVBoxLayout();
+    m_gradientMode = new QComboBox(this);
+    m_shadewidget  = new ShadeWidget(this);
+
+    layout1->addWidget(m_gradientMode);
+    layout1->addWidget(m_shadewidget);
+    QVBoxLayout *layout2 = new QVBoxLayout();
+    m_midpoint = new QSlider(this);
+    layout2->addWidget(m_midpoint);
+
+    QHBoxLayout *ly = new QHBoxLayout();
+    ly->addLayout(layout);
+    ly->addLayout(layout2);
+    ly->addLayout(layout1);
+
+    setLayout(ly);
+}
+
+
 
 QtPenPropertyManager::QtPenPropertyManager(QObject *parent)
     :QtAbstractPropertyManager(parent)
@@ -266,3 +371,5 @@ void QtPenPropertyManager::uninitializeProperty(QtProperty *property)
     }
     m_propertyToJoinStyle.remove(property);
 }
+
+

@@ -32,7 +32,7 @@ static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, cons
 
 
 GraphicsItem::GraphicsItem(QGraphicsItem *parent)
-    :AbstractShapeItem<QGraphicsItem>(parent)
+    :AbstractShapeType<QGraphicsItem>(parent)
 {
 //    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
 //    effect->setBlurRadius(8);
@@ -49,9 +49,6 @@ GraphicsItem::GraphicsItem(QGraphicsItem *parent)
 void GraphicsItem::updatehandles()
 {
     const QRectF &geom = this->boundingRect();
-
-    const int w = SELECTION_HANDLE_SIZE;
-    const int h = SELECTION_HANDLE_SIZE;
 
     const Handles::iterator hend =  m_handles.end();
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
@@ -89,7 +86,7 @@ void GraphicsItem::updatehandles()
 
 void GraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-
+    Q_UNUSED(event);
 }
 
 QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
@@ -101,8 +98,10 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
 }
 
 
-GraphicsRectItem::GraphicsRectItem(const QRect & rect ,QGraphicsItem *parent)
+GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphicsItem *parent)
     :GraphicsItem(parent)
+    ,m_isRound(isRound)
+    ,m_fRatio(1/3.0)
 {
 
     m_width = rect.width();
@@ -114,11 +113,12 @@ GraphicsRectItem::GraphicsRectItem(const QRect & rect ,QGraphicsItem *parent)
         SizeHandleRect *shr = new SizeHandleRect(this,i, this);
         m_handles.push_back(shr);
     }
+    if( m_isRound ){
+        m_fRatio = 1/3.0f;
+        SizeHandleRect *shr = new SizeHandleRect(this, 8 , this);
+        m_handles.push_back(shr);
+    }
     updatehandles();
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-    this->setAcceptHoverEvents(true);
 }
 
 QRectF GraphicsRectItem::boundingRect() const
@@ -129,8 +129,17 @@ QRectF GraphicsRectItem::boundingRect() const
 QPainterPath GraphicsRectItem::shape() const
 {
     QPainterPath path;
-    path.addRect(boundingRect());
-    return qt_graphicsItem_shapeFromPath(path,pen());
+    double r;
+    if(m_fRatio<=0)
+       r=0;
+    else {
+        r = m_height * m_fRatio + 0.5;
+    }
+    if ( m_isRound )
+        path.addRoundRect(rect(),r,r);
+    else
+        path.addRect(rect());
+    return path;
 }
 
 void GraphicsRectItem::resize(int dir, const QPointF & delta)
@@ -138,7 +147,6 @@ void GraphicsRectItem::resize(int dir, const QPointF & delta)
     QPointF local = mapFromParent(delta);
     QString dirName;
 
-    const QRectF &geom = this->boundingRect();
     QRect delta1 = this->rect().toRect();
     switch (dir) {
     case Right:
@@ -173,6 +181,19 @@ void GraphicsRectItem::resize(int dir, const QPointF & delta)
         dirName = "Top";
         delta1.setTop(local.y());
         break;
+    case 8:
+    {
+        QRectF delta1 = rect();
+        int y = local.y();
+        if(y> delta1.center().y() )
+            y = delta1.center().y();
+        if(y<delta1.top())
+            y=delta1.top();
+        int H= delta1.height();
+        if(H==0)
+            H=1;
+        m_fRatio= std::abs(((float)(delta1.top()-y)))/H;
+    }
    default:
         break;
     }
@@ -208,14 +229,59 @@ void GraphicsRectItem::updateCoordinate()
 
 void GraphicsRectItem::move(const QPointF &point)
 {
-   moveBy(point.x(),point.y());
+    moveBy(point.x(),point.y());
+}
+
+void GraphicsRectItem::updatehandles()
+{
+    const QRectF &geom = this->boundingRect();
+    const Handles::iterator hend =  m_handles.end();
+    for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
+        SizeHandleRect *hndl = *it;;
+        switch (hndl->dir()) {
+        case LeftTop:
+            hndl->move(geom.x() , geom.y());
+            break;
+        case Top:
+            hndl->move(geom.x() + geom.width() / 2 , geom.y() );
+            break;
+        case RightTop:
+            hndl->move(geom.x() + geom.width() , geom.y() );
+            break;
+        case Right:
+            hndl->move(geom.x() + geom.width() , geom.y() + geom.height() / 2 );
+            break;
+        case RightBottom:
+            hndl->move(geom.x() + geom.width() , geom.y() + geom.height() );
+            break;
+        case Bottom:
+            hndl->move(geom.x() + geom.width() / 2 , geom.y() + geom.height() );
+            break;
+        case LeftBottom:
+            hndl->move(geom.x() , geom.y() + geom.height() );
+            break;
+        case Left:
+            hndl->move(geom.x() , geom.y() + geom.height() / 2 );
+            break;
+        case 8:
+         {
+            hndl->move( geom.right() , geom.top() + geom.height() * m_fRatio );
+         }
+            break;
+        default:
+            break;
+        }
+    }
+
 }
 
 
 void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+/*
     QColor c = QColor(Qt::red);
- /*
     QLinearGradient result(rect().topLeft(), rect().topRight());
     result.setColorAt(0, c.dark(150));
     result.setColorAt(0.5, c.light(200));
@@ -224,7 +290,16 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
  */
    painter->setPen(pen());
    painter->setBrush(brush());
-   painter->drawRect(rect().toRect());
+   double r;
+   if(m_fRatio<=0)
+      r=0;
+   else {
+       r = m_height * m_fRatio + 0.5;
+   }
+   if ( m_isRound )
+       painter->drawRoundedRect(rect(),r,r);
+   else
+       painter->drawRect(rect().toRect());
 
 /*
     QPointF origin = m_localRect.center();
@@ -249,12 +324,15 @@ QPainterPath GraphicsEllipseItem::shape() const
 {
     QPainterPath path;
     path.addEllipse(boundingRect());
-    return qt_graphicsItem_shapeFromPath(path,pen());
+    return path;
 }
 
 void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QColor c = QColor(Qt::red);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
+//    QColor c = QColor(Qt::red);
 //    c.setAlpha(160);
     QRectF rc = rect().normalized();
 /*
@@ -301,13 +379,14 @@ QPainterPath GraphicsLineItem::shape() const
 
 void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QColor c = QColor(Qt::red);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
     painter->setPen(pen());
     painter->drawLine(rect().topLeft(),rect().bottomRight());
 }
 
 GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
-    :AbstractShapeItem <QGraphicsItemGroup>(parent),
+    :AbstractShapeType <QGraphicsItemGroup>(parent),
       m_parent(parent)
 {
     // handles
@@ -445,9 +524,6 @@ void GraphicsItemGroup::updatehandles()
 {
     const QRectF &geom = this->boundingRect();
 
-    const int w = SELECTION_HANDLE_SIZE;
-    const int h = SELECTION_HANDLE_SIZE;
-
     const Handles::iterator hend =  m_handles.end();
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
         SizeHandleRect *hndl = *it;;
@@ -495,7 +571,9 @@ QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change,
 
 void GraphicsItemGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    Q_UNUSED(painter);
 }
 
 GraphicsBezierCurve::GraphicsBezierCurve(QGraphicsItem *parent)
@@ -534,6 +612,8 @@ void GraphicsBezierCurve::addPoint(const QPointF &point)
 
 void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
 
     QPainterPath path;
     painter->setPen(pen());
@@ -604,6 +684,9 @@ void GridTool::paintGrid(QPainter *painter, const QRect &rect)
 
 void GridTool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
     QColor c(Qt::darkCyan);
     painter->setPen(c);
 
@@ -641,6 +724,7 @@ void GraphicsArcItem::addPoint(const QPointF &point)
 
 void GraphicsArcItem::endPoint(const QPointF &point)
 {
+    Q_UNUSED(point)
     if ( m_points.count() > 3) {
         m_points.remove(3);
         delete m_handles.at(3);
@@ -667,7 +751,6 @@ void GraphicsArcItem::resize(int dir, const QPointF & delta)
         qreal len_x = local.x() - m_points.at(0).x();
         m_startAngle = -atan2(len_y,len_x)*180/3.1416;
        if ( m_points.count() > 2){
-            qreal startAngle,endAngle;
             qreal len_y = m_points.at(1).y() - m_points.at(0).y();
             qreal len_x = m_points.at(1).x() - m_points.at(0).x();
             m_startAngle = -atan2(len_y,len_x)*180/3.1416;
@@ -680,9 +763,9 @@ void GraphicsArcItem::resize(int dir, const QPointF & delta)
             if ( m_endAngle < m_startAngle ){
                 qreal tmp = m_endAngle;
                 m_endAngle = m_startAngle;
-                m_startAngle = m_endAngle;
+                m_startAngle = tmp;
             }
-            if ( abs(m_endAngle-m_startAngle) > 360 ){
+            if ( std::abs(m_endAngle-m_startAngle) > 360 ){
                 m_startAngle = 0;
                 m_endAngle = 360;
             }
@@ -736,6 +819,9 @@ void GraphicsArcItem::updatehandles()
 
 void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
     QPainterPath path;
     qreal startAngle = m_startAngle <= m_endAngle ? m_startAngle : m_endAngle;
     qreal endAngle = m_startAngle >= m_endAngle ? m_startAngle : m_endAngle;
@@ -753,123 +839,6 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     painter->drawPath(path);
 //    painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
 }
-
-
-GraphicsRoundRectItem::GraphicsRoundRectItem(const QRect &rect, QGraphicsItem *parent)
-    :GraphicsRectItem(rect,parent),
-     m_roundness(16,16)
-{
-    m_fRatio = 1/3.0f;
-    SizeHandleRect *shr = new SizeHandleRect(this, 8 , this);
-    m_handles.push_back(shr);
-}
-
-QPainterPath GraphicsRoundRectItem::shape() const
-{
-    QPainterPath path;
-    double r;
-    if(m_fRatio<=0)
-       r=0;
-    else {
-        r = m_height * m_fRatio + 0.5;
-    }
-    path.addRoundRect(rect(),r,r);
-    return path;
-
-}
-
-void GraphicsRoundRectItem::resize(int dir, const QPointF & delta)
-{
-    if ( dir == 8 ){
-        QPointF local = mapFromScene(delta);
-        QRectF rc = rect();
-        int y = local.y();
-        if(y> rc.center().y() )
-            y = rc.center().y();
-        if(y<rc.top())
-            y=rc.top();
-        int H= rc.height();
-        if(H==0)
-            H=1;
-        m_fRatio= std::abs(((float)(rc.top()-y)))/H;
-    }
-
-    GraphicsRectItem::resize(dir,delta);
-}
-
-void GraphicsRoundRectItem::updatehandles()
-{
-    const QRectF &geom = this->boundingRect();
-
-    const int w = SELECTION_HANDLE_SIZE;
-    const int h = SELECTION_HANDLE_SIZE;
-
-    const Handles::iterator hend =  m_handles.end();
-    for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
-        SizeHandleRect *hndl = *it;;
-        switch (hndl->dir()) {
-        case LeftTop:
-            hndl->move(geom.x() , geom.y());
-            break;
-        case Top:
-            hndl->move(geom.x() + geom.width() / 2 , geom.y() );
-            break;
-        case RightTop:
-            hndl->move(geom.x() + geom.width() , geom.y() );
-            break;
-        case Right:
-            hndl->move(geom.x() + geom.width() , geom.y() + geom.height() / 2 );
-            break;
-        case RightBottom:
-            hndl->move(geom.x() + geom.width() , geom.y() + geom.height() );
-            break;
-        case Bottom:
-            hndl->move(geom.x() + geom.width() / 2 , geom.y() + geom.height() );
-            break;
-        case LeftBottom:
-            hndl->move(geom.x() , geom.y() + geom.height() );
-            break;
-        case Left:
-            hndl->move(geom.x() , geom.y() + geom.height() / 2 );
-            break;
-        case 8:
-         {
-            hndl->move( geom.right() , geom.top() + geom.height() * m_fRatio );
-         }
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-void GraphicsRoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    QColor c = QColor(Qt::red);
-
-    /*
-    QLinearGradient result(rect().topLeft(), rect().topRight());
-    result.setColorAt(0, c.dark(150));
-    result.setColorAt(0.5, c.light(200));
-    result.setColorAt(1, c.dark(150));
-    painter->setBrush(result);
-    */
-
-    double r;
-    if(m_fRatio<=0)
-       r=0;
-    else {
-        r = m_height * m_fRatio + 0.5;
-    }
-
-    painter->setBrush(brush());
-
-    painter->setPen(pen());
-
-    painter->drawRoundRect(rect(),r,r);
-
-}
-
 
 GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)
     :GraphicsItem(parent)
@@ -946,6 +915,7 @@ void GraphicsPolygonItem::updateCoordinate()
 
 void GraphicsPolygonItem::endPoint(const QPointF & point)
 {
+    Q_UNUSED(point);
     int nPoints = m_points.count();
     if( nPoints > 2 && (m_points[nPoints-1] == m_points[nPoints-2] ||
         m_points[nPoints-1].x() - 1 == m_points[nPoints-2].x() &&
@@ -959,8 +929,6 @@ void GraphicsPolygonItem::endPoint(const QPointF & point)
 void GraphicsPolygonItem::updatehandles()
 {
     const Handles::iterator hend =  m_handles.end();
-    const int w = SELECTION_HANDLE_SIZE;
-    const int h = SELECTION_HANDLE_SIZE;
 
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it) {
         SizeHandleRect *hndl = *it;
@@ -971,6 +939,8 @@ void GraphicsPolygonItem::updatehandles()
 
 void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
 
     QColor c = brush();
     QLinearGradient result(rect().topLeft(), rect().topRight());

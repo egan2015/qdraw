@@ -59,6 +59,7 @@ public slots:
     void zoomOut();
     void on_group_triggered();
     void on_unGroup_triggered();
+    void on_func_test_triggered();
 private:
     void createActions();
     void createMenus();
@@ -89,6 +90,8 @@ private:
     QAction  * actionAll;
     QAction  * actionBringToFront;
     QAction  * actionSendToBack;
+
+    QAction  * funcAct;
 
     QAction  * actionGroup;
     QAction  * actionUnGroup;

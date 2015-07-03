@@ -31,6 +31,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     setStatusBar(new QStatusBar);
 
+    funcAct = new QAction(tr("func test"),this);
+    connect(funcAct,SIGNAL(triggered()),this,SLOT(on_func_test_triggered()));
+    menuBar()->addMenu(tr("Func"))->addAction(funcAct);
 
     scene = new DrawScene(this);
     scene->setSceneRect(QRectF(0 , 0 , 800, 600));
@@ -339,6 +342,7 @@ void MainWindow::itemSelected()
 
 void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
 {
+    Q_UNUSED(item);
     QUndoCommand *moveCommand = new MoveCommand(scene, oldPosition);
     undoStack->push(moveCommand);
 }
@@ -399,25 +403,6 @@ void MainWindow::on_actionSendToBack_triggered()
 
 void MainWindow::on_aglin_triggered()
 {
-
-/*
-   QtPenPropertyManager *penPropertyManager = new QtPenPropertyManager();
-   QtProperty * property = penPropertyManager->addProperty("pen");
-
-   QtTreePropertyBrowser *editor = new QtTreePropertyBrowser();
-   editor->setFactoryForManager(penPropertyManager->subIntPropertyManager(),new QtSpinBoxFactory());
-   editor->setFactoryForManager(penPropertyManager->subEnumPropertyManager(),new QtEnumEditorFactory());
-
-   editor->addProperty(property);
-
-   QPen pen;
-   pen.setWidth(10);
-   pen.setCapStyle(Qt::RoundCap);
-   pen.setJoinStyle(Qt::SvgMiterJoin);
-   penPropertyManager->setValue(property,pen);
-
-   editor->show();
-*/
     if ( sender() == actionRight )
     {
         scene->align(RIGHT_ALIGN);
@@ -473,4 +458,28 @@ void MainWindow::on_unGroup_triggered()
         QUndoCommand *unGroupCommand = new UnGroupCommand(group,scene);
         undoStack->push(unGroupCommand);
     }
+}
+
+void MainWindow::on_func_test_triggered()
+{
+    /*
+       QtPenPropertyManager *penPropertyManager = new QtPenPropertyManager();
+       QtProperty * property = penPropertyManager->addProperty("pen");
+
+       QtTreePropertyBrowser *editor = new QtTreePropertyBrowser();
+       editor->setFactoryForManager(penPropertyManager->subIntPropertyManager(),new QtSpinBoxFactory());
+       editor->setFactoryForManager(penPropertyManager->subEnumPropertyManager(),new QtEnumEditorFactory());
+
+       editor->addProperty(property);
+
+       QPen pen;
+       pen.setWidth(10);
+       pen.setCapStyle(Qt::RoundCap);
+       pen.setJoinStyle(Qt::SvgMiterJoin);
+       penPropertyManager->setValue(property,pen);
+
+       editor->show();
+    */
+        QtGradientEditor * editor = new QtGradientEditor(NULL);
+        editor->show();
 }

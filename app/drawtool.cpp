@@ -388,10 +388,10 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
     scene->clearSelection();
     switch ( c_drawShape ){
     case rectangle:
-        item = new GraphicsRectItem(QRect(0,0,0,0),NULL);
+        item = new GraphicsRectItem(QRect(0,0,0,0));
         break;
     case roundrect:
-        item = new GraphicsRoundRectItem(QRect(0,0,0,0),NULL);
+        item = new GraphicsRectItem(QRect(0,0,0,0),true);
         break;
     case ellipse:
         item = new GraphicsEllipseItem(QRect(0,0,0,0),NULL);

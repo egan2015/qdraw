@@ -3,6 +3,35 @@
 
 #include <qtpropertymanager.h>
 #include <qteditorfactory.h>
+QT_BEGIN_NAMESPACE
+class QComboBox;
+class QSlider;
+QT_END_NAMESPACE
+
+class ShadeWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    ShadeWidget(QWidget *parent);
+protected:
+    void paintEvent(QPaintEvent * event);
+};
+
+static QIcon createColorIcon(const QColor & color );
+
+class QtGradientEditor :public QWidget
+{
+    Q_OBJECT
+public:
+    QtGradientEditor( QWidget * parent );
+private:
+    QComboBox *m_gradientMode;
+    QComboBox *m_colorBegin;
+    QComboBox *m_colorMiddle;
+    QComboBox *m_colorEnd;
+    QSlider   *m_midpoint;
+    ShadeWidget * m_shadewidget;
+};
 
 class QtPenPropertyManager : public QtAbstractPropertyManager
 {

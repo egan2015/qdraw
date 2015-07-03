@@ -11,23 +11,23 @@
 #include <QCursor>
 #include <vector>
 
-template < typename AbstractType = QGraphicsItem >
-class AbstractShapeItem : public AbstractType
+template < typename BaseType = QGraphicsItem >
+class AbstractShapeType : public BaseType
 {
 public:
-   explicit AbstractShapeItem(QGraphicsItem * parent = 0 )
-        :AbstractType(parent)
+   explicit AbstractShapeType(QGraphicsItem * parent = 0 )
+        :BaseType(parent)
     {
-        m_pen.setColor(Qt::black);
+        m_pen.setColor(Qt::NoPen);
         m_brush.setColor(Qt::white);
         m_width = m_height = 0;
     }
-    virtual ~AbstractShapeItem(){}
+    virtual ~AbstractShapeType(){}
     virtual QString displayName () const { return QString("AbstractType");}
-    virtual void resize(int dir, const QPointF & delta ){}
+    virtual void resize(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
-    virtual void move( const QPointF & point ){}
+    virtual void move( const QPointF & point ){Q_UNUSED(point);}
 
     int handleCount() const { return m_handles.size()-1;}
 
@@ -80,10 +80,10 @@ protected:
 
 };
 
-typedef  AbstractShapeItem< QGraphicsItem > AbstractBasicShape;
+typedef  AbstractShapeType< QGraphicsItem > AbstractBasicShape;
 
 class GraphicsItem : public QObject,
-        public AbstractShapeItem<QGraphicsItem>
+        public AbstractShapeType<QGraphicsItem>
 {
     Q_OBJECT
     Q_PROPERTY(QColor pen READ penColor WRITE setPen )
@@ -109,7 +109,7 @@ protected:
 class GraphicsRectItem : public GraphicsItem
 {
 public:
-    GraphicsRectItem(const QRect & rect ,QGraphicsItem * parent);
+    GraphicsRectItem(const QRect & rect , bool isRound = false ,QGraphicsItem * parent = 0 );
     QRectF boundingRect() const;
     QPainterPath shape() const;
     virtual void resize(int dir, const QPointF & delta);
@@ -118,25 +118,15 @@ public:
     void move( const QPointF & point );
     QString displayName() const { return tr("rectangle"); }
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-};
-
-class GraphicsRoundRectItem : public GraphicsRectItem
-{
-public:
-    GraphicsRoundRectItem( const QRect & rect , QGraphicsItem *parent );
-    QPainterPath shape() const;
-    virtual void resize(int dir, const QPointF & delta);
-    QString displayName() const { return tr("roundrect"); }
-protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    QPoint m_roundness;
+    bool m_isRound;
     qreal m_fRatio;
 };
 
+
 class GraphicsItemGroup : public QObject,
-        public AbstractShapeItem <QGraphicsItemGroup>
+        public AbstractShapeType <QGraphicsItemGroup>
 {
     Q_OBJECT
 public:

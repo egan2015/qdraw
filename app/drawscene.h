@@ -44,7 +44,7 @@ public:
     QGraphicsView * view() { return m_view; }
     void align(AlignType alignType );
     void mouseEvent(QGraphicsSceneMouseEvent *mouseEvent );
-    GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items);
+    GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items ,bool isAdd = true);
     void destroyGroup(QGraphicsItemGroup *group);
 signals:
     void itemMoved( QGraphicsItem * item , const QPointF & oldPosition );

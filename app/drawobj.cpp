@@ -8,6 +8,7 @@
 #include <QMatrix4x4>
 #include <QGraphicsTransform>
 #include <cmath>
+#include "drawscene.h"
 
 static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, const QPen &pen)
 {
@@ -224,7 +225,8 @@ void GraphicsRectItem::updateCoordinate()
     setTransform(transform().translate(-delta.x(),-delta.y()));
 
     updatehandles();
-
+    m_width = m_localRect.width();
+    m_height = m_localRect.height();
 }
 
 void GraphicsRectItem::move(const QPointF &point)
@@ -232,12 +234,12 @@ void GraphicsRectItem::move(const QPointF &point)
     moveBy(point.x(),point.y());
 }
 
-GraphicsItem *GraphicsRectItem::copy() const
+QGraphicsItem *GraphicsRectItem::copy() const
 {
     GraphicsRectItem * item = new GraphicsRectItem( rect().toRect(),m_isRound);
-    item->setWidth(width());
-    item->setHeight(height());
-    item->setPos(pos().x()+10,pos().y()+10);
+    item->m_width = width();
+    item->m_height = height();
+    item->setPos(pos().x(),pos().y());
     item->setPen(pen());
     item->setBrush(brush());
     item->setTransform(transform());
@@ -245,6 +247,7 @@ GraphicsItem *GraphicsRectItem::copy() const
     item->setRotation(rotation());
     item->setScale(scale());
     item->setZValue(zValue()+0.1);
+    item->m_fRatio = m_fRatio;
     item->updateCoordinate();
     return item;
 }
@@ -344,6 +347,23 @@ QPainterPath GraphicsEllipseItem::shape() const
     return path;
 }
 
+QGraphicsItem *GraphicsEllipseItem::copy() const
+{
+    GraphicsEllipseItem * item = new GraphicsEllipseItem( rect().toRect());
+    item->m_width = width();
+    item->m_height = height();
+    item->setPos(pos().x(),pos().y());
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
+    return item;
+}
+
 void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
@@ -392,6 +412,24 @@ QPainterPath GraphicsLineItem::shape() const
     path.moveTo(rect().topLeft());
     path.lineTo(rect().bottomRight());
     return qt_graphicsItem_shapeFromPath(path,pen());
+}
+
+QGraphicsItem *GraphicsLineItem::copy() const
+{
+    GraphicsLineItem * item = new GraphicsLineItem();
+    item->m_width = width();
+    item->m_height = height();
+    item->m_localRect = m_localRect;
+    item->setPos(pos().x(),pos().y());
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
+    return item;
 }
 
 void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -525,6 +563,26 @@ GraphicsItemGroup::~GraphicsItemGroup()
 
 }
 
+QGraphicsItem *GraphicsItemGroup::copy() const
+{
+    GraphicsItemGroup *item = 0;
+    DrawScene * s = dynamic_cast<DrawScene*>(scene());
+    if ( s){
+        QList<QGraphicsItem*> copylist = copyChildItems();
+        item = s->createGroup(copylist,false);
+        item->setPos(pos().x(),pos().y());
+        item->setPen(pen());
+        item->setBrush(brush());
+        item->setTransform(transform());
+        item->setTransformOriginPoint(transformOriginPoint());
+        item->setRotation(rotation());
+        item->setScale(scale());
+        item->setZValue(zValue()+0.1);
+        item->updateCoordinate();
+    }
+    return item;
+}
+
 void GraphicsItemGroup::updateCoordinate()
 {
     QPointF pt1,pt2,delta;
@@ -535,6 +593,19 @@ void GraphicsItemGroup::updateCoordinate()
     setTransformOriginPoint(boundingRect().center());
     moveBy(-delta.x(),-delta.y());
     updatehandles();
+}
+
+QList<QGraphicsItem *> GraphicsItemGroup::copyChildItems() const
+{
+    QList<QGraphicsItem*> copylist ;
+    foreach (QGraphicsItem * shape , childItems() ) {
+        AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(shape);
+        if ( ab && !qgraphicsitem_cast<SizeHandleRect*>(ab)){
+            QGraphicsItem * cp = ab->copy();
+            copylist.append(cp);
+        }
+    }
+    return copylist;
 }
 
 void GraphicsItemGroup::updatehandles()
@@ -625,6 +696,31 @@ void GraphicsBezierCurve::addPoint(const QPointF &point)
     m_width = m_localRect.width();
     m_height = m_localRect.height();
     updatehandles();
+}
+
+QGraphicsItem *GraphicsBezierCurve::copy() const
+{
+    GraphicsBezierCurve * item = new GraphicsBezierCurve( );
+    item->m_width = width();
+    item->m_height = height();
+    item->m_points = m_points;
+
+    const Handles::const_iterator hend =  m_handles.end();
+    for (Handles::const_iterator it = m_handles.begin(); it != hend; ++it) {
+        SizeHandleRect *hndl = *it;
+        item->m_handles.push_back(new SizeHandleRect(item,(*it)->dir(),item));
+    }
+
+    item->setPos(pos().x(),pos().y());
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
+    return item;
 }
 
 void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -820,6 +916,33 @@ void GraphicsArcItem::updateCoordinate()
     updatehandles();
 }
 
+QGraphicsItem *GraphicsArcItem::copy() const
+{
+    GraphicsArcItem * item = new GraphicsArcItem( );
+    item->m_width = width();
+    item->m_height = height();
+    item->m_points = m_points;
+
+    const Handles::const_iterator hend =  m_handles.end();
+    for (Handles::const_iterator it = m_handles.begin(); it != hend; ++it) {
+        SizeHandleRect *hndl = *it;
+        item->m_handles.push_back(new SizeHandleRect(item,(*it)->dir(),item));
+    }
+    item->m_startAngle = m_startAngle;
+    item->m_endAngle   = m_endAngle;
+    item->m_Radius = m_Radius;
+    item->setPos(pos().x(),pos().y());
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
+    return item;
+}
+
 void GraphicsArcItem::updatehandles()
 {
     GraphicsPolygonItem::updatehandles();
@@ -943,6 +1066,30 @@ void GraphicsPolygonItem::endPoint(const QPointF & point)
     }
 }
 
+QGraphicsItem *GraphicsPolygonItem::copy() const
+{
+    GraphicsPolygonItem * item = new GraphicsPolygonItem( );
+    item->m_width = width();
+    item->m_height = height();
+    item->m_points = m_points;
+
+    const Handles::const_iterator hend =  m_handles.end();
+    for (Handles::const_iterator it = m_handles.begin(); it != hend; ++it) {
+        SizeHandleRect *hndl = *it;
+        item->m_handles.push_back(new SizeHandleRect(item,(*it)->dir(),item));
+    }
+    item->setPos(pos().x(),pos().y());
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
+    return item;
+}
+
 void GraphicsPolygonItem::updatehandles()
 {
     const Handles::iterator hend =  m_handles.end();
@@ -968,5 +1115,4 @@ void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
 
     painter->setPen(pen());
     painter->drawPolygon(m_points);
-
 }

@@ -485,12 +485,13 @@ void MainWindow::on_func_test_triggered()
         editor->show();
         */
     if (scene->selectedItems().count() == 0 ) return;
-    GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(scene->selectedItems().first());
+    AbstractShape * item = qgraphicsitem_cast<AbstractShape*>(scene->selectedItems().first());
     if ( item ){
-        GraphicsItem * copy = item->copy();
+        QGraphicsItem * copy = item->copy();
         if ( copy ){
             scene->clearSelection();
             copy->setSelected(true);
+            copy->moveBy(10,10);
             scene->addItem(copy);
         }
     }

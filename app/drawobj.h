@@ -10,6 +10,16 @@
 #include <QList>
 #include <QCursor>
 #include <vector>
+#include <QMimeData>
+
+class ShapeMimeData : public QMimeData
+{
+    Q_OBJECT
+public:
+    ShapeMimeData(QGraphicsItem * item);
+private:
+    QGraphicsItem *m_item;
+};
 
 template < typename BaseType = QGraphicsItem >
 class AbstractShapeType : public BaseType
@@ -28,6 +38,7 @@ public:
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
+    virtual QGraphicsItem * copy() const { return NULL;}
     int handleCount() const { return m_handles.size()-1;}
 
     int collidesWithHandle( const QPointF & point ) const
@@ -79,7 +90,7 @@ protected:
 
 };
 
-typedef  AbstractShapeType< QGraphicsItem > AbstractBasicShape;
+typedef  AbstractShapeType< QGraphicsItem > AbstractShape;
 
 class GraphicsItem : public QObject,
         public AbstractShapeType<QGraphicsItem>
@@ -95,7 +106,6 @@ public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
-    virtual GraphicsItem * copy() const { return NULL ;};
 signals:
     void selectedChange(QGraphicsItem *item);
 
@@ -115,7 +125,8 @@ public:
     virtual QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
-    virtual GraphicsItem *copy () const ;
+    QGraphicsItem *copy () const ;
+
     QString displayName() const { return tr("rectangle"); }
 protected:
     void updatehandles();
@@ -128,6 +139,12 @@ class GraphicsItemGroup : public QObject,
         public AbstractShapeType <QGraphicsItemGroup>
 {
     Q_OBJECT
+    Q_PROPERTY(QColor pen READ penColor WRITE setPen )
+    Q_PROPERTY(QColor brush READ brush WRITE setBrush )
+    Q_PROPERTY(qreal  width READ width WRITE setWidth )
+    Q_PROPERTY(qreal  height READ height WRITE setHeight )
+    Q_PROPERTY(QPointF  position READ pos WRITE setPos )
+
 public:
     enum {Type = UserType+2};
     int  type() const { return Type; }
@@ -136,11 +153,17 @@ public:
     void removeFromGroup(QGraphicsItem *item);
     QRectF boundingRect() const;
     ~GraphicsItemGroup();
+
+    QString displayName() const { return tr("group"); }
+
+    QGraphicsItem *copy () const ;
+
     void updateCoordinate();
 signals:
     void selectedChange(QGraphicsItem *item);
 
 protected:
+    QList<QGraphicsItem *> copyChildItems() const;
     void updatehandles();
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
@@ -151,8 +174,9 @@ protected:
 class GraphicsEllipseItem : public GraphicsRectItem
 {
 public:
-    GraphicsEllipseItem(const QRect & rect ,QGraphicsItem * parent);
+    GraphicsEllipseItem(const QRect & rect ,QGraphicsItem * parent = 0);
     QPainterPath shape() const;
+    QGraphicsItem *copy() const;
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
@@ -160,8 +184,9 @@ protected:
 class GraphicsLineItem : public GraphicsRectItem
 {
 public:
-    GraphicsLineItem(QGraphicsItem * parent );
+    GraphicsLineItem(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
+    QGraphicsItem *copy() const;
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
@@ -170,13 +195,14 @@ protected:
 class GraphicsPolygonItem : public GraphicsItem
 {
 public:
-    GraphicsPolygonItem(QGraphicsItem * parent );
+    GraphicsPolygonItem(QGraphicsItem * parent = 0);
     QRectF boundingRect() const ;
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
     virtual void resize(int dir, const QPointF & delta);
     void updateCoordinate ();
     virtual void endPoint(const QPointF & point );
+     QGraphicsItem *copy() const;
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -189,9 +215,10 @@ protected:
 class GraphicsBezierCurve : public GraphicsPolygonItem
 {
 public:
-    GraphicsBezierCurve(QGraphicsItem * parent );
+    GraphicsBezierCurve(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;    
+    QGraphicsItem *copy() const;
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     int m_index;
@@ -200,13 +227,14 @@ protected:
 class GraphicsArcItem :public GraphicsPolygonItem
 {
 public:
-    GraphicsArcItem(QGraphicsItem * parent);
+    GraphicsArcItem(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
      void endPoint(const QPointF & point );
     virtual void resize(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
     void updateCoordinate ();
+    QGraphicsItem *copy() const;
 protected:
     void updatehandles();
 

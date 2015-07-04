@@ -44,9 +44,13 @@ bool operator< (const BBoxSort &a, const BBoxSort &b)
 
 void DrawScene::align(AlignType alignType)
 {
-    QGraphicsItem * firstItem = selectedItems().first();
+    AbstractShape * firstItem = qgraphicsitem_cast<AbstractShape*>(selectedItems().first());
+    if ( !firstItem ) return;
     QRectF rectref = firstItem->mapRectToScene(firstItem->boundingRect());
     int nLeft, nRight, nTop, nBottom;
+    int width = firstItem->width();
+    int height = firstItem->height();
+
     nLeft=nRight=rectref.center().x();
     nTop=nBottom=rectref.center().y();
     QPointF pt = rectref.center();
@@ -125,26 +129,26 @@ void DrawScene::align(AlignType alignType)
             break;
        case ALL_ALIGN:
        {
-           AbstractBasicShape * aitem = qgraphicsitem_cast<AbstractBasicShape*>(item);
+           AbstractShape * aitem = qgraphicsitem_cast<AbstractShape*>(item);
            if ( aitem ){
-               aitem->setWidth(rectref.width());
-               aitem->setHeight(rectref.height());
+               aitem->setWidth(width);
+               aitem->setHeight(height);
            }
        }
            break;
         case WIDTH_ALIGN:
        {
-            AbstractBasicShape * aitem = qgraphicsitem_cast<AbstractBasicShape*>(item);
+            AbstractShape * aitem = qgraphicsitem_cast<AbstractShape*>(item);
             if ( aitem )
-                aitem->setWidth(rectref.width());
+                aitem->setWidth(width);
        }
             break;
 
         case HEIGHT_ALIGN:
        {
-            AbstractBasicShape * aitem = qgraphicsitem_cast<AbstractBasicShape*>(item);
+            AbstractShape * aitem = qgraphicsitem_cast<AbstractShape*>(item);
             if ( aitem )
-                aitem->setHeight(rectref.height());
+                aitem->setHeight(height);
        }
             break;
         }
@@ -170,7 +174,7 @@ void DrawScene::mouseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 }
 
-GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items)
+GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bool isAdd)
 {
     // Build a list of the first item's ancestors
     QList<QGraphicsItem *> ancestors;
@@ -206,7 +210,7 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items)
 
     // Create a new group at that level
     GraphicsItemGroup *group = new GraphicsItemGroup(commonAncestor);
-    if (!commonAncestor)
+    if (!commonAncestor && isAdd )
         addItem(group);
     foreach (QGraphicsItem *item, items){
         item->setSelected(false);

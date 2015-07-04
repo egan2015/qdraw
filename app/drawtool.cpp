@@ -150,6 +150,7 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
         dashRect->setTransform(item->transform());
         dashRect->setRotation(item->rotation());
         dashRect->setScale(item->scale());
+        dashRect->setZValue(item->zValue());
         initialPositions = item->pos();
         scene->addItem(dashRect);
     }

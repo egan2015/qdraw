@@ -136,7 +136,7 @@ QPainterPath GraphicsRectItem::shape() const
         r = m_height * m_fRatio + 0.5;
     }
     if ( m_isRound )
-        path.addRoundRect(rect(),r,r);
+        path.addRoundedRect(rect(),r,r);
     else
         path.addRect(rect());
     return path;
@@ -230,6 +230,23 @@ void GraphicsRectItem::updateCoordinate()
 void GraphicsRectItem::move(const QPointF &point)
 {
     moveBy(point.x(),point.y());
+}
+
+GraphicsItem *GraphicsRectItem::copy() const
+{
+    GraphicsRectItem * item = new GraphicsRectItem( rect().toRect(),m_isRound);
+    item->setWidth(width());
+    item->setHeight(height());
+    item->setPos(pos().x()+10,pos().y()+10);
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
+    return item;
 }
 
 void GraphicsRectItem::updatehandles()

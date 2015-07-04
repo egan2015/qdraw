@@ -28,7 +28,6 @@ public:
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
-
     int handleCount() const { return m_handles.size()-1;}
 
     int collidesWithHandle( const QPointF & point ) const
@@ -96,7 +95,7 @@ public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
-
+    virtual GraphicsItem * copy() const { return NULL ;};
 signals:
     void selectedChange(QGraphicsItem *item);
 
@@ -116,6 +115,7 @@ public:
     virtual QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
+    virtual GraphicsItem *copy () const ;
     QString displayName() const { return tr("rectangle"); }
 protected:
     void updatehandles();
@@ -123,7 +123,6 @@ protected:
     bool m_isRound;
     qreal m_fRatio;
 };
-
 
 class GraphicsItemGroup : public QObject,
         public AbstractShapeType <QGraphicsItemGroup>

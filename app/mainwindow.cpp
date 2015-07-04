@@ -480,6 +480,19 @@ void MainWindow::on_func_test_triggered()
 
        editor->show();
     */
+       /*
         QtGradientEditor * editor = new QtGradientEditor(NULL);
         editor->show();
+        */
+    if (scene->selectedItems().count() == 0 ) return;
+    GraphicsItem * item = qgraphicsitem_cast<GraphicsItem*>(scene->selectedItems().first());
+    if ( item ){
+        GraphicsItem * copy = item->copy();
+        if ( copy ){
+            scene->clearSelection();
+            copy->setSelected(true);
+            scene->addItem(copy);
+        }
+    }
+
 }

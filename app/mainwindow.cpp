@@ -68,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Qt Drawing"));
     setUnifiedTitleAndToolBarOnMac(true);
 
+
+    connect(QApplication::clipboard(),SIGNAL(dataChanged()),this,SLOT(dataChanged()));
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(updateActions()));
     m_timer.start(100);
     theControlledObject = NULL;
@@ -197,9 +199,20 @@ void MainWindow::createActions()
     zoomInAction = new QAction(QIcon(":/icons/zoomin.png"),tr("zoomIn"),this);
     zoomOutAction = new QAction(QIcon(":/icons/zoomout.png"),tr("zoomOut"),this);
 
+    copyAction = new QAction(QIcon(":/icons/copy.png"),tr("copy"),this);
+    copyAction->setShortcut(QKeySequence::Copy);
+    pasteAction = new QAction(QIcon(":/icons/paste.png"),tr("paste"),this);
+    pasteAction->setShortcut(QKeySequence::Paste);
+    cutAction = new QAction(QIcon(":/icons/cut.png"),tr("cut"),this);
+    cutAction->setShortcut(QKeySequence::Cut);
+    pasteAction->setEnabled(false);
+
+    connect(copyAction,SIGNAL(triggered()),this,SLOT(on_copy()));
+    connect(pasteAction,SIGNAL(triggered()),this,SLOT(on_paste()));
+    connect(cutAction,SIGNAL(triggered()),this,SLOT(on_cut()));
+
     connect(zoomInAction , SIGNAL(triggered()),this,SLOT(zoomIn()));
     connect(zoomOutAction , SIGNAL(triggered()),this,SLOT(zoomOut()));
-
     connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
     this->addAction(deleteAction);
 }
@@ -214,8 +227,13 @@ void MainWindow::createToolbars()
     // create edit toolbar
     editToolBar = addToolBar(tr("edit"));
     editToolBar->setIconSize(QSize(24,24));
+    editToolBar->addAction(copyAction);
+    editToolBar->addAction(pasteAction);
+    editToolBar->addAction(cutAction);
+
     editToolBar->addAction(undoAction);
     editToolBar->addAction(redoAction);
+
     editToolBar->addAction(zoomInAction);
     editToolBar->addAction(zoomOutAction);
 
@@ -324,6 +342,8 @@ void MainWindow::updateActions()
     actionHorz->setEnabled(scene->selectedItems().count() > 2);
     actionVert->setEnabled(scene->selectedItems().count() > 2);
 
+    copyAction->setEnabled(scene->selectedItems().count() > 0);
+    cutAction->setEnabled(scene->selectedItems().count() > 0);
 }
 
 void MainWindow::itemSelected()
@@ -343,7 +363,7 @@ void MainWindow::itemSelected()
 void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
 {
     Q_UNUSED(item);
-    QUndoCommand *moveCommand = new MoveCommand(scene, oldPosition);
+    QUndoCommand *moveCommand = new MoveCommand(item, oldPosition);
     undoStack->push(moveCommand);
 }
 
@@ -495,5 +515,51 @@ void MainWindow::on_func_test_triggered()
             scene->addItem(copy);
         }
     }
+}
 
+void MainWindow::on_copy()
+{
+    ShapeMimeData * data = new ShapeMimeData( scene->selectedItems() );
+    QApplication::clipboard()->setMimeData(data);
+}
+
+void MainWindow::on_paste()
+{
+    QMimeData * mp = const_cast<QMimeData *>(QApplication::clipboard()->mimeData()) ;
+    ShapeMimeData * data = dynamic_cast< ShapeMimeData*>( mp );
+    if ( data ){
+        scene->clearSelection();
+        foreach (QGraphicsItem * item , data->items() ) {
+            AbstractShape *sp = qgraphicsitem_cast<AbstractShape*>(item);
+            QGraphicsItem * copy = sp->copy();
+            if ( copy ){
+                copy->setSelected(true);
+                copy->moveBy(10,10);
+                QUndoCommand *addCommand = new AddCommand(copy, scene);
+                undoStack->push(addCommand);
+            }
+        }
+    }
+}
+
+void MainWindow::on_cut()
+{
+    QList<QGraphicsItem *> copylist ;
+    foreach (QGraphicsItem *item , scene->selectedItems()) {
+        AbstractShape *sp = qgraphicsitem_cast<AbstractShape*>(item);
+        QGraphicsItem * copy = sp->copy();
+        if ( copy )
+            copylist.append(copy);
+    }
+    QUndoCommand *deleteCommand = new DeleteCommand(scene);
+    undoStack->push(deleteCommand);
+    if ( copylist.count() > 0 ){
+        ShapeMimeData * data = new ShapeMimeData( copylist );
+        QApplication::clipboard()->setMimeData(data);
+    }
+}
+
+void MainWindow::dataChanged()
+{
+   pasteAction->setEnabled(true);
 }

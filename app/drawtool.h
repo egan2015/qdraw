@@ -62,6 +62,7 @@ public:
     QSizeF  m_lastSize;
     QPointF initialPositions;
     QGraphicsPathItem * dashRect;
+    GraphicsItemGroup * selLayer;
 };
 
 class  RotationTool : public DrawTool
@@ -82,7 +83,7 @@ public:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene ) ;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene ) ;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene );
-    GraphicsItem * item;
+    AbstractShape * item;
 };
 
 class PolygonTool : public DrawTool

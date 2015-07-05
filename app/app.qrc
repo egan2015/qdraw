@@ -31,5 +31,8 @@
         <file>icons/align_height.svg</file>
         <file>icons/align_width.svg</file>
         <file>icons/align_all.png</file>
+        <file>icons/copy.png</file>
+        <file>icons/cut.png</file>
+        <file>icons/paste.png</file>
     </qresource>
 </RCC>

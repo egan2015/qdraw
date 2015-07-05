@@ -60,6 +60,10 @@ public slots:
     void on_group_triggered();
     void on_unGroup_triggered();
     void on_func_test_triggered();
+    void on_copy();
+    void on_paste();
+    void on_cut();
+    void dataChanged();
 private:
     void createActions();
     void createMenus();
@@ -100,6 +104,10 @@ private:
     QAction  * deleteAction;
     QAction  * undoAction;
     QAction  * redoAction;
+    QAction  * copyAction;
+    QAction  * pasteAction;
+    QAction  * cutAction;
+
     QAction  * zoomInAction;
     QAction  * zoomOutAction;
 

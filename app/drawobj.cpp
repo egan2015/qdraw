@@ -10,6 +10,26 @@
 #include <cmath>
 #include "drawscene.h"
 
+ShapeMimeData::ShapeMimeData(QList<QGraphicsItem *> items)
+{
+    foreach (QGraphicsItem *item , items ) {
+       AbstractShape *sp = qgraphicsitem_cast<AbstractShape*>(item);
+       m_items.append(sp->copy());
+    }
+}
+ShapeMimeData::~ShapeMimeData()
+{
+    foreach (QGraphicsItem *item , m_items ) {
+        delete item;
+    }
+    m_items.clear();
+}
+
+QList<QGraphicsItem *> ShapeMimeData::items() const
+{
+    return m_items;
+}
+
 static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, const QPen &pen)
 {
     // We unfortunately need this hack as QPainterPathStroker will set a width of 1.0
@@ -102,7 +122,8 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
 GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphicsItem *parent)
     :GraphicsItem(parent)
     ,m_isRound(isRound)
-    ,m_fRatio(1/3.0)
+    ,m_fRatioX(1/10.0)
+    ,m_fRatioY(1/3.0)
 {
 
     m_width = rect.width();
@@ -115,8 +136,9 @@ GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphics
         m_handles.push_back(shr);
     }
     if( m_isRound ){
-        m_fRatio = 1/3.0f;
         SizeHandleRect *shr = new SizeHandleRect(this, 8 , this);
+        m_handles.push_back(shr);
+        shr = new SizeHandleRect(this, 9 , this);
         m_handles.push_back(shr);
     }
     updatehandles();
@@ -130,14 +152,18 @@ QRectF GraphicsRectItem::boundingRect() const
 QPainterPath GraphicsRectItem::shape() const
 {
     QPainterPath path;
-    double r;
-    if(m_fRatio<=0)
-       r=0;
+    double rx,ry;
+    if(m_fRatioX<=0)
+       rx=0;
     else {
-        r = m_height * m_fRatio + 0.5;
+        rx = m_width * m_fRatioX + 0.5;
     }
+    if ( m_fRatioY <=0 )
+        ry = 0;
+    else
+        ry = m_height * m_fRatioY + 0.5;
     if ( m_isRound )
-        path.addRoundedRect(rect(),r,r);
+        path.addRoundedRect(rect(),rx,ry);
     else
         path.addRect(rect());
     return path;
@@ -193,7 +219,21 @@ void GraphicsRectItem::resize(int dir, const QPointF & delta)
         int H= delta1.height();
         if(H==0)
             H=1;
-        m_fRatio= std::abs(((float)(delta1.top()-y)))/H;
+        m_fRatioY = std::abs(((float)(delta1.top()-y)))/H;
+    }
+        break;
+    case 9:
+    {
+        QRectF delta1 = rect();
+        int x = local.x();
+        if(x < delta1.center().x() )
+            x = delta1.center().x();
+        if(x>delta1.right())
+            x=delta1.right();
+        int W= delta1.width();
+        if(W==0)
+            W=1;
+        m_fRatioX = std::abs(((float)(delta1.right()-x)))/W;
     }
    default:
         break;
@@ -247,7 +287,8 @@ QGraphicsItem *GraphicsRectItem::copy() const
     item->setRotation(rotation());
     item->setScale(scale());
     item->setZValue(zValue()+0.1);
-    item->m_fRatio = m_fRatio;
+    item->m_fRatioY = m_fRatioY;
+    item->m_fRatioX = m_fRatioX;
     item->updateCoordinate();
     return item;
 }
@@ -285,8 +326,11 @@ void GraphicsRectItem::updatehandles()
             break;
         case 8:
          {
-            hndl->move( geom.right() , geom.top() + geom.height() * m_fRatio );
+            hndl->move( geom.right() , geom.top() + geom.height() * m_fRatioY );
          }
+         break;
+        case 9:
+            hndl->move( geom.right() - geom.width() * m_fRatioX , geom.top());
             break;
         default:
             break;
@@ -310,14 +354,18 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
  */
    painter->setPen(pen());
    painter->setBrush(brush());
-   double r;
-   if(m_fRatio<=0)
-      r=0;
+   double rx,ry;
+   if(m_fRatioX<=0)
+      rx=0;
    else {
-       r = m_height * m_fRatio + 0.5;
+       rx = m_width * m_fRatioX + 0.5;
    }
+   if ( m_fRatioY <=0 )
+       ry = 0;
+   else
+       ry = m_height * m_fRatioY + 0.5;
    if ( m_isRound )
-       painter->drawRoundedRect(rect(),r,r);
+       painter->drawRoundedRect(rect(),rx,ry);
    else
        painter->drawRect(rect().toRect());
 
@@ -566,20 +614,17 @@ GraphicsItemGroup::~GraphicsItemGroup()
 QGraphicsItem *GraphicsItemGroup::copy() const
 {
     GraphicsItemGroup *item = 0;
-    DrawScene * s = dynamic_cast<DrawScene*>(scene());
-    if ( s){
-        QList<QGraphicsItem*> copylist = copyChildItems();
-        item = s->createGroup(copylist,false);
-        item->setPos(pos().x(),pos().y());
-        item->setPen(pen());
-        item->setBrush(brush());
-        item->setTransform(transform());
-        item->setTransformOriginPoint(transformOriginPoint());
-        item->setRotation(rotation());
-        item->setScale(scale());
-        item->setZValue(zValue()+0.1);
-        item->updateCoordinate();
-    }
+    QList<QGraphicsItem*> copylist = copyChildItems();
+    item = createGroup(copylist);
+    item->setPos(pos().x(),pos().y());
+    item->setPen(pen());
+    item->setBrush(brush());
+    item->setTransform(transform());
+    item->setTransformOriginPoint(transformOriginPoint());
+    item->setRotation(rotation());
+    item->setScale(scale());
+    item->setZValue(zValue()+0.1);
+    item->updateCoordinate();
     return item;
 }
 
@@ -595,6 +640,50 @@ void GraphicsItemGroup::updateCoordinate()
     updatehandles();
 }
 
+GraphicsItemGroup *GraphicsItemGroup::createGroup(const QList<QGraphicsItem *> &items) const
+{
+    // Build a list of the first item's ancestors
+    QList<QGraphicsItem *> ancestors;
+    int n = 0;
+    if (!items.isEmpty()) {
+        QGraphicsItem *parent = items.at(n++);
+        while ((parent = parent->parentItem()))
+            ancestors.append(parent);
+    }
+
+    // Find the common ancestor for all items
+    QGraphicsItem *commonAncestor = 0;
+    if (!ancestors.isEmpty()) {
+        while (n < items.size()) {
+            int commonIndex = -1;
+            QGraphicsItem *parent = items.at(n++);
+            do {
+                int index = ancestors.indexOf(parent, qMax(0, commonIndex));
+                if (index != -1) {
+                    commonIndex = index;
+                    break;
+                }
+            } while ((parent = parent->parentItem()));
+
+            if (commonIndex == -1) {
+                commonAncestor = 0;
+                break;
+            }
+
+            commonAncestor = ancestors.at(commonIndex);
+        }
+    }
+    // Create a new group at that level
+    GraphicsItemGroup *group = new GraphicsItemGroup(commonAncestor);
+    foreach (QGraphicsItem *item, items){
+        item->setSelected(false);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( !g )
+             group->addToGroup(item);
+    }
+    return group;
+}
+
 QList<QGraphicsItem *> GraphicsItemGroup::copyChildItems() const
 {
     QList<QGraphicsItem*> copylist ;
@@ -602,6 +691,8 @@ QList<QGraphicsItem *> GraphicsItemGroup::copyChildItems() const
         AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(shape);
         if ( ab && !qgraphicsitem_cast<SizeHandleRect*>(ab)){
             QGraphicsItem * cp = ab->copy();
+            //if ( !cp->scene() )
+            //    scene()->addItem(cp);
             copylist.append(cp);
         }
     }
@@ -1116,3 +1207,5 @@ void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setPen(pen());
     painter->drawPolygon(m_points);
 }
+
+

@@ -16,9 +16,11 @@ class ShapeMimeData : public QMimeData
 {
     Q_OBJECT
 public:
-    ShapeMimeData(QGraphicsItem * item);
+    ShapeMimeData( QList<QGraphicsItem * > items);
+    ~ShapeMimeData();
+    QList<QGraphicsItem *> items() const ;
 private:
-    QGraphicsItem *m_item;
+    QList<QGraphicsItem * > m_items;
 };
 
 template < typename BaseType = QGraphicsItem >
@@ -132,7 +134,8 @@ protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     bool m_isRound;
-    qreal m_fRatio;
+    qreal m_fRatioY;
+    qreal m_fRatioX;
 };
 
 class GraphicsItemGroup : public QObject,
@@ -163,6 +166,7 @@ signals:
     void selectedChange(QGraphicsItem *item);
 
 protected:
+    GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items) const;
     QList<QGraphicsItem *> copyChildItems() const;
     void updatehandles();
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);

@@ -7,13 +7,12 @@
 class MoveCommand : public QUndoCommand
 {
 public:
-    MoveCommand(QGraphicsScene *graphicsScene, const QPointF & delta ,
+    MoveCommand(QGraphicsItem *item, const QPointF & delta ,
                 QUndoCommand * parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 private:
-    QList<QGraphicsItem *> items;
-    QGraphicsScene *myGraphicsScene;
+    QGraphicsItem  *myItem;
     QPointF myDelta;
     bool bMoved;
 };
@@ -35,7 +34,7 @@ class DeleteCommand : public QUndoCommand
 {
 public:
     explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
-
+    ~DeleteCommand();
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 

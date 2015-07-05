@@ -6,7 +6,6 @@
 #include "drawobj.h"
 #include <vector>
 
-
 DrawScene::DrawScene(QObject *parent)
     :QGraphicsScene(parent)
 {
@@ -20,8 +19,11 @@ public:
     BBoxSort( QGraphicsItem * item , const QRectF & rect , AlignType alignType )
         :item_(item),box(rect),align(alignType)
     {
+        //topLeft
         min_ = alignType == HORZEVEN_ALIGN ? box.topLeft().x() : box.topLeft().y();
+        //bottomRight
         max_ = alignType == HORZEVEN_ALIGN ? box.bottomRight().x() : box.bottomRight().y();
+        //width or height
         extent_ = alignType == HORZEVEN_ALIGN ? box.width() : box.height();
         anchor =  min_*0.5 + max_ * 0.5;
     }
@@ -89,6 +91,7 @@ void DrawScene::align(AlignType alignType)
                 else
                     t.setY(pos - it->min());
                 it->item_->moveBy(t.x(),t.y());
+                 emit itemMoved(it->item_,t);
                 changed = true;
             }
             pos += it->extent();
@@ -155,6 +158,7 @@ void DrawScene::align(AlignType alignType)
         QPointF ptLast= rectItem.center();
         QPointF ptMove = ptNew - ptLast;
         item->moveBy(ptMove.x(),ptMove.y());
+        emit itemMoved(item,ptMove);
         i++;
     }
 }

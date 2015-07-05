@@ -92,6 +92,7 @@ SelectTool::SelectTool()
     m_lastSize.setHeight(0);
     m_lastSize.setWidth(0);
     dashRect = 0;
+    selLayer = 0;
 }
 
 void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
@@ -132,7 +133,12 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
             QGraphicsView * view = scene->view();
             view->setDragMode(QGraphicsView::RubberBandDrag);
         }
-
+#if 0
+        if ( selLayer ){
+            scene->destroyGroup(selLayer);
+            selLayer = 0;
+        }
+#endif
     }
 
     if ( selectMode == move && items.count() == 1 ){
@@ -207,9 +213,11 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
          }else if ( item !=0 && selectMode == size && c_last != c_down ){
             item->updateCoordinate();
         }
-    }else if ( items.count() > 1 && selectMode == move && c_last != c_down )
-        emit scene->itemMoved(NULL , c_last - c_down );
-
+    }else if ( items.count() > 1 && selectMode == move && c_last != c_down ){
+        foreach (QGraphicsItem * item , items) {
+          emit scene->itemMoved(item , c_last - c_down );
+        }
+    }
 
     if (selectMode == netSelect ){
 
@@ -217,14 +225,18 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
             QGraphicsView * view = scene->view();
             view->setDragMode(QGraphicsView::NoDrag);
         }
+#if 0
+        if ( scene->selectedItems().count() > 1 ){
+            selLayer = scene->createGroup(scene->selectedItems());
+            selLayer->setSelected(true);
+        }
+#endif
     }
-
     if (dashRect ){
         scene->removeItem(dashRect);
         delete dashRect;
         dashRect = 0;
     }
-
     selectMode = none;
     nDragHandle = Handle_None;
     m_hoverSizer = false;
@@ -279,7 +291,6 @@ void RotationTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
                 dashRect->setScale(item->scale());
                 dashRect->setZValue(item->zValue());
                 scene->addItem(dashRect);
-
                 setCursor(scene,QCursor((QPixmap(":/icons/rotate.png"))));
             }
             else{
@@ -395,7 +406,7 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
         item = new GraphicsRectItem(QRect(0,0,0,0),true);
         break;
     case ellipse:
-        item = new GraphicsEllipseItem(QRect(0,0,0,0),NULL);
+        item = dynamic_cast<AbstractShape*> (new GraphicsEllipseItem(QRect(0,0,0,0)));
         break;
     case line:
         item = new GraphicsLineItem(0);

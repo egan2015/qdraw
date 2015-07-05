@@ -1,21 +1,18 @@
 #include "commands.h"
 
-MoveCommand::MoveCommand(QGraphicsScene *graphicsScene, const QPointF &delta, QUndoCommand *parent)
+MoveCommand::MoveCommand(QGraphicsItem *item, const QPointF &delta, QUndoCommand *parent)
     : QUndoCommand(parent)
 {
-    items = graphicsScene->selectedItems();
+    myItem = item;
     myDelta = delta;
-    myGraphicsScene = graphicsScene;
     bMoved = true;
 }
 
 //! [2]
 void MoveCommand::undo()
 {
-    foreach (QGraphicsItem *item, items) {
-       item->moveBy(-myDelta.x(),-myDelta.y());
-    }
-    myGraphicsScene->update();
+    myItem->moveBy(-myDelta.x(),-myDelta.y());
+
     setText(QObject::tr("Move %1,%2")
         .arg(-myDelta.x()).arg(-myDelta.y()));
     bMoved = false;
@@ -26,10 +23,8 @@ void MoveCommand::undo()
 void MoveCommand::redo()
 {
     if ( !bMoved ){
-        foreach (QGraphicsItem *item, items) {
-           item->moveBy(myDelta.x(),myDelta.y());
-        }
-        myGraphicsScene->update();
+        myItem->moveBy(myDelta.x(),myDelta.y());
+        myItem->scene()->update();
     }
     setText(QObject::tr("Move %1,%2")
         .arg(myDelta.x()).arg(myDelta.y()));
@@ -43,13 +38,20 @@ DeleteCommand::DeleteCommand(QGraphicsScene *scene, QUndoCommand *parent)
     items = myGraphicsScene->selectedItems();
     setText(QObject::tr("Delete %1").arg(items.count()));
 }
+
+DeleteCommand::~DeleteCommand()
+{
+
+}
 //! [4]
 
 //! [5]
 void DeleteCommand::undo()
 {
     foreach (QGraphicsItem *item, items) {
-        myGraphicsScene->addItem(item);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( !g )
+            myGraphicsScene->addItem(item);
     }
     myGraphicsScene->update();
 
@@ -60,7 +62,9 @@ void DeleteCommand::undo()
 void DeleteCommand::redo()
 {
     foreach (QGraphicsItem *item, items) {
-        myGraphicsScene->removeItem(item);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( !g )
+            myGraphicsScene->removeItem(item);
     }
 }
 //! [6]

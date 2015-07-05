@@ -363,8 +363,13 @@ void MainWindow::itemSelected()
 void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
 {
     Q_UNUSED(item);
-    QUndoCommand *moveCommand = new MoveCommand(item, oldPosition);
-    undoStack->push(moveCommand);
+    if ( item ){
+        QUndoCommand *moveCommand = new MoveCommand(item, oldPosition);
+        undoStack->push(moveCommand);
+    }else{
+        QUndoCommand *moveCommand = new MoveCommand(scene, oldPosition);
+        undoStack->push(moveCommand);
+    }
 }
 
 void MainWindow::itemAdded(QGraphicsItem *item)

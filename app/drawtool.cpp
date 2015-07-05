@@ -214,9 +214,7 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
             item->updateCoordinate();
         }
     }else if ( items.count() > 1 && selectMode == move && c_last != c_down ){
-        foreach (QGraphicsItem * item , items) {
-          emit scene->itemMoved(item , c_last - c_down );
-        }
+          emit scene->itemMoved(NULL , c_last - c_down );
     }
 
     if (selectMode == netSelect ){

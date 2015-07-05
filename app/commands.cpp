@@ -1,8 +1,19 @@
 #include "commands.h"
 
-MoveCommand::MoveCommand(QGraphicsItem *item, const QPointF &delta, QUndoCommand *parent)
+MoveCommand::MoveCommand(QGraphicsScene *graphicsScene, const QPointF &delta, QUndoCommand *parent)
     : QUndoCommand(parent)
 {
+    myItem = 0;
+    myItems = graphicsScene->selectedItems();
+    myGraphicsScene = graphicsScene;
+    myDelta = delta;
+    bMoved = true;
+}
+
+MoveCommand::MoveCommand(QGraphicsItem * item, const QPointF &delta, QUndoCommand *parent)
+    : QUndoCommand(parent)
+{
+    myGraphicsScene = 0;
     myItem = item;
     myDelta = delta;
     bMoved = true;
@@ -11,8 +22,13 @@ MoveCommand::MoveCommand(QGraphicsItem *item, const QPointF &delta, QUndoCommand
 //! [2]
 void MoveCommand::undo()
 {
-    myItem->moveBy(-myDelta.x(),-myDelta.y());
-
+    if ( myItem )
+        myItem->moveBy(-myDelta.x(),-myDelta.y());
+    else if( myItems.count() > 0 ){
+        foreach (QGraphicsItem *item, myItems) {
+           item->moveBy(-myDelta.x(),-myDelta.y());
+        }
+    }
     setText(QObject::tr("Move %1,%2")
         .arg(-myDelta.x()).arg(-myDelta.y()));
     bMoved = false;
@@ -23,8 +39,15 @@ void MoveCommand::undo()
 void MoveCommand::redo()
 {
     if ( !bMoved ){
-        myItem->moveBy(myDelta.x(),myDelta.y());
-        myItem->scene()->update();
+        if ( myItem ){
+            myItem->moveBy(myDelta.x(),myDelta.y());
+            myItem->scene()->update();
+        }else if( myItems.count() > 0 ){
+            foreach (QGraphicsItem *item, myItems) {
+               item->moveBy(myDelta.x(),myDelta.y());
+            }
+            myGraphicsScene->update();
+        }
     }
     setText(QObject::tr("Move %1,%2")
         .arg(myDelta.x()).arg(myDelta.y()));

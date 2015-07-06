@@ -23,6 +23,7 @@ private:
     QList<QGraphicsItem * > m_items;
 };
 
+
 template < typename BaseType = QGraphicsItem >
 class AbstractShapeType : public BaseType
 {

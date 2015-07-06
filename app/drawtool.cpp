@@ -6,7 +6,7 @@
 #include <QGraphicsLineItem>
 #include <QtMath>
 #include "drawobj.h"
-#define PI 3.14
+#define PI 3.1416
 
 QList<DrawTool*> DrawTool::c_tools;
 QPointF DrawTool::c_down;
@@ -41,9 +41,9 @@ int nDragHandle = Handle_None;
 
 static void setCursor(DrawScene * scene , const QCursor & cursor )
 {
-        QGraphicsView * view = scene->view();
-        if (view)
-            view->setCursor(cursor);
+    QGraphicsView * view = scene->view();
+    if (view)
+        view->setCursor(cursor);
 }
 
 DrawTool::DrawTool(DrawShape shape)
@@ -175,7 +175,7 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
                 QSizeF delta(c_last.x() - c_down.x() , c_last.y() - c_down.y());
                 item->resize(nDragHandle,c_last);
             }
-            else if(nDragHandle == Handle_None && selectMode == selection ){
+            else if(nDragHandle == Handle_None ){
                  int handle = item->collidesWithHandle(event->scenePos());
                  if ( handle != Handle_None){
                      setCursor(scene,Qt::OpenHandCursor/*item->getCursor(handle)*/);
@@ -245,14 +245,13 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
 RotationTool::RotationTool()
     :DrawTool(rotation)
 {
-    lastAngle == 0;
+    lastAngle = 0;
     dashRect = 0;
 }
 
 void RotationTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mousePressEvent(event,scene);
-
 
     if (!m_hoverSizer)
       scene->mouseEvent(event);
@@ -302,7 +301,6 @@ void RotationTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
 void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mouseMoveEvent(event,scene);
-
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
         AbstractShape * item = qgraphicsitem_cast<AbstractShape*>(items.first());
@@ -312,7 +310,6 @@ void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
 
              qreal len_y = c_last.y() - origin.y();
              qreal len_x = c_last.x() - origin.x();
-
              qreal angle = atan2(len_y,len_x)*180/PI;
 
              angle = item->rotation() + int(angle - lastAngle) ;
@@ -353,7 +350,6 @@ void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene 
         if ( item != 0  && nDragHandle !=Handle_None && selectMode == rotate ){
 
              QPointF origin = item->mapToScene(item->boundingRect().center());
-
              QPointF delta = c_last - origin ;
              qreal len_y = c_last.y() - origin.y();
              qreal len_x = c_last.x() - origin.x();
@@ -382,7 +378,6 @@ void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene 
         dashRect = 0;
     }
     scene->mouseEvent(event);
-
 }
 
 RectTool::RectTool(DrawShape drawShape)

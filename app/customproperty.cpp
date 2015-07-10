@@ -266,7 +266,7 @@ QtGradientEditor::QtGradientEditor(QWidget *parent)
     connect(m_midpoint,SIGNAL(valueChanged(int)),m_shadewidget,SLOT(positionChanged(int)));
     setFixedHeight(150);
     setFixedWidth(300);
-    setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
+    setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint );
     setWindowTitle(tr("GradientEditor"));
 }
 

@@ -505,10 +505,11 @@ void MainWindow::on_func_test_triggered()
 
        editor->show();
     */
-       /*
+
         QtGradientEditor * editor = new QtGradientEditor(NULL);
         editor->show();
-        */
+
+    /*
     if (scene->selectedItems().count() == 0 ) return;
     AbstractShape * item = qgraphicsitem_cast<AbstractShape*>(scene->selectedItems().first());
     if ( item ){
@@ -520,6 +521,7 @@ void MainWindow::on_func_test_triggered()
             scene->addItem(copy);
         }
     }
+    */
 }
 
 void MainWindow::on_copy()

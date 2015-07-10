@@ -16,6 +16,7 @@ SizeHandleRect::SizeHandleRect(QGraphicsItem* parent , int d, QGraphicsItem *res
     ,m_state(SelectionHandleOff)
     ,borderColor("white")
 {
+    this->setAcceptHoverEvents(true);
     setFlag(QGraphicsItem::ItemIgnoresTransformations,true);
     hide();
 }
@@ -51,6 +52,7 @@ void SizeHandleRect::setState(SelectionHandleState st)
         show();
         break;
     }
+    borderColor = Qt::white;
     m_state = st;
 }
 
@@ -58,6 +60,21 @@ void SizeHandleRect::move(qreal x, qreal y)
 {   
     setPos(x,y);
 }
+
+void SizeHandleRect::hoverEnterEvent(QGraphicsSceneHoverEvent *e)
+{
+    borderColor = Qt::blue;
+    update();
+    QGraphicsRectItem::hoverEnterEvent(e);
+}
+
+void SizeHandleRect::hoverLeaveEvent(QGraphicsSceneHoverEvent *e)
+{
+    borderColor = Qt::white;
+    update();
+    QGraphicsRectItem::hoverLeaveEvent(e);
+}
+
 
 
 

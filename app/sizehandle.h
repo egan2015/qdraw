@@ -27,6 +27,8 @@ public:
     void setState(SelectionHandleState st);
     void move(qreal x, qreal y );
 protected:
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *e );
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *e );
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 private:

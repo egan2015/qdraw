@@ -157,8 +157,10 @@ void DrawScene::align(AlignType alignType)
         }
         QPointF ptLast= rectItem.center();
         QPointF ptMove = ptNew - ptLast;
-        item->moveBy(ptMove.x(),ptMove.y());
-        emit itemMoved(item,ptMove);
+        if ( !ptMove.isNull()){
+            item->moveBy(ptMove.x(),ptMove.y());
+            emit itemMoved(item,ptMove);
+        }
         i++;
     }
 }

@@ -7,6 +7,8 @@
 #include <QGraphicsEffect>
 #include <QMatrix4x4>
 #include <QGraphicsTransform>
+#include <QStyle>
+#include <QStyleOptionGraphicsItem>
 #include <cmath>
 #include "drawscene.h"
 
@@ -854,6 +856,12 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
         ++i;
     }
     painter->drawPath(path);
+
+   if (option->state & QStyle::State_Selected){
+       painter->setPen(QPen(Qt::lightGray, 0, Qt::SolidLine));
+       painter->setBrush(Qt::NoBrush);
+       painter->drawPolyline(m_points);
+    }
 }
 
 

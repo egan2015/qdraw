@@ -765,6 +765,7 @@ QPainterPath GraphicsBezierCurve::shape() const
 {
     QPainterPath path;
     path.moveTo(m_points.at(0));
+/*
     if ( m_points.count() ==2 )
         path.quadTo(m_points.at(0),m_points.at(1));
     else if (m_points.count() == 3) {
@@ -772,6 +773,17 @@ QPainterPath GraphicsBezierCurve::shape() const
     } else if ( m_points.count() == 4 ){
         path.cubicTo(m_points.at(1),m_points.at(2),m_points.at(3));
     }
+*/
+    int i=1;
+    while (i + 2 < m_points.size()) {
+        path.cubicTo(m_points.at(i), m_points.at(i+1), m_points.at(i+2));
+        i += 3;
+    }
+    while (i < m_points.size()) {
+        path.lineTo(m_points.at(i));
+        ++i;
+    }
+
     return path;
 }
 
@@ -823,6 +835,7 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setPen(pen());
     painter->setBrush(brush());
     path.moveTo(m_points.at(0));
+/*
     if ( m_points.count() ==2 )
         path.quadTo(m_points.at(0),m_points.at(1));
     else if (m_points.count() == 3) {
@@ -830,7 +843,16 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
     } else if ( m_points.count() == 4 ){
         path.cubicTo(m_points.at(1),m_points.at(2),m_points.at(3));
     }
-
+*/
+    int i=1;
+    while (i + 2 < m_points.size()) {
+        path.cubicTo(m_points.at(i), m_points.at(i+1), m_points.at(i+2));
+        i += 3;
+    }
+    while (i < m_points.size()) {
+        path.lineTo(m_points.at(i));
+        ++i;
+    }
     painter->drawPath(path);
 }
 

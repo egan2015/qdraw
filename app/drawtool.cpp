@@ -499,14 +499,15 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
 void PolygonTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-    if ( c_drawShape == bezier && m_nPoints == 4 ){
+/*    if ( c_drawShape == bezier && m_nPoints == 4 ){
         item->updateCoordinate();
         emit scene->itemAdded( item );
         item = NULL;
         selectMode = none;
         c_drawShape = selection;
         m_nPoints = 0;
-    }else if (c_drawShape == arc && m_nPoints == 4 ){
+    }else
+*/    if (c_drawShape == arc && m_nPoints == 4 ){
         item->updateCoordinate();
         item->endPoint(event->scenePos());
         emit scene->itemAdded( item );

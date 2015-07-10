@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(QApplication::clipboard(),SIGNAL(dataChanged()),this,SLOT(dataChanged()));
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(updateActions()));
-    m_timer.start(100);
+    m_timer.start(500);
     theControlledObject = NULL;
 
 }

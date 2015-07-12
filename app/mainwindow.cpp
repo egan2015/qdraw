@@ -29,7 +29,10 @@ MainWindow::MainWindow(QWidget *parent)
     createToolBox();
     createPropertyEditor();
 
-    setStatusBar(new QStatusBar);
+    m_posInfo = new QLabel(tr("x,y"));
+    m_posInfo->setMinimumSize(m_posInfo->sizeHint());
+    m_posInfo->setAlignment(Qt::AlignHCenter);
+    statusBar()->addWidget(m_posInfo);
 
     funcAct = new QAction(tr("func test"),this);
     connect(funcAct,SIGNAL(triggered()),this,SLOT(on_func_test_triggered()));

@@ -1096,9 +1096,9 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     path.moveTo(m_points.at(0));
     path.arcTo(m_localRect,startAngle,endAngle-startAngle);
     path.closeSubpath();
-
     painter->drawPath(path);
-//    painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
+
+//  painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
 }
 
 GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)

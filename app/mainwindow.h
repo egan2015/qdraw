@@ -81,50 +81,50 @@ private:
     QToolBar * editToolBar;
     // align toolbar
     QToolBar * alignToolBar;
-    QAction  * actionRight;
-    QAction  * actionLeft;
-    QAction  * actionVCenter;
-    QAction  * actionHCenter;
-    QAction  * actionUp;
-    QAction  * actionDown;
-    QAction  * actionHorz;
-    QAction  * actionVert;
-    QAction  * actionHeight;
-    QAction  * actionWidth;
-    QAction  * actionAll;
-    QAction  * actionBringToFront;
-    QAction  * actionSendToBack;
+    QAction  * rightAct;
+    QAction  * leftAct;
+    QAction  * vCenterAct;
+    QAction  * hCenterAct;
+    QAction  * upAct;
+    QAction  * downAct;
+    QAction  * horzAct;
+    QAction  * vertAct;
+    QAction  * heightAct;
+    QAction  * widthAct;
+    QAction  * allAct;
+    QAction  * bringToFrontAct;
+    QAction  * sendToBackAct;
 
     QAction  * funcAct;
 
-    QAction  * actionGroup;
-    QAction  * actionUnGroup;
+    QAction  * groupAct;
+    QAction  * unGroupAct;
 
     // edit action
-    QAction  * deleteAction;
-    QAction  * undoAction;
-    QAction  * redoAction;
-    QAction  * copyAction;
-    QAction  * pasteAction;
-    QAction  * cutAction;
+    QAction  * deleteAct;
+    QAction  * undoAct;
+    QAction  * redoAct;
+    QAction  * copyAct;
+    QAction  * pasteAct;
+    QAction  * cutAct;
 
-    QAction  * zoomInAction;
-    QAction  * zoomOutAction;
+    QAction  * zoomInAct;
+    QAction  * zoomOutAct;
 
     // drawing toolbar
     QToolBar * drawToolBar;
     QActionGroup * drawActionGroup;
 
-    QAction  * actionSelect;
-    QAction  * actionLine;
-    QAction  * actionRect;
-    QAction  * actionRoundRect;
-    QAction  * actionEllipse;
-    QAction  * actionPolygon;
-    QAction  * actionPolyline;
-    QAction  * actionBezier;
-    QAction  * actionArc;
-    QAction  * actionRotate;
+    QAction  * selectAct;
+    QAction  * lineAct;
+    QAction  * rectAct;
+    QAction  * roundRectAct;
+    QAction  * ellipseAct;
+    QAction  * polygonAct;
+    QAction  * polylineAct;
+    QAction  * bezierAct;
+    QAction  * arcAct;
+    QAction  * rotateAct;
 
     //property editor
     ObjectController *propertyEditor;

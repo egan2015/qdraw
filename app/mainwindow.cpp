@@ -102,122 +102,122 @@ void MainWindow::createActions()
 {
     // create align actions
 
-    actionRight   = new QAction(QIcon(":/icons/align_right.png"),tr("align right"),this);
-    actionLeft    = new QAction(QIcon(":/icons/align_left.png"),tr("align left"),this);
-    actionVCenter = new QAction(QIcon(":/icons/align_vcenter.png"),tr("align vcenter"),this);
-    actionHCenter = new QAction(QIcon(":/icons/align_hcenter.png"),tr("align hcenter"),this);
-    actionUp     = new QAction(QIcon(":/icons/align_top.png"),tr("align top"),this);
-    actionDown  = new QAction(QIcon(":/icons/align_bottom.png"),tr("align bottom"),this);
-    actionHorz = new QAction(QIcon(":/icons/align_horzeven.png"),tr("align horzeven"),this);
-    actionVert = new QAction(QIcon(":/icons/align_verteven.png"),tr("align verteven"),this);
-    actionHeight = new QAction(QIcon(":/icons/align_height.png"),tr("align height"),this);
-    actionWidth  = new QAction(QIcon(":/icons/align_width.png"),tr("align width"),this);
-    actionAll    = new QAction(QIcon(":/icons/align_all.png"),tr("align width and height"),this);
+    rightAct   = new QAction(QIcon(":/icons/align_right.png"),tr("align right"),this);
+    leftAct    = new QAction(QIcon(":/icons/align_left.png"),tr("align left"),this);
+    vCenterAct = new QAction(QIcon(":/icons/align_vcenter.png"),tr("align vcenter"),this);
+    hCenterAct = new QAction(QIcon(":/icons/align_hcenter.png"),tr("align hcenter"),this);
+    upAct      = new QAction(QIcon(":/icons/align_top.png"),tr("align top"),this);
+    downAct    = new QAction(QIcon(":/icons/align_bottom.png"),tr("align bottom"),this);
+    horzAct    = new QAction(QIcon(":/icons/align_horzeven.png"),tr("align horzeven"),this);
+    vertAct    = new QAction(QIcon(":/icons/align_verteven.png"),tr("align verteven"),this);
+    heightAct  = new QAction(QIcon(":/icons/align_height.png"),tr("align height"),this);
+    widthAct   = new QAction(QIcon(":/icons/align_width.png"),tr("align width"),this);
+    allAct     = new QAction(QIcon(":/icons/align_all.png"),tr("align width and height"),this);
 
-    actionBringToFront = new QAction(QIcon(":/icons/bringtofront.png"),tr("bring to front"),this);
-    actionSendToBack   = new QAction(QIcon(":/icons/sendtoback.png"),tr("send to back"),this);
-    actionGroup        = new QAction(QIcon(":/icons/group.png"),tr("group"),this);
-    actionUnGroup        = new QAction(QIcon(":/icons/ungroup.png"),tr("ungroup"),this);
+    bringToFrontAct = new QAction(QIcon(":/icons/bringtofront.png"),tr("bring to front"),this);
+    sendToBackAct   = new QAction(QIcon(":/icons/sendtoback.png"),tr("send to back"),this);
+    groupAct        = new QAction(QIcon(":/icons/group.png"),tr("group"),this);
+    unGroupAct        = new QAction(QIcon(":/icons/ungroup.png"),tr("ungroup"),this);
 
-    connect(actionBringToFront,SIGNAL(triggered()),this,SLOT(on_actionBringToFront_triggered()));
-    connect(actionSendToBack,SIGNAL(triggered()),this,SLOT(on_actionSendToBack_triggered()));
-    connect(actionRight,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionLeft,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionVCenter,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionHCenter,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionUp,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionDown,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(bringToFrontAct,SIGNAL(triggered()),this,SLOT(on_actionBringToFront_triggered()));
+    connect(sendToBackAct,SIGNAL(triggered()),this,SLOT(on_actionSendToBack_triggered()));
+    connect(rightAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(leftAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(vCenterAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(hCenterAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(upAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(downAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
 
-    connect(actionHorz,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionVert,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionHeight,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionWidth,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
-    connect(actionAll,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(horzAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(vertAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(heightAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(widthAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
+    connect(allAct,SIGNAL(triggered()),this,SLOT(on_aglin_triggered()));
 
-    connect(actionGroup,SIGNAL(triggered()),this,SLOT(on_group_triggered()));
-    connect(actionUnGroup,SIGNAL(triggered()),this,SLOT(on_unGroup_triggered()));
+    connect(groupAct,SIGNAL(triggered()),this,SLOT(on_group_triggered()));
+    connect(unGroupAct,SIGNAL(triggered()),this,SLOT(on_unGroup_triggered()));
 
 
     //create draw actions
-    actionSelect = new QAction(QIcon(":/icons/arrow.png"),tr("select tool"),this);
+    selectAct = new QAction(QIcon(":/icons/arrow.png"),tr("select tool"),this);
 
-    actionSelect->setCheckable(true);
-    actionLine= new QAction(QIcon(":/icons/line.png"),tr("line tool"),this);
-    actionLine->setCheckable(true);
-    actionRect= new QAction(QIcon(":/icons/rectangle.png"),tr("rect tool"),this);
-    actionRect->setCheckable(true);
+    selectAct->setCheckable(true);
+    lineAct = new QAction(QIcon(":/icons/line.png"),tr("line tool"),this);
+    lineAct->setCheckable(true);
+    rectAct = new QAction(QIcon(":/icons/rectangle.png"),tr("rect tool"),this);
+    rectAct->setCheckable(true);
 
-    actionRoundRect =  new QAction(QIcon(":/icons/roundrect.png"),tr("roundrect tool"),this);
-    actionRoundRect->setCheckable(true);
-    actionEllipse= new QAction(QIcon(":/icons/ellipse.png"),tr("ellipse tool"),this);
-    actionEllipse->setCheckable(true);
-    actionPolygon= new QAction(QIcon(":/icons/polygon.png"),tr("polygon tool"),this);
-    actionPolygon->setCheckable(true);
-    actionPolyline= new QAction(QIcon(":/icons/polyline.png"),tr("polyline tool"),this);
-    actionPolyline->setCheckable(true);
-    actionBezier= new QAction(QIcon(":/icons/bezier.png"),tr("bezier tool"),this);
-    actionBezier->setCheckable(true);
-    actionArc = new QAction(QIcon(":/icons/arc.png"),tr("arc tool"),this);
-    actionArc->setCheckable(true);
+    roundRectAct =  new QAction(QIcon(":/icons/roundrect.png"),tr("roundrect tool"),this);
+    roundRectAct->setCheckable(true);
+    ellipseAct = new QAction(QIcon(":/icons/ellipse.png"),tr("ellipse tool"),this);
+    ellipseAct->setCheckable(true);
+    polygonAct = new QAction(QIcon(":/icons/polygon.png"),tr("polygon tool"),this);
+    polygonAct->setCheckable(true);
+    polylineAct = new QAction(QIcon(":/icons/polyline.png"),tr("polyline tool"),this);
+    polylineAct->setCheckable(true);
+    bezierAct= new QAction(QIcon(":/icons/bezier.png"),tr("bezier tool"),this);
+    bezierAct->setCheckable(true);
+    arcAct = new QAction(QIcon(":/icons/arc.png"),tr("arc tool"),this);
+    arcAct->setCheckable(true);
 
-    actionRotate = new QAction(QIcon(":/icons/rotate.png"),tr("rotate tool"),this);
-    actionRotate->setCheckable(true);
+    rotateAct = new QAction(QIcon(":/icons/rotate.png"),tr("rotate tool"),this);
+    rotateAct->setCheckable(true);
 
     drawActionGroup = new QActionGroup(this);
-    drawActionGroup->addAction(actionSelect);
-    drawActionGroup->addAction(actionLine);
-    drawActionGroup->addAction(actionRect);
-    drawActionGroup->addAction(actionRoundRect);
-    drawActionGroup->addAction(actionEllipse);
-    drawActionGroup->addAction(actionPolygon);
-    drawActionGroup->addAction(actionPolyline);
-    drawActionGroup->addAction(actionBezier);
-    drawActionGroup->addAction(actionRotate);
-    drawActionGroup->addAction(actionArc);
-    actionSelect->setChecked(true);
+    drawActionGroup->addAction(selectAct);
+    drawActionGroup->addAction(lineAct);
+    drawActionGroup->addAction(rectAct);
+    drawActionGroup->addAction(roundRectAct);
+    drawActionGroup->addAction(ellipseAct);
+    drawActionGroup->addAction(polygonAct);
+    drawActionGroup->addAction(polylineAct);
+    drawActionGroup->addAction(bezierAct);
+    drawActionGroup->addAction(rotateAct);
+    drawActionGroup->addAction(arcAct);
+    selectAct->setChecked(true);
 
 
-    connect(actionSelect,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionLine,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionRect,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionRoundRect,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionEllipse,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionPolygon,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionPolyline,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionBezier,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionRotate,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(actionArc,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(selectAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(lineAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(rectAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(roundRectAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(ellipseAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(polygonAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(polylineAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(bezierAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(rotateAct,SIGNAL(triggered()),this,SLOT(addShape()));
+    connect(arcAct,SIGNAL(triggered()),this,SLOT(addShape()));
 
-    deleteAction = new QAction(tr("&Delete"), this);
-    deleteAction->setShortcut(tr("Delete"));
+    deleteAct = new QAction(tr("&Delete"), this);
+    deleteAct->setShortcut(tr("Delete"));
 
-    undoAction = undoStack->createUndoAction(this,tr("undo"));
-    undoAction->setIcon(QIcon(":/icons/undo.png"));
-    undoAction->setShortcuts(QKeySequence::Undo);
+    undoAct = undoStack->createUndoAction(this,tr("undo"));
+    undoAct->setIcon(QIcon(":/icons/undo.png"));
+    undoAct->setShortcuts(QKeySequence::Undo);
 
-    redoAction = undoStack->createRedoAction(this,tr("redo"));
-    redoAction->setIcon(QIcon(":/icons/redo.png"));
-    redoAction->setShortcuts(QKeySequence::Redo);
+    redoAct = undoStack->createRedoAction(this,tr("redo"));
+    redoAct->setIcon(QIcon(":/icons/redo.png"));
+    redoAct->setShortcuts(QKeySequence::Redo);
 
-    zoomInAction = new QAction(QIcon(":/icons/zoomin.png"),tr("zoomIn"),this);
-    zoomOutAction = new QAction(QIcon(":/icons/zoomout.png"),tr("zoomOut"),this);
+    zoomInAct = new QAction(QIcon(":/icons/zoomin.png"),tr("zoomIn"),this);
+    zoomOutAct = new QAction(QIcon(":/icons/zoomout.png"),tr("zoomOut"),this);
 
-    copyAction = new QAction(QIcon(":/icons/copy.png"),tr("copy"),this);
-    copyAction->setShortcut(QKeySequence::Copy);
-    pasteAction = new QAction(QIcon(":/icons/paste.png"),tr("paste"),this);
-    pasteAction->setShortcut(QKeySequence::Paste);
-    cutAction = new QAction(QIcon(":/icons/cut.png"),tr("cut"),this);
-    cutAction->setShortcut(QKeySequence::Cut);
-    pasteAction->setEnabled(false);
+    copyAct = new QAction(QIcon(":/icons/copy.png"),tr("copy"),this);
+    copyAct->setShortcut(QKeySequence::Copy);
+    pasteAct = new QAction(QIcon(":/icons/paste.png"),tr("paste"),this);
+    pasteAct->setShortcut(QKeySequence::Paste);
+    cutAct = new QAction(QIcon(":/icons/cut.png"),tr("cut"),this);
+    cutAct->setShortcut(QKeySequence::Cut);
+    pasteAct->setEnabled(false);
 
-    connect(copyAction,SIGNAL(triggered()),this,SLOT(on_copy()));
-    connect(pasteAction,SIGNAL(triggered()),this,SLOT(on_paste()));
-    connect(cutAction,SIGNAL(triggered()),this,SLOT(on_cut()));
+    connect(copyAct,SIGNAL(triggered()),this,SLOT(on_copy()));
+    connect(pasteAct,SIGNAL(triggered()),this,SLOT(on_paste()));
+    connect(cutAct,SIGNAL(triggered()),this,SLOT(on_cut()));
 
-    connect(zoomInAction , SIGNAL(triggered()),this,SLOT(zoomIn()));
-    connect(zoomOutAction , SIGNAL(triggered()),this,SLOT(zoomOut()));
-    connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
-    this->addAction(deleteAction);
+    connect(zoomInAct , SIGNAL(triggered()),this,SLOT(zoomIn()));
+    connect(zoomOutAct , SIGNAL(triggered()),this,SLOT(zoomOut()));
+    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteItem()));
+    this->addAction(deleteAct);
 }
 
 void MainWindow::createMenus()
@@ -230,50 +230,50 @@ void MainWindow::createToolbars()
     // create edit toolbar
     editToolBar = addToolBar(tr("edit"));
     editToolBar->setIconSize(QSize(24,24));
-    editToolBar->addAction(copyAction);
-    editToolBar->addAction(pasteAction);
-    editToolBar->addAction(cutAction);
+    editToolBar->addAction(copyAct);
+    editToolBar->addAction(pasteAct);
+    editToolBar->addAction(cutAct);
 
-    editToolBar->addAction(undoAction);
-    editToolBar->addAction(redoAction);
+    editToolBar->addAction(undoAct);
+    editToolBar->addAction(redoAct);
 
-    editToolBar->addAction(zoomInAction);
-    editToolBar->addAction(zoomOutAction);
+    editToolBar->addAction(zoomInAct);
+    editToolBar->addAction(zoomOutAct);
 
     // create draw toolbar
     drawToolBar = addToolBar(tr("drawing"));
     drawToolBar->setIconSize(QSize(24,24));
-    drawToolBar->addAction(actionSelect);
-    drawToolBar->addAction(actionLine);
-    drawToolBar->addAction(actionRect);
-    drawToolBar->addAction(actionRoundRect);
-    drawToolBar->addAction(actionArc);
-    drawToolBar->addAction(actionEllipse);
-    drawToolBar->addAction(actionPolygon);
-    drawToolBar->addAction(actionPolyline);
-    drawToolBar->addAction(actionBezier);
-    drawToolBar->addAction(actionRotate);
+    drawToolBar->addAction(selectAct);
+    drawToolBar->addAction(lineAct);
+    drawToolBar->addAction(rectAct);
+    drawToolBar->addAction(roundRectAct);
+    drawToolBar->addAction(arcAct);
+    drawToolBar->addAction(ellipseAct);
+    drawToolBar->addAction(polygonAct);
+    drawToolBar->addAction(polylineAct);
+    drawToolBar->addAction(bezierAct);
+    drawToolBar->addAction(rotateAct);
 
     // create align toolbar
     alignToolBar = addToolBar(tr("align"));
     alignToolBar->setIconSize(QSize(24,24));
-    alignToolBar->addAction(actionUp);
-    alignToolBar->addAction(actionDown);
-    alignToolBar->addAction(actionRight);
-    alignToolBar->addAction(actionLeft);
-    alignToolBar->addAction(actionVCenter);
-    alignToolBar->addAction(actionHCenter);
+    alignToolBar->addAction(upAct);
+    alignToolBar->addAction(downAct);
+    alignToolBar->addAction(rightAct);
+    alignToolBar->addAction(leftAct);
+    alignToolBar->addAction(vCenterAct);
+    alignToolBar->addAction(hCenterAct);
 
-    alignToolBar->addAction(actionHorz);
-    alignToolBar->addAction(actionVert);
-    alignToolBar->addAction(actionHeight);
-    alignToolBar->addAction(actionWidth);
-    alignToolBar->addAction(actionAll);
+    alignToolBar->addAction(horzAct);
+    alignToolBar->addAction(vertAct);
+    alignToolBar->addAction(heightAct);
+    alignToolBar->addAction(widthAct);
+    alignToolBar->addAction(allAct);
 
-    alignToolBar->addAction(actionBringToFront);
-    alignToolBar->addAction(actionSendToBack);
-    alignToolBar->addAction(actionGroup);
-    alignToolBar->addAction(actionUnGroup);
+    alignToolBar->addAction(bringToFrontAct);
+    alignToolBar->addAction(sendToBackAct);
+    alignToolBar->addAction(groupAct);
+    alignToolBar->addAction(unGroupAct);
 }
 
 void MainWindow::createPropertyEditor()
@@ -287,66 +287,66 @@ void MainWindow::createPropertyEditor()
 
 void MainWindow::addShape()
 {
-    if ( sender() == actionSelect )
+    if ( sender() == selectAct )
         DrawTool::c_drawShape = selection;
-    else if (sender() == actionLine )
+    else if (sender() == lineAct )
         DrawTool::c_drawShape = line;
-    else if ( sender() == actionRect )
+    else if ( sender() == rectAct )
         DrawTool::c_drawShape = rectangle;
-    else if ( sender() == actionRoundRect )
+    else if ( sender() == roundRectAct )
         DrawTool::c_drawShape = roundrect;
-    else if ( sender() == actionEllipse )
+    else if ( sender() == ellipseAct )
         DrawTool::c_drawShape = ellipse ;
-    else if ( sender() == actionPolygon )
+    else if ( sender() == polygonAct )
         DrawTool::c_drawShape = polygon;
-    else if ( sender() == actionBezier )
+    else if ( sender() == bezierAct )
         DrawTool::c_drawShape = bezier ;
-    else if (sender() == actionRotate )
+    else if (sender() == rotateAct )
         DrawTool::c_drawShape = rotation;
-    else if ( sender() == actionArc)
+    else if ( sender() == arcAct)
         DrawTool::c_drawShape = arc;
 
-    if ( sender() != actionSelect && sender() != actionRotate )
+    if ( sender() != selectAct && sender() != rotateAct )
         scene->clearSelection();
 }
 
 void MainWindow::updateActions()
 {
-    actionSelect->setChecked(DrawTool::c_drawShape == selection);
-    actionLine->setChecked(DrawTool::c_drawShape == line);
-    actionRect->setChecked(DrawTool::c_drawShape == rectangle);
-    actionRoundRect->setChecked(DrawTool::c_drawShape == roundrect);
-    actionEllipse->setChecked(DrawTool::c_drawShape == ellipse);
-    actionBezier->setChecked(DrawTool::c_drawShape == bezier);
-    actionRotate->setChecked(DrawTool::c_drawShape == rotation);
-    actionPolygon->setChecked(DrawTool::c_drawShape == polygon);
-    actionArc->setChecked(DrawTool::c_drawShape==arc);
+    selectAct->setChecked(DrawTool::c_drawShape == selection);
+    lineAct->setChecked(DrawTool::c_drawShape == line);
+    rectAct->setChecked(DrawTool::c_drawShape == rectangle);
+    roundRectAct->setChecked(DrawTool::c_drawShape == roundrect);
+    ellipseAct->setChecked(DrawTool::c_drawShape == ellipse);
+    bezierAct->setChecked(DrawTool::c_drawShape == bezier);
+    rotateAct->setChecked(DrawTool::c_drawShape == rotation);
+    polygonAct->setChecked(DrawTool::c_drawShape == polygon);
+    arcAct->setChecked(DrawTool::c_drawShape==arc);
 
-    undoAction->setEnabled(undoStack->canUndo());
-    redoAction->setEnabled(undoStack->canRedo());
+    undoAct->setEnabled(undoStack->canUndo());
+    redoAct->setEnabled(undoStack->canRedo());
 
-    actionBringToFront->setEnabled(scene->selectedItems().count() > 0);
-    actionSendToBack->setEnabled(scene->selectedItems().count() > 0);
-    actionGroup->setEnabled( scene->selectedItems().count() > 1);
-    actionUnGroup->setEnabled(scene->selectedItems().count() > 0 &&
+    bringToFrontAct->setEnabled(scene->selectedItems().count() > 0);
+    sendToBackAct->setEnabled(scene->selectedItems().count() > 0);
+    groupAct->setEnabled( scene->selectedItems().count() > 1);
+    unGroupAct->setEnabled(scene->selectedItems().count() > 0 &&
                               dynamic_cast<GraphicsItemGroup*>(scene->selectedItems().first()));
 
-    actionLeft->setEnabled(scene->selectedItems().count() > 1);
-    actionRight->setEnabled(scene->selectedItems().count() > 1);
-    actionLeft->setEnabled(scene->selectedItems().count() > 1);
-    actionVCenter->setEnabled(scene->selectedItems().count() > 1);
-    actionHCenter->setEnabled(scene->selectedItems().count() > 1);
-    actionUp->setEnabled(scene->selectedItems().count() > 1);
-    actionDown->setEnabled(scene->selectedItems().count() > 1);
+    leftAct->setEnabled(scene->selectedItems().count() > 1);
+    rightAct->setEnabled(scene->selectedItems().count() > 1);
+    leftAct->setEnabled(scene->selectedItems().count() > 1);
+    vCenterAct->setEnabled(scene->selectedItems().count() > 1);
+    hCenterAct->setEnabled(scene->selectedItems().count() > 1);
+    upAct->setEnabled(scene->selectedItems().count() > 1);
+    downAct->setEnabled(scene->selectedItems().count() > 1);
 
-    actionHeight->setEnabled(scene->selectedItems().count() > 1);
-    actionWidth->setEnabled(scene->selectedItems().count() > 1);
-    actionAll->setEnabled(scene->selectedItems().count()>1);
-    actionHorz->setEnabled(scene->selectedItems().count() > 2);
-    actionVert->setEnabled(scene->selectedItems().count() > 2);
+    heightAct->setEnabled(scene->selectedItems().count() > 1);
+    widthAct->setEnabled(scene->selectedItems().count() > 1);
+    allAct->setEnabled(scene->selectedItems().count()>1);
+    horzAct->setEnabled(scene->selectedItems().count() > 2);
+    vertAct->setEnabled(scene->selectedItems().count() > 2);
 
-    copyAction->setEnabled(scene->selectedItems().count() > 0);
-    cutAction->setEnabled(scene->selectedItems().count() > 0);
+    copyAct->setEnabled(scene->selectedItems().count() > 0);
+    cutAct->setEnabled(scene->selectedItems().count() > 0);
 }
 
 void MainWindow::itemSelected()
@@ -431,29 +431,29 @@ void MainWindow::on_actionSendToBack_triggered()
 
 void MainWindow::on_aglin_triggered()
 {
-    if ( sender() == actionRight )
+    if ( sender() == rightAct )
     {
         scene->align(RIGHT_ALIGN);
-    }else if ( sender() == actionLeft){
+    }else if ( sender() == leftAct){
         scene->align(LEFT_ALIGN);
-    }else if ( sender() == actionUp ){
+    }else if ( sender() == upAct ){
         scene->align(UP_ALIGN);
-    }else if ( sender() == actionDown ){
+    }else if ( sender() == downAct ){
         scene->align(DOWN_ALIGN);
-    }else if ( sender() == actionVCenter ){
+    }else if ( sender() == vCenterAct ){
         scene->align(VERT_ALIGN);
-    }else if ( sender() == actionHCenter)
+    }else if ( sender() == hCenterAct)
     {
         scene->align(HORZ_ALIGN);
-    }else if ( sender() == actionHeight )
+    }else if ( sender() == heightAct )
         scene->align(HEIGHT_ALIGN);
-    else if ( sender()==actionWidth )
+    else if ( sender()==widthAct )
         scene->align(WIDTH_ALIGN);
-    else if ( sender() == actionHorz )
+    else if ( sender() == horzAct )
         scene->align(HORZEVEN_ALIGN);
-    else if ( sender() == actionVert )
+    else if ( sender() == vertAct )
         scene->align(VERTEVEN_ALIGN);
-    else if ( sender () == actionAll )
+    else if ( sender () == allAct )
         scene->align(ALL_ALIGN);
 }
 
@@ -571,5 +571,5 @@ void MainWindow::on_cut()
 
 void MainWindow::dataChanged()
 {
-   pasteAction->setEnabled(true);
+   pasteAct->setEnabled(true);
 }

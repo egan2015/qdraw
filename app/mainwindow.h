@@ -107,14 +107,12 @@ private:
     QAction  * copyAct;
     QAction  * pasteAct;
     QAction  * cutAct;
-
     QAction  * zoomInAct;
     QAction  * zoomOutAct;
 
     // drawing toolbar
     QToolBar * drawToolBar;
     QActionGroup * drawActionGroup;
-
     QAction  * selectAct;
     QAction  * lineAct;
     QAction  * rectAct;

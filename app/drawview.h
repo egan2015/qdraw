@@ -9,10 +9,13 @@ class QMouseEvent;
 
 class DrawView : public QGraphicsView
 {
+    Q_OBJECT
 public:
     DrawView(QGraphicsScene *scene);
     void zoomIn();
     void zoomOut();
+signals:
+    void positionChanged(int x , int y );
 protected:
     void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;

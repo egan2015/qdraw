@@ -64,6 +64,7 @@ public slots:
     void on_paste();
     void on_cut();
     void dataChanged();
+    void positionChanged(int x, int y );
 private:
     void createActions();
     void createMenus();

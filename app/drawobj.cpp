@@ -115,7 +115,13 @@ void GraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
-        setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(parentItem());
+        if (!g)
+            setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
+        else{
+            setSelected(false);
+            return QVariant::fromValue<bool>(false);
+        }
     }
     return QGraphicsItem::itemChange(change, value);
 }

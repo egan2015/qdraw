@@ -29,10 +29,12 @@ MainWindow::MainWindow(QWidget *parent)
     createToolBox();
     createPropertyEditor();
 
+ /*
     m_posInfo = new QLabel(tr("x,y"));
     m_posInfo->setMinimumSize(m_posInfo->sizeHint());
     m_posInfo->setAlignment(Qt::AlignHCenter);
     statusBar()->addWidget(m_posInfo);
+*/
 
     funcAct = new QAction(tr("func test"),this);
     connect(funcAct,SIGNAL(triggered()),this,SLOT(on_func_test_triggered()));
@@ -54,9 +56,11 @@ MainWindow::MainWindow(QWidget *parent)
     view = new DrawView(scene);
     scene->setView(view);
 
+    connect(view,SIGNAL(positionChanged(int,int)),this,SLOT(positionChanged(int,int)));
+
     view->setRenderHint(QPainter::Antialiasing);
     view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    //view->setAlignment(Qt::AlignLeft|Qt::AlignTop);
+//    view->setAlignment(Qt::AlignLeft|Qt::AlignTop);
     scene->setBackgroundBrush(Qt::darkGray);
 
     mdiArea = new QMdiArea;
@@ -509,10 +513,10 @@ void MainWindow::on_func_test_triggered()
        editor->show();
     */
 
-/*
+
         QtGradientEditor * editor = new QtGradientEditor(NULL);
         editor->show();
-*/
+
 
 }
 
@@ -560,5 +564,12 @@ void MainWindow::on_cut()
 
 void MainWindow::dataChanged()
 {
-   pasteAct->setEnabled(true);
+    pasteAct->setEnabled(true);
+}
+
+void MainWindow::positionChanged(int x, int y)
+{
+   char buf[255];
+   sprintf(buf,"%d,%d",x,y);
+   statusBar()->showMessage(buf);
 }

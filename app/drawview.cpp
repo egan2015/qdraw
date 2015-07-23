@@ -24,9 +24,11 @@ void DrawView::zoomOut()
 
 void DrawView::mouseMoveEvent(QMouseEvent *event)
 {
-    QGraphicsView::mouseMoveEvent(event);
+    QPointF pt = mapToScene(event->pos());
     m_hruler->updatePosition(event->pos());
     m_vruler->updatePosition(event->pos());
+    emit positionChanged( pt.x() , pt.y() );
+    QGraphicsView::mouseMoveEvent(event);
 }
 
 void DrawView::resizeEvent(QResizeEvent *event)
@@ -55,15 +57,17 @@ void DrawView::updateRuler()
 {
     QRectF viewbox = this->rect();
     QPointF offset = mapFromScene(sceneRect().topLeft());
-    double lower_x = 1.0 * ( viewbox.left()  - (m_scrollPos.x() + offset.x()) );
-    double upper_x = 1.0 * ( viewbox.right() - (m_scrollPos.x() + offset.x()) );
+    double factor = transform().m11();
+    double lower_x = factor * ( viewbox.left()  - (m_scrollPos.x() + offset.x()) );
+    double upper_x = factor * ( viewbox.right() - (m_scrollPos.x() + offset.x()) );
 
-    double lower_y = 1.0 * ( viewbox.top()  -   (m_scrollPos.y() + offset.y() ) );
-    double upper_y = 1.0 * ( viewbox.bottom() - (m_scrollPos.y() + offset.y() ));
+    double lower_y = factor * ( viewbox.top()  -   (m_scrollPos.y() + offset.y() ) );
+    double upper_y = factor * ( viewbox.bottom() - (m_scrollPos.y() + offset.y() ));
 
     m_hruler->setRange(lower_x,upper_x,upper_x - lower_x );
     m_vruler->setRange(lower_y,upper_y,upper_y - lower_y );
     m_hruler->update();
     m_vruler->update();
+
 }
 

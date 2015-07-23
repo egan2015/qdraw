@@ -128,7 +128,7 @@ private:
     ObjectController *propertyEditor;
     QObject *theControlledObject;
 
-    QGraphicsView  *view;
+    DrawView  *view;
     DrawScene      *scene;
     QListView      *listView;
 

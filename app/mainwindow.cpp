@@ -56,8 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     view->setRenderHint(QPainter::Antialiasing);
     view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view->setAlignment(Qt::AlignLeft|Qt::AlignTop);
-    view->setBackgroundBrush(Qt::darkGray);
+    //view->setAlignment(Qt::AlignLeft|Qt::AlignTop);
+    scene->setBackgroundBrush(Qt::darkGray);
 
     mdiArea = new QMdiArea;
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -459,12 +459,12 @@ void MainWindow::on_aglin_triggered()
 
 void MainWindow::zoomIn()
 {
-    view->scale(1.2,1.2);
+    view->zoomIn();
 }
 
 void MainWindow::zoomOut()
 {
-    view->scale(1 / 1.2, 1 / 1.2);
+    view->zoomOut();
 }
 
 void MainWindow::on_group_triggered()
@@ -514,38 +514,6 @@ void MainWindow::on_func_test_triggered()
         editor->show();
 */
 
-struct SPRulerMetric
-{
-  double ruler_scale[16];
-  int    subdivide[5];
-};
-
-// Ruler metric for general use.
-static SPRulerMetric const ruler_metric_general = {
-  { 1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000 },
-  { 1, 5, 10, 50, 100 }
-};
-
-// Ruler metric for inch scales.
-static SPRulerMetric const ruler_metric_inches = {
-  { 1, 2, 4,  8, 16, 32,  64, 128, 256,  512, 1024, 2048, 4096, 8192, 16384, 32768 },
-  { 1, 2,  4,  8,  16 }
-};
-
-    int             i;
-    int             width = 800, height = 600;
-    int             length, ideal_length;
-    double          lower = -1000, upper=1000; /* Upper and lower limits, in ruler units */
-    double          increment;    /* Number of pixels per unit */
-    uint            scale;        /* Number of units per major unit */
-    double          start, end, cur;
-    char            unit_str[32];
-    int             digit_height;
-    int             digit_offset;
-    char            digit_str[2] = { '\0', '\0' };
-    int             text_size;
-    int             pos;
-    double          max_size;
 }
 
 void MainWindow::on_copy()

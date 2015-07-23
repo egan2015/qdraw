@@ -3,41 +3,67 @@
 DrawView::DrawView(QGraphicsScene *scene)
     :QGraphicsView(scene)
 {
-    m_hRuleBar = new QtRuleBar(RT_HORIZONTAL,this,this);
-    m_vRuleBar = new QtRuleBar(RT_VERTICAL,this,this);
+    m_scrollPos   = QPoint(0,0);
+    m_hruler = new QtRuleBar(RT_HORIZONTAL,this,this);
+    m_vruler = new QtRuleBar(RT_VERTICAL,this,this);
     box = new QtCornerBox(this);
-    m_grid = new GridTool();
     setViewport(new QWidget);
 }
 
-void DrawView::drawBackground(QPainter *painter, const QRectF &rect)
+void DrawView::zoomIn()
 {
-    QGraphicsView::drawBackground(painter,rect);
-    painter->save();
-    painter->resetTransform();
-    if( m_grid ){
-        QRectF rc = transform().mapRect(sceneRect());
-        m_grid->paintGrid(painter,rc.toRect());
-    }
-    painter->restore();
+    scale(1.2,1.2);
+    updateRuler();
+}
+
+void DrawView::zoomOut()
+{
+    scale(1 / 1.2, 1 / 1.2);
+    updateRuler();
+}
+
+void DrawView::mouseMoveEvent(QMouseEvent *event)
+{
+    QGraphicsView::mouseMoveEvent(event);
+    m_hruler->updatePosition(event->pos());
+    m_vruler->updatePosition(event->pos());
 }
 
 void DrawView::resizeEvent(QResizeEvent *event)
 {
+    QGraphicsView::resizeEvent(event);
+
     this->setViewportMargins(RULER_SIZE,RULER_SIZE,0,0);
-    m_hRuleBar->resize(this->size().width(),RULER_SIZE);
-    m_hRuleBar->move(RULER_SIZE,0);
-    m_vRuleBar->resize(RULER_SIZE,this->size().height());
-    m_vRuleBar->move(0,RULER_SIZE);
+    m_hruler->resize(this->size().width(),RULER_SIZE);
+    m_hruler->move(RULER_SIZE,0);
+    m_vruler->resize(RULER_SIZE,this->size().height());
+    m_vruler->move(0,RULER_SIZE);
+
     box->resize(RULER_SIZE,RULER_SIZE);
     box->move(0,0);
-    QGraphicsView::resizeEvent(event);
+    updateRuler();
 }
 
 void DrawView::scrollContentsBy(int dx, int dy)
 {
-    m_hRuleBar->updatePosition(dx,dy);
-    m_vRuleBar->updatePosition(dx,dy);
     QGraphicsView::scrollContentsBy(dx,dy);
+    m_scrollPos += QPoint(dx,dy);
+    updateRuler();
+}
+
+void DrawView::updateRuler()
+{
+    QRectF viewbox = this->rect();
+    QPointF offset = mapFromScene(sceneRect().topLeft());
+    double lower_x = 1.0 * ( viewbox.left()  - (m_scrollPos.x() + offset.x()) );
+    double upper_x = 1.0 * ( viewbox.right() - (m_scrollPos.x() + offset.x()) );
+
+    double lower_y = 1.0 * ( viewbox.top()  -   (m_scrollPos.y() + offset.y() ) );
+    double upper_y = 1.0 * ( viewbox.bottom() - (m_scrollPos.y() + offset.y() ));
+
+    m_hruler->setRange(lower_x,upper_x,upper_x - lower_x );
+    m_vruler->setRange(lower_y,upper_y,upper_y - lower_y );
+    m_hruler->update();
+    m_vruler->update();
 }
 

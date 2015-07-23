@@ -5,12 +5,17 @@
 #include <QKeyEvent>
 #include "drawobj.h"
 #include <vector>
+#include <QPainter>
 
 DrawScene::DrawScene(QObject *parent)
     :QGraphicsScene(parent)
 {
     m_view = NULL;
     m_dx=m_dy=0;
+    m_grid = new GridTool();
+    QGraphicsItem * item = addRect(QRectF(0,0,0,0));
+    item->setAcceptHoverEvents(true);
+
 }
 
 class BBoxSort
@@ -236,6 +241,15 @@ void DrawScene::destroyGroup(QGraphicsItemGroup *group)
     }
     removeItem(group);
     delete group;
+}
+
+void DrawScene::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    QGraphicsScene::drawBackground(painter,rect);
+    painter->fillRect(sceneRect(),Qt::white);
+    if( m_grid ){
+        m_grid->paintGrid(painter,sceneRect().toRect());
+    }
 }
 
 void DrawScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)

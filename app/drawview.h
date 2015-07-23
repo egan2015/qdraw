@@ -5,20 +5,23 @@
 #include "rulebar.h"
 #include "drawobj.h"
 
-class GridTool;
+class QMouseEvent;
+
 class DrawView : public QGraphicsView
 {
 public:
     DrawView(QGraphicsScene *scene);
-
+    void zoomIn();
+    void zoomOut();
 protected:
-    void drawBackground(QPainter *painter, const QRectF &rect) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
     void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
-    QtRuleBar *m_hRuleBar;
-    QtRuleBar *m_vRuleBar;
+    void updateRuler();
+    QtRuleBar *m_hruler;
+    QtRuleBar *m_vruler;
     QtCornerBox * box;    
-    GridTool *m_grid;
+    QPoint m_scrollPos;
 };
 
 #endif // DRAWVIEW_H

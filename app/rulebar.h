@@ -41,21 +41,20 @@ class QtRuleBar : public QFrame
     Q_OBJECT
 public:
     explicit QtRuleBar(int type , QGraphicsView * view, QWidget * parent = 0  );
-
-    void updatePosition(int dx, int dy );
-    void updateRuler( const QRect & localRect, float fZoomFactor);
+    void setRange( double lower , double upper , double max_size );
+    void updatePosition( const QPoint & pos );
 protected:
     void paintEvent(QPaintEvent *event);
-
-    void DrawTicker(QPainter* painter, const QRect &rulerRect, int nFactor, int nBegin = 0, bool bShowPos = true);
-    void DrawCursorPos(QPoint NewPos);
+    void drawTicker(QPainter * painter);
+    void drawPos(QPainter * painter) ;
     int   m_rulerType;
-    QPoint m_scrollPos;
     QPoint m_lastPos;
-    QSize  m_DocSize;
-    qreal  m_fZoomFactor;
     QColor m_faceColor;
     QGraphicsView * m_view;
+
+    double m_lower;
+    double m_upper;
+    double m_maxsize;
 };
 
 #endif // RULEBAR

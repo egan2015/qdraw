@@ -1,47 +1,56 @@
 #include "rulebar.h"
 #include <QGraphicsView>
 
+#define MINIMUM_INCR   5
+
+typedef struct
+{
+  double ruler_scale[16];
+  int    subdivide[5];
+}SPRulerMetric;
+
+// Ruler metric for general use.
+static SPRulerMetric const ruler_metric_general = {
+  { 1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000 },
+  { 1, 5, 10, 50, 100 }
+};
+
+// Ruler metric for inch scales.
+static SPRulerMetric const ruler_metric_inches = {
+  { 1, 2, 4,  8, 16, 32,  64, 128, 256,  512, 1024, 2048, 4096, 8192, 16384, 32768 },
+  { 1, 2,  4,  8,  16 }
+};
+
+
 QtRuleBar::QtRuleBar(int type , QGraphicsView * view, QWidget *parent)
     :QFrame(parent),
-    m_DocSize(QSize(3000,2000)),
     m_view(view),
     m_faceColor(0xFF, 0xFF, 0xFF)
 {
+    m_lower = m_upper = m_maxsize = 0;
+    m_lastPos = QPoint(0,0);
     m_rulerType   = type;
-    m_scrollPos   = QPoint(0,0);
-    m_lastPos     = QPoint(0,0);
-    m_fZoomFactor = 1;
     setFont(QFont("Times New Roman",10,10));
 }
 
-void QtRuleBar::updatePosition(int dx, int dy )
+void QtRuleBar::setRange(double lower, double upper, double max_size)
 {
-    m_scrollPos -= QPoint(dx,dy);
-    update();
+    m_lower = lower;
+    m_upper = upper;
+    m_maxsize = max_size;
 }
 
-void QtRuleBar::updateRuler(const QRect &localRect, float fZoomFactor)
+void QtRuleBar::updatePosition(const QPoint &pos)
 {
-
-    m_DocSize = localRect.size();
-    m_fZoomFactor = fZoomFactor;
-
+    m_lastPos = pos;
+    update();
 }
 
 void QtRuleBar::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
     QPainter painter(this);
     QRect rulerRect = rect();
-
-    if (m_rulerType==RT_HORIZONTAL)
-    {
-        rulerRect.setRight((int)(m_DocSize.width()*m_fZoomFactor));
-    }
-    else //(m_rulerType==RT_VERTICAL)
-    {
-        rulerRect.setBottom((int)(m_DocSize.height()*m_fZoomFactor));
-    }
-
     painter.fillRect(rulerRect,m_faceColor);
     if ( m_rulerType == RT_HORIZONTAL ){
         painter.drawLine(rulerRect.bottomLeft(),rulerRect.bottomRight());
@@ -49,62 +58,154 @@ void QtRuleBar::paintEvent(QPaintEvent *event)
     else{
         painter.drawLine(rulerRect.topRight(),rulerRect.bottomRight());
     }
-    DrawTicker(&painter, rulerRect, 50);
-    DrawTicker(&painter, rulerRect, 10, 10, false);
-    DrawTicker(&painter, rulerRect, 5, 12, false);
-
-
-
+    drawTicker(&painter);
+    drawPos(&painter);
 }
 
-void QtRuleBar::DrawTicker(QPainter *painter, const QRect &rulerRect, int nFactor, int nBegin, bool bShowPos)
+void QtRuleBar::drawTicker(QPainter *painter)
 {
-    int nSize  = (m_rulerType == RT_HORIZONTAL)?rulerRect.width() : rulerRect.height();
-    int nTick  = (int)(nFactor*m_fZoomFactor);
+    int             i;
+    int             width, height;
+    int             length, ideal_length;
+    double          lower = m_lower , upper = m_upper; /* Upper and lower limits, in ruler units */
+    double          increment;    /* Number of pixels per unit */
+    uint            scale;        /* Number of units per major unit */
+    double          start, end, cur;
+    char            unit_str[32];
+    int             digit_height;
+    int             digit_offset;
+    int             text_size;
+    int             pos;
+    double          max_size = m_maxsize;
+    SPRulerMetric    ruler_metric = ruler_metric_general; /* The metric to use for this unit system */
+    QRect allocation = this->rect();
+    QFontMetrics fm(font());
+    digit_height = fm.height() + 2 ;
+    digit_offset = 0;
+    if (m_rulerType==RT_HORIZONTAL){
+        width = allocation.width();
+        height = allocation.height();
+    }else{
+        width = allocation.height();
+        height = allocation.width();
+    }
+    if ( (upper - lower) == 0 ) return ;
+    increment = (double) width / (upper - lower);
 
-    for (int i=0;  i<= nSize/nFactor; i++)
-    {
-        QString text = QString(tr("%1")).arg(i*nFactor);
+    scale = ceil (max_size);
+    sprintf (unit_str, "%d", 50);
+    text_size = strlen (unit_str) * digit_height + 1;
+    for (scale = 0; scale < sizeof (ruler_metric.ruler_scale) /
+         sizeof(ruler_metric.ruler_scale[0]); scale++)
+        if (ruler_metric.ruler_scale[scale] * fabs (increment) > 2 * text_size)
+            break;
+    if (scale == sizeof (ruler_metric.ruler_scale))
+        scale = sizeof (ruler_metric.ruler_scale) - 1;
+    length = 0;
 
-        if (m_rulerType==RT_HORIZONTAL)
+    for (i = sizeof (ruler_metric.subdivide) /
+         sizeof( ruler_metric.subdivide[0] ) - 1; i >= 0; i--){
+        double subd_incr;
+        if (scale == 1 && i == 1 )
+            subd_incr = 1.0 ;
+        else
+            subd_incr = ((double)ruler_metric.ruler_scale[scale] /
+                         (double)ruler_metric.subdivide[i]);
+        if (subd_incr * fabs (increment) <= MINIMUM_INCR)
+            continue;
+
+        ideal_length = height / (i + 1) - 1;
+
+        if (ideal_length > ++length)
+            length = ideal_length;
+        if (lower < upper){
+            start = floor (lower / subd_incr) * subd_incr;
+            end   = ceil  (upper / subd_incr) * subd_incr;
+        }else
         {
-            QPoint pt1,pt2;
-            pt1.setX(nTick*i-m_scrollPos.x());
-            pt1.setY(rulerRect.top()+nBegin);
-            pt2.setX(nTick*i-m_scrollPos.x());
-            pt2.setY(rulerRect.bottom());
-            painter->drawLine(pt1,pt2);
-            if (bShowPos )
-                painter->drawText(nTick*i- m_scrollPos.x() + 2,
-                                  rulerRect.top(),
-                                  nFactor,
-                                  RULER_SIZE,
-                                  Qt::AlignLeft|Qt::AlignTop,text);
+            start = floor (upper / subd_incr) * subd_incr;
+            end   = ceil  (lower / subd_incr) * subd_incr;
         }
-        else //(m_rulerType==RT_VERTICAL)
-        {
-            painter->drawLine(rulerRect.left()+nBegin,
-                              nTick*i-m_scrollPos.y(),
-                              rulerRect.right() ,
-                              nTick*i-m_scrollPos.y());
-
-            if (bShowPos){
-                QFontMetrics fm(font());
-                int w = fm.width(text);
-                QRect textRect(0,0,nFactor,RULER_SIZE);
-                painter->save();
-                painter->translate(rulerRect.left() , nTick*(i+1)-m_scrollPos.y()+2);
-                painter->rotate(-90);
-                painter->drawText(textRect,Qt::AlignTop | Qt::AlignRight,text);
-                painter->restore();
+        int tick_index = 0;
+        for (cur = start; cur <= end; cur += subd_incr){
+            pos = int(round((cur - lower) * increment + 1e-12));
+            if (m_rulerType==RT_HORIZONTAL){
+                QRect rt(pos,height-length,1,length);
+                painter->drawLine(rt.topLeft(),rt.bottomLeft());
+            }else{
+                QRect rt(height-length,pos,length,1);
+                painter->drawLine(rt.topLeft(),rt.topRight());
             }
+            double label_spacing_px = fabs(increment*(double)ruler_metric.ruler_scale[scale]/ruler_metric.subdivide[i]);
+            if (i == 0 &&
+                    (label_spacing_px > 6*digit_height || tick_index%2 == 0 || cur == 0) &&
+                    (label_spacing_px > 3*digit_height || tick_index%4 == 0 || cur == 0))
+            {
+                if (std::abs((int)cur) >= 2000 && (((int) cur)/1000)*1000 == ((int) cur))
+                    sprintf (unit_str, "%dk", ((int) cur)/1000);
+                else
+                    sprintf (unit_str, "%d", (int) cur);
+               if (m_rulerType==RT_HORIZONTAL){
+                   int w = fm.width(unit_str);
+                   painter->drawText(pos + 2,
+                                     allocation.top(),
+                                     w,
+                                     RULER_SIZE,
+                                     Qt::AlignLeft|Qt::AlignTop,unit_str);
+               } else{
+
+                   int w = fm.width(unit_str);
+                   QRect textRect(-w/2,-RULER_SIZE/2,w,RULER_SIZE);
+                   painter->save();
+                   painter->translate(2, pos + w/2+2);
+                   painter->rotate(90);
+                   painter->drawText(textRect,Qt::AlignRight,unit_str);
+                   painter->restore();
+               }
+            }
+           tick_index++;
         }
     }
 }
 
-void QtRuleBar::DrawCursorPos(QPoint NewPos)
+void QtRuleBar::drawPos(QPainter *painter)
 {
-
+   int  x, y;
+   int  width, height;
+   int  bs_width, bs_height;
+   QRect allocation = this->rect();
+   double position;
+   double lower = m_lower;
+   double upper = m_upper;
+   if (m_rulerType==RT_HORIZONTAL){
+       width = allocation.width();
+       height = allocation.height();
+       bs_width = height / 2 + 2 ;
+       bs_width |= 1;  /* make sure it's odd */
+       bs_height = bs_width / 2 + 1;
+       position = lower + (upper - lower) * m_lastPos.x() / allocation.width();
+   }else{
+       width = allocation.height();
+       height = allocation.width();
+       bs_height = width / 2 + 2 ;
+       bs_height |= 1;  /* make sure it's odd */
+       bs_width = bs_height / 2 + 1;
+       position = lower + (upper - lower) *  m_lastPos.y() / allocation.height() ;
+   }
+   if ((bs_width > 0) && (bs_height > 0)){
+       double increment;
+       if (m_rulerType==RT_HORIZONTAL){
+           increment = (double) width / (upper - lower);
+           x = round ((position - lower) * increment) + bs_width / 2 - 1;
+           y = (height + bs_height) / 2 ;
+           painter->drawLine(m_lastPos.x(),0, m_lastPos.x() , height);
+       }else{
+           increment = (double) height / (upper - lower);
+           x = (width + bs_width) / 2 ;
+           y = round ((position - lower) * increment) + (bs_height) / 2 - 1;
+           painter->drawLine(0 , m_lastPos.y() , width , m_lastPos.y());
+       }
+   }
 }
 
 QtCornerBox::QtCornerBox(QWidget *parent)
@@ -115,8 +216,10 @@ QtCornerBox::QtCornerBox(QWidget *parent)
 
 void QtCornerBox::paintEvent(QPaintEvent *e)
 {
+    Q_UNUSED(e);
     QPainter painter(this);
     painter.fillRect(rect(),QColor(0xFF, 0xFF, 0xFF));
+
     painter.setPen(Qt::DashLine);
     painter.drawLine(rect().center().x(),rect().top(),rect().center().x(),rect().bottom());
     painter.drawLine(rect().left(),rect().center().y(),rect().right(),rect().center().y());

@@ -14,6 +14,7 @@ class QFont;
 class QGraphicsTextItem;
 class QColor;
 class QKeyEvent;
+class QPainter;
 QT_END_NAMESPACE
 
 
@@ -34,7 +35,7 @@ enum AlignType
 };
 
 class GraphicsItemGroup;
-
+class GridTool;
 class DrawScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -52,6 +53,7 @@ signals:
     void itemAdded(QGraphicsItem * item );
 
 protected:
+    void drawBackground(QPainter *painter, const QRectF &rect) Q_DECL_OVERRIDE;
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
@@ -63,6 +65,7 @@ protected:
     qreal m_dx;
     qreal m_dy;
     bool  m_moved;
+    GridTool *m_grid;
 };
 
 #endif // DRAWSCENE

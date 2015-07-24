@@ -53,6 +53,60 @@ static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, cons
     return p;
 }
 
+static void qt_graphicsItem_highlightSelected(
+    QGraphicsItem *item, QPainter *painter, const QStyleOptionGraphicsItem *option)
+{
+    const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
+    if (qFuzzyIsNull(qMax(murect.width(), murect.height())))
+        return;
+
+    const QRectF mbrect = painter->transform().mapRect(item->boundingRect());
+    if (qMin(mbrect.width(), mbrect.height()) < qreal(1.0))
+        return;
+
+    qreal itemPenWidth;
+    switch (item->type()) {
+        case QGraphicsEllipseItem::Type:
+            itemPenWidth = static_cast<QGraphicsEllipseItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsPathItem::Type:
+            itemPenWidth = static_cast<QGraphicsPathItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsPolygonItem::Type:
+            itemPenWidth = static_cast<QGraphicsPolygonItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsRectItem::Type:
+            itemPenWidth = static_cast<QGraphicsRectItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsSimpleTextItem::Type:
+            itemPenWidth = static_cast<QGraphicsSimpleTextItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsLineItem::Type:
+            itemPenWidth = static_cast<QGraphicsLineItem *>(item)->pen().widthF();
+            break;
+        default:
+            itemPenWidth = 1.0;
+    }
+    const qreal pad = itemPenWidth / 2;
+
+    const qreal penWidth = 0; // cosmetic pen
+
+    const QColor fgcolor = option->palette.windowText().color();
+    const QColor bgcolor( // ensure good contrast against fgcolor
+        fgcolor.red()   > 127 ? 0 : 255,
+        fgcolor.green() > 127 ? 0 : 255,
+        fgcolor.blue()  > 127 ? 0 : 255);
+
+
+    painter->setPen(QPen(bgcolor, penWidth, Qt::SolidLine));
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(item->boundingRect().adjusted(pad, pad, -pad, -pad));
+
+    painter->setPen(QPen(QColor("lightskyblue")/*option->palette.windowText()*/, 0, Qt::SolidLine));
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(item->boundingRect().adjusted(pad, pad, -pad, -pad));
+
+}
 
 GraphicsItem::GraphicsItem(QGraphicsItem *parent)
     :AbstractShapeType<QGraphicsItem>(parent)
@@ -350,16 +404,7 @@ void GraphicsRectItem::updatehandles()
 
 void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-/*
-    QColor c = QColor(Qt::red);
-    QLinearGradient result(rect().topLeft(), rect().topRight());
-    result.setColorAt(0, c.dark(150));
-    result.setColorAt(0.5, c.light(200));
-    result.setColorAt(1, c.dark(150));
-    painter->setBrush(result);
- */
+
    painter->setPen(pen());
    painter->setBrush(brush());
    double rx,ry;
@@ -377,16 +422,9 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
    else
        painter->drawRect(rect().toRect());
 
-/*
-    QPointF origin = m_localRect.center();
-    painter->setBrush(Qt::blue);
-    painter->drawEllipse(origin,6,6);
 
-    QPointF pos2 = transformOriginPoint();
-    painter->setBrush(Qt::black);
-    painter->drawEllipse(pos2,6,6);
-*/
-
+   if (option->state & QStyle::State_Selected)
+       qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
 
@@ -422,8 +460,8 @@ QGraphicsItem *GraphicsEllipseItem::copy() const
 
 void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
+//    Q_UNUSED(option);
+//    Q_UNUSED(widget);
 
 //    QColor c = QColor(Qt::red);
 //    c.setAlpha(160);
@@ -441,6 +479,10 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
 */
     painter->setBrush(brush());
     painter->drawEllipse(rc);
+
+    if (option->state & QStyle::State_Selected)
+        qt_graphicsItem_highlightSelected(this, painter, option);
+
 }
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
@@ -758,9 +800,11 @@ QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change,
 
 void GraphicsItemGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    Q_UNUSED(option);
+//    Q_UNUSED(option);
     Q_UNUSED(widget);
-    Q_UNUSED(painter);
+//    Q_UNUSED(painter);
+    if (option->state & QStyle::State_Selected)
+        qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
 GraphicsBezierCurve::GraphicsBezierCurve(QGraphicsItem *parent)
@@ -868,6 +912,9 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
        painter->setBrush(Qt::NoBrush);
        painter->drawPolyline(m_points);
     }
+
+   if (option->state & QStyle::State_Selected)
+       qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
 
@@ -1105,6 +1152,8 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     painter->drawPath(path);
 
 //  painter->drawArc(m_localRect, startAngle * 16 , (endAngle - startAngle) * 16);
+    if (option->state & QStyle::State_Selected)
+        qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
 GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)
@@ -1242,6 +1291,9 @@ void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
 
     painter->setPen(pen());
     painter->drawPolygon(m_points);
+
+    if (option->state & QStyle::State_Selected)
+        qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
 

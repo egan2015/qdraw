@@ -56,6 +56,38 @@ public:
         }
         return Handle_None;
     }
+
+    QPointF opposite( int handle ) {
+        QPointF pt(0,0);
+        switch (handle) {
+        case Right:
+            pt = m_handles.at(Left)->pos();
+            break;
+        case RightTop:
+            pt = m_handles[LeftBottom]->pos();
+            break;
+        case RightBottom:
+            pt = m_handles[LeftTop]->pos();
+            break;
+        case LeftBottom:
+            pt = m_handles[RightTop]->pos();
+            break;
+        case Bottom:
+            pt = m_handles[Top]->pos();
+            break;
+        case LeftTop:
+            pt = m_handles[RightBottom]->pos();
+            break;
+        case Left:
+            pt = m_handles[Right]->pos();
+            break;
+        case Top:
+            pt = m_handles[Bottom]->pos();
+            break;
+         }
+        return pt;
+    }
+
     QColor brush() const {return m_brush.color();}
     QPen   pen() const {return m_pen;}
     QColor penColor() const {return m_pen.color();}

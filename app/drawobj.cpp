@@ -100,11 +100,11 @@ static void qt_graphicsItem_highlightSelected(
 
     painter->setPen(QPen(bgcolor, penWidth, Qt::SolidLine));
     painter->setBrush(Qt::NoBrush);
-    painter->drawRect(item->boundingRect().adjusted(pad, pad, -pad, -pad));
+    painter->drawRect(item->boundingRect().adjusted(-pad, -pad, pad, pad));
 
-    painter->setPen(QPen(QColor("lightskyblue")/*option->palette.windowText()*/, 0, Qt::SolidLine));
+    painter->setPen(QPen(QColor("lightskyblue"), 0, Qt::SolidLine));
     painter->setBrush(Qt::NoBrush);
-    painter->drawRect(item->boundingRect().adjusted(pad, pad, -pad, -pad));
+    painter->drawRect(item->boundingRect().adjusted(-pad, -pad, pad, pad));
 
 }
 
@@ -1068,7 +1068,7 @@ void GraphicsArcItem::resize(int dir, const QPointF & delta)
 
 QRectF GraphicsArcItem::boundingRect() const
 {
-    return m_localRect;
+    return shape().controlPointRect();// m_localRect;
 }
 
 void GraphicsArcItem::updateCoordinate()
@@ -1084,7 +1084,7 @@ void GraphicsArcItem::updateCoordinate()
     m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
 
     setTransform(transform().translate(delta.x(),delta.y()));
-    setTransformOriginPoint(boundingRect().center());
+    setTransformOriginPoint(m_localRect.center());
     moveBy(-delta.x(),-delta.y());
     setTransform(transform().translate(-delta.x(),-delta.y()));
     updatehandles();

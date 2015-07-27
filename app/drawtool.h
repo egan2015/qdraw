@@ -59,8 +59,8 @@ public:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene ) ;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene ) ;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene );
-    QSizeF  m_lastSize;
     QPointF initialPositions;
+    QPointF opposite_;
     QGraphicsPathItem * dashRect;
     GraphicsItemGroup * selLayer;
 };

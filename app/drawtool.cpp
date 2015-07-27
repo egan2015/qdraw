@@ -20,7 +20,8 @@ static RectTool   lineTool(line);
 static RectTool   rectTool(rectangle);
 static RectTool   roundRectTool(roundrect);
 static RectTool   ellipseTool(ellipse);
-static PolygonTool   arcTool(arc);
+static RectTool   arcTool(arc);
+
 static PolygonTool polygonTool(polygon);
 static PolygonTool bezierTool(bezier);
 
@@ -89,8 +90,6 @@ DrawTool *DrawTool::findTool(DrawShape drawShape)
 SelectTool::SelectTool()
     :DrawTool(selection)
 {
-    m_lastSize.setHeight(0);
-    m_lastSize.setWidth(0);
     dashRect = 0;
     selLayer = 0;
 }
@@ -98,8 +97,6 @@ SelectTool::SelectTool()
 void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mousePressEvent(event,scene);
-
-    QPointF itemPoint;
 
     if (!m_hoverSizer)
       scene->mouseEvent(event);
@@ -118,10 +115,6 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
              selectMode = size;
         else
             selectMode =  move;
-
-        m_lastSize = item->boundingRect().size();
-        itemPoint = item->mapFromScene(c_down);
-
         setCursor(scene,Qt::ClosedHandCursor);
 
     }else if ( items.count() > 1 )
@@ -173,6 +166,7 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
         if ( item != 0 ){
             if ( nDragHandle != Handle_None && selectMode == size ){
                 QSizeF delta(c_last.x() - c_down.x() , c_last.y() - c_down.y());
+
                 item->resize(nDragHandle,c_last);
             }
             else if(nDragHandle == Handle_None ){
@@ -461,8 +455,6 @@ void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
         item = new GraphicsPolygonItem(NULL);
         }else if (c_drawShape == bezier ){
             item = new GraphicsBezierCurve(NULL);
-        }else {
-            item = new GraphicsArcItem(NULL);
         }
         item->setPos(event->scenePos());
         scene->addItem(item);
@@ -499,24 +491,6 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
 void PolygonTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-/*    if ( c_drawShape == bezier && m_nPoints == 4 ){
-        item->updateCoordinate();
-        emit scene->itemAdded( item );
-        item = NULL;
-        selectMode = none;
-        c_drawShape = selection;
-        m_nPoints = 0;
-    }else
-*/    if (c_drawShape == arc && m_nPoints == 4 ){
-        item->updateCoordinate();
-        item->endPoint(event->scenePos());
-        emit scene->itemAdded( item );
-        item = NULL;
-        selectMode = none;
-        c_drawShape = selection;
-        m_nPoints = 0;
-    }
-
     DrawTool::mousePressEvent(event,scene);
 }
 

@@ -37,12 +37,13 @@ public:
     }
     virtual ~AbstractShapeType(){}
     virtual QString displayName () const { return QString("AbstractType");}
-    virtual void resize(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}
+    virtual void resize(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}    
+    virtual void stretch( double sx , double sy , const QPointF & origin ) {}
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
     virtual QGraphicsItem * copy() const { return NULL;}
-    int handleCount() const { return m_handles.size()-1;}
+    int handleCount() const { return m_handles.size();}
 
     int collidesWithHandle( const QPointF & point ) const
     {
@@ -114,7 +115,6 @@ protected:
         for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
             (*it)->setState(st);
     }
-
     QBrush m_brush;
     QPen   m_pen ;
     typedef std::vector<SizeHandleRect*> Handles;
@@ -122,7 +122,6 @@ protected:
     QRectF m_localRect;
     qreal m_width;
     qreal m_height;
-
 };
 
 typedef  AbstractShapeType< QGraphicsItem > AbstractShape;
@@ -156,8 +155,9 @@ public:
     GraphicsRectItem(const QRect & rect , bool isRound = false ,QGraphicsItem * parent = 0 );
     QRectF boundingRect() const;
     QPainterPath shape() const;
-    virtual void resize(int dir, const QPointF & delta);
-    virtual QRectF  rect() const {  return m_localRect;}
+    void resize(int dir, const QPointF & delta);
+    void stretch(double sx , double sy , const QPointF & origin);
+    QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
     QGraphicsItem *copy () const ;
@@ -169,6 +169,7 @@ protected:
     bool m_isRound;
     qreal m_fRatioY;
     qreal m_fRatioX;
+    QRectF m_initialRect;
 };
 
 class GraphicsItemGroup : public QObject,
@@ -216,6 +217,7 @@ public:
     QGraphicsItem *copy() const;
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
 };
 
 class GraphicsLineItem : public GraphicsRectItem
@@ -254,31 +256,26 @@ class GraphicsBezierCurve : public GraphicsPolygonItem
 public:
     GraphicsBezierCurve(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
-    virtual void addPoint( const QPointF & point ) ;    
     QGraphicsItem *copy() const;
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    int m_index;
 };
 
-class GraphicsArcItem :public GraphicsPolygonItem
+class GraphicsArcItem :public GraphicsRectItem
 {
 public:
     GraphicsArcItem(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
-    virtual void addPoint( const QPointF & point ) ;
-     void endPoint(const QPointF & point );
-    virtual void resize(int dir, const QPointF & delta );
+    void resize(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
     void updateCoordinate ();
     QGraphicsItem *copy() const;
 protected:
     void updatehandles();
-
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     qreal m_Radius;
-    qreal m_startAngle;
-    qreal m_endAngle;
+    int   m_startAngle;
+    int   m_spanAngle;
 };
 
 class GridTool : public QGraphicsItem

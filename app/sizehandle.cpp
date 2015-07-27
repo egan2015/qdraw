@@ -6,13 +6,13 @@
 #include <qdebug.h>
 #include <QtWidgets>
 
-SizeHandleRect::SizeHandleRect(QGraphicsItem* parent , int d, QGraphicsItem *resizable)
+SizeHandleRect::SizeHandleRect(QGraphicsItem* parent , int d, bool control)
     :QGraphicsRectItem(-SELECTION_HANDLE_SIZE/2,
                        -SELECTION_HANDLE_SIZE/2,
                        SELECTION_HANDLE_SIZE,
                        SELECTION_HANDLE_SIZE,parent)
     ,m_dir(d)
-    ,m_resizable(resizable)
+    ,m_controlPoint(control)
     ,m_state(SelectionHandleOff)
     ,borderColor("white")
 {
@@ -29,12 +29,13 @@ void SizeHandleRect::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     painter->setBrush(QBrush(borderColor));
 
     painter->setRenderHint(QPainter::Antialiasing,false);
-    if ( m_dir > Left )
+
+    if ( m_controlPoint  )
     {
-        painter->setBrush(Qt::darkBlue);
-        //painter->drawEllipse(rect());
-    }
-    painter->drawRect(rect());
+        painter->setPen(QPen(Qt::red,Qt::SolidLine));
+        painter->drawEllipse(rect().center(),rect().width()/2,rect().height()/2);
+    }else
+        painter->drawRect(rect());
     painter->restore();
 }
 

@@ -38,7 +38,7 @@ public:
     virtual ~AbstractShapeType(){}
     virtual QString displayName () const { return QString("AbstractType");}
     virtual void resize(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}    
-    virtual void stretch( double sx , double sy , const QPointF & origin ) {}
+    virtual void stretch( int handle , double sx , double sy , const QPointF & origin ) {}
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
@@ -59,31 +59,31 @@ public:
     }
 
     QPointF opposite( int handle ) {
-        QPointF pt(0,0);
+        QPointF pt;
         switch (handle) {
         case Right:
-            pt = m_handles.at(Left)->pos();
+            pt = m_handles.at(Left-1)->pos();
             break;
         case RightTop:
-            pt = m_handles[LeftBottom]->pos();
+            pt = m_handles[LeftBottom-1]->pos();
             break;
         case RightBottom:
-            pt = m_handles[LeftTop]->pos();
+            pt = m_handles[LeftTop-1]->pos();
             break;
         case LeftBottom:
-            pt = m_handles[RightTop]->pos();
+            pt = m_handles[RightTop-1]->pos();
             break;
         case Bottom:
-            pt = m_handles[Top]->pos();
+            pt = m_handles[Top-1]->pos();
             break;
         case LeftTop:
-            pt = m_handles[RightBottom]->pos();
+            pt = m_handles[RightBottom-1]->pos();
             break;
         case Left:
-            pt = m_handles[Right]->pos();
+            pt = m_handles[Right-1]->pos();
             break;
         case Top:
-            pt = m_handles[Bottom]->pos();
+            pt = m_handles[Bottom-1]->pos();
             break;
          }
         return pt;
@@ -156,7 +156,7 @@ public:
     QRectF boundingRect() const;
     QPainterPath shape() const;
     void resize(int dir, const QPointF & delta);
-    void stretch(double sx , double sy , const QPointF & origin);
+    void stretch(int handle , double sx , double sy , const QPointF & origin);
     QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
@@ -194,7 +194,8 @@ public:
     QString displayName() const { return tr("group"); }
 
     QGraphicsItem *copy () const ;
-
+    void resize(int dir, const QPointF & delta);
+    void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate();
 signals:
     void selectedChange(QGraphicsItem *item);
@@ -207,6 +208,7 @@ protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
     QGraphicsItem * m_parent;
     QRectF itemsBoundingRect;
+    QRectF m_initialRect;
 };
 
 class GraphicsEllipseItem : public GraphicsRectItem
@@ -239,6 +241,7 @@ public:
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
     virtual void resize(int dir, const QPointF & delta);
+    void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate ();
     virtual void endPoint(const QPointF & point );
      QGraphicsItem *copy() const;
@@ -246,8 +249,7 @@ protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPolygonF m_points;
-    qreal m_width;
-    qreal m_height;
+    QPolygonF m_initialPoints;
 };
 
 
@@ -270,6 +272,7 @@ public:
     QRectF boundingRect() const ;
     void updateCoordinate ();
     QGraphicsItem *copy() const;
+    void stretch( int handle , double sx , double sy , const QPointF & origin );
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

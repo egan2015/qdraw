@@ -190,6 +190,7 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bo
     // Build a list of the first item's ancestors
     QList<QGraphicsItem *> ancestors;
     int n = 0;
+    QPointF pt = items.first()->pos();
     if (!items.isEmpty()) {
         QGraphicsItem *parent = items.at(n++);
         while ((parent = parent->parentItem()))
@@ -223,12 +224,14 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bo
     GraphicsItemGroup *group = new GraphicsItemGroup(commonAncestor);
     if (!commonAncestor && isAdd )
         addItem(group);
+    group->setPos(pt);
     foreach (QGraphicsItem *item, items){
         item->setSelected(false);
         QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
         if ( !g )
              group->addToGroup(item);
     }
+
     return group;
 }
 

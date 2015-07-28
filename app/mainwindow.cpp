@@ -59,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(view,SIGNAL(positionChanged(int,int)),this,SLOT(positionChanged(int,int)));
 
     view->setRenderHint(QPainter::Antialiasing);
-    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+//    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 //    view->setAlignment(Qt::AlignLeft|Qt::AlignTop);
     scene->setBackgroundBrush(Qt::darkGray);
 

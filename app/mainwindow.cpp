@@ -305,8 +305,9 @@ void MainWindow::addShape()
     else if (sender() == polylineAct )
         DrawTool::c_drawShape = polyline;
 
-    if ( sender() != selectAct && sender() != rotateAct )
+    if ( sender() != selectAct && sender() != rotateAct ){
         scene->clearSelection();
+    }
 }
 
 void MainWindow::updateActions()

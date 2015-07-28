@@ -38,7 +38,7 @@ public:
     virtual ~AbstractShapeType(){}
     virtual QString displayName () const { return QString("AbstractType");}
     virtual void resize(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}    
-    virtual void stretch( int handle , double sx , double sy , const QPointF & origin ) {}
+    virtual void stretch( int  , double  , double  , const QPointF & ) {}
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
@@ -172,6 +172,24 @@ protected:
     QRectF m_initialRect;
 };
 
+class GraphicsEllipseItem :public GraphicsRectItem
+{
+public:
+    GraphicsEllipseItem(QGraphicsItem * parent = 0);
+    QPainterPath shape() const;
+    void resize(int dir, const QPointF & delta );
+    QRectF boundingRect() const ;
+    void updateCoordinate ();
+    QGraphicsItem *copy() const;
+    void stretch( int handle , double sx , double sy , const QPointF & origin );
+     QString displayName() const { return tr("ellipse"); }
+protected:
+    void updatehandles();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    int   m_startAngle;
+    int   m_spanAngle;
+};
+
 class GraphicsItemGroup : public QObject,
         public AbstractShapeType <QGraphicsItemGroup>
 {
@@ -218,10 +236,10 @@ public:
     QRectF boundingRect() const ;
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
-    virtual void resize(int dir, const QPointF & delta);
+    virtual void endPoint(const QPointF & point );
+    void resize(int dir, const QPointF & delta);
     void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate ();
-    virtual void endPoint(const QPointF & point );
      QGraphicsItem *copy() const;
 protected:
     void updatehandles();
@@ -261,22 +279,7 @@ private:
     bool m_isBezier;
 };
 
-class GraphicsEllipseItem :public GraphicsRectItem
-{
-public:
-    GraphicsEllipseItem(QGraphicsItem * parent = 0);
-    QPainterPath shape() const;
-    void resize(int dir, const QPointF & delta );
-    QRectF boundingRect() const ;
-    void updateCoordinate ();
-    QGraphicsItem *copy() const;
-    void stretch( int handle , double sx , double sy , const QPointF & origin );
-protected:
-    void updatehandles();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    int   m_startAngle;
-    int   m_spanAngle;
-};
+
 
 class GridTool : public QGraphicsItem
 {

@@ -990,10 +990,10 @@ void GridTool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
 
 GraphicsEllipseItem::GraphicsEllipseItem(QGraphicsItem *parent)
-    :GraphicsRectItem(QRect(0,0,0,0),parent)
+    :GraphicsRectItem(QRect(0,0,1,1),parent)
 {
-    m_startAngle = 20;
-    m_spanAngle  = 380;
+    m_startAngle = 40;
+    m_spanAngle  = 400;
     SizeHandleRect *shr = new SizeHandleRect(this, 9 , true);
     m_handles.push_back(shr);
     shr = new SizeHandleRect(this, 10 , true);
@@ -1090,10 +1090,9 @@ void GraphicsEllipseItem::resize(int dir, const QPointF & delta)
     }
 
     if ( std::abs(m_spanAngle-m_startAngle) > 360 ){
-        m_startAngle = 20;
-        m_spanAngle = 380;
+        m_startAngle = 40;
+        m_spanAngle = 400;
     }
-
     updatehandles();
 }
 
@@ -1129,7 +1128,6 @@ QGraphicsItem *GraphicsEllipseItem::copy() const
     GraphicsEllipseItem * item = new GraphicsEllipseItem( );
     item->m_width = width();
     item->m_height = height();
-
     item->m_startAngle = m_startAngle;
     item->m_spanAngle   = m_spanAngle;
 

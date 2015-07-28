@@ -83,7 +83,7 @@ public:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene ) ;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene ) ;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event , DrawScene * scene );
-    AbstractShape * item;
+    GraphicsItem * item;
 };
 
 class PolygonTool : public DrawTool

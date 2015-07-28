@@ -68,7 +68,7 @@ void DrawTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 
 void DrawTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-    if (event->scenePos() == c_down)
+    if (event->scenePos() == (c_down - QPoint(2,2)))
         c_drawShape = selection;
     setCursor(scene,Qt::ArrowCursor);
 }
@@ -101,8 +101,9 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
     DrawTool::mousePressEvent(event,scene);
 
     if (!m_hoverSizer)
-      scene->mouseEvent(event);
+       scene->mouseEvent(event);
 
+    nDragHandle = Handle_None;
     selectMode = none;
     QList<QGraphicsItem *> items = scene->selectedItems();
     AbstractShape *item = 0;
@@ -120,9 +121,13 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
         else
             selectMode =  move;
 
-        if ( nDragHandle <= Left )
+        if ( nDragHandle!= Handle_None && nDragHandle <= Left ){
             opposite_ = item->opposite(nDragHandle);
-
+            if( opposite_.x() == 0 )
+                opposite_.setX(1);
+            if (opposite_.y() == 0 )
+                opposite_.setY(1);
+        }
         setCursor(scene,Qt::ClosedHandCursor);
 
     }else if ( items.count() > 1 )
@@ -158,14 +163,14 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
         dashRect->setRotation(item->rotation());
         dashRect->setScale(item->scale());
         dashRect->setZValue(item->zValue());
-        initialPositions = item->pos();
         scene->addItem(dashRect);
+
+        initialPositions = item->pos();
     }
 }
 
 void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-
     DrawTool::mouseMoveEvent(event,scene);
     QList<QGraphicsItem *> items = scene->selectedItems();
     AbstractShape * item = 0;
@@ -173,8 +178,13 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
         item = qgraphicsitem_cast<AbstractShape*>(items.first());
         if ( item != 0 ){
             if ( nDragHandle != Handle_None && selectMode == size ){
-                if (opposite_.isNull())
+                if (opposite_.isNull()){
                     opposite_ = item->opposite(nDragHandle);
+                    if( opposite_.x() == 0 )
+                        opposite_.setX(1);
+                    if (opposite_.y() == 0 )
+                        opposite_.setY(1);
+                }
 
                 QPointF new_delta = item->mapFromScene(c_last) - opposite_;
                 QPointF initial_delta = item->mapFromScene(c_down) - opposite_;
@@ -182,9 +192,12 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
                 double sx = new_delta.x() / initial_delta.x();
                 double sy = new_delta.y() / initial_delta.y();
 
-                //qDebug()<<"scale:"<<nDragHandle<<opposite_<< sx << " ，" << sy;
+                item->stretch(nDragHandle, sx , sy ,opposite_);
 
-                 item->stretch(nDragHandle, sx , sy ,opposite_);
+//                qDebug()<<"scale:"<<nDragHandle<<opposite_<< sx << " ，" << sy
+//                       << new_delta << item->mapFromScene(c_last)
+//                       << initial_delta << item->mapFromScene(c_down);
+
             } else if ( nDragHandle > Left  && selectMode == editor ){
                 item->resize(nDragHandle,c_last);
             }
@@ -200,12 +213,14 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
              }
         }
     }
+
     if ( selectMode == move ){
         setCursor(scene,Qt::ClosedHandCursor);
         if ( dashRect ){
             dashRect->setPos(initialPositions + c_last - c_down);
         }
     }
+
     if ( selectMode != size  && items.count() > 1)
     {
         scene->mouseEvent(event);
@@ -216,6 +231,7 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
 
 void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
+
     DrawTool::mouseReleaseEvent(event,scene);
 
     QList<QGraphicsItem *> items = scene->selectedItems();
@@ -402,22 +418,23 @@ RectTool::RectTool(DrawShape drawShape)
 
 void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-    DrawTool::mousePressEvent(event,scene);
 
     scene->clearSelection();
+    DrawTool::mousePressEvent(event,scene);
     switch ( c_drawShape ){
     case rectangle:
-        item = new GraphicsRectItem(QRect(0,0,0,0));
+        item = new GraphicsRectItem(QRect(0,0,1,1));
         break;
     case roundrect:
-        item = new GraphicsRectItem(QRect(0,0,0,0),true);
+        item = new GraphicsRectItem(QRect(0,0,1,1),true);
         break;
     case ellipse:
-        item = dynamic_cast<AbstractShape*> (new GraphicsEllipseItem());
+        item = new GraphicsEllipseItem();
         break;
     }
     if ( item == 0) return;
-    item->setPos(event->scenePos()-QPointF(2,2));
+    c_down+=QPoint(2,2);
+    item->setPos(event->scenePos());
     scene->addItem(item);
     item->setSelected(true);
 
@@ -437,7 +454,7 @@ void RectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 {
     selectTool.mouseReleaseEvent(event,scene);
 
-    if ( event->scenePos() == c_down ){
+    if ( event->scenePos() == (c_down-QPoint(2,2))){
 
        if ( item != 0){
          item->setSelected(false);
@@ -449,8 +466,7 @@ void RectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
     }else if( item ){
         emit scene->itemAdded( item );
     }
-
-    c_drawShape = selection;
+  c_drawShape = selection;
 }
 
 

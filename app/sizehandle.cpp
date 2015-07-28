@@ -33,6 +33,7 @@ void SizeHandleRect::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     if ( m_controlPoint  )
     {
         painter->setPen(QPen(Qt::red,Qt::SolidLine));
+        painter->setBrush(Qt::green);
         painter->drawEllipse(rect().center(),rect().width()/2,rect().height()/2);
     }else
         painter->drawRect(rect());

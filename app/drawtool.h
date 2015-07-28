@@ -30,7 +30,7 @@ enum DrawShape
     ellipse ,
     bezier,
     polygon,
-    arc,
+    polyline,
 };
 
 class DrawTool

@@ -224,7 +224,6 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bo
     GraphicsItemGroup *group = new GraphicsItemGroup(commonAncestor);
     if (!commonAncestor && isAdd )
         addItem(group);
-    group->setPos(pt);
     foreach (QGraphicsItem *item, items){
         item->setSelected(false);
         QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());

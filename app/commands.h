@@ -49,13 +49,13 @@ private:
 class GroupCommand : public QUndoCommand
 {
 public:
-    explicit GroupCommand( QGraphicsItemGroup * group, QGraphicsScene *graphicsScene,
+    explicit GroupCommand( GraphicsItemGroup * group, QGraphicsScene *graphicsScene,
                            QUndoCommand *parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 private:
     QList<QGraphicsItem *> items;
-    QGraphicsItemGroup * myGroup;
+    GraphicsItemGroup * myGroup;
     QGraphicsScene *myGraphicsScene;
     bool b_undo;
 };
@@ -63,13 +63,13 @@ private:
 class UnGroupCommand : public QUndoCommand
 {
 public:
-    explicit UnGroupCommand( QGraphicsItemGroup * group, QGraphicsScene *graphicsScene,
+    explicit UnGroupCommand( GraphicsItemGroup * group, QGraphicsScene *graphicsScene,
                              QUndoCommand *parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 private:
     QList<QGraphicsItem *> items;
-    QGraphicsItemGroup * myGroup;
+    GraphicsItemGroup * myGroup;
     QGraphicsScene *myGraphicsScene;
 };
 

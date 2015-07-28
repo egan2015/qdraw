@@ -16,14 +16,14 @@ quint32 DrawTool::c_nDownFlags;
 DrawShape DrawTool::c_drawShape = selection;
 
 static SelectTool selectTool;
-static RectTool   lineTool(line);
 static RectTool   rectTool(rectangle);
 static RectTool   roundRectTool(roundrect);
 static RectTool   ellipseTool(ellipse);
-static RectTool   arcTool(arc);
 
+static PolygonTool lineTool(line);
 static PolygonTool polygonTool(polygon);
 static PolygonTool bezierTool(bezier);
+static PolygonTool polylineTool(polyline);
 
 static RotationTool rotationTool;
 
@@ -120,7 +120,8 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
         else
             selectMode =  move;
 
-        opposite_ = item->opposite(nDragHandle);
+        if ( nDragHandle <= Left )
+            opposite_ = item->opposite(nDragHandle);
 
         setCursor(scene,Qt::ClosedHandCursor);
 
@@ -172,24 +173,25 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
         item = qgraphicsitem_cast<AbstractShape*>(items.first());
         if ( item != 0 ){
             if ( nDragHandle != Handle_None && selectMode == size ){
-                QSizeF delta(c_last.x() - c_down.x() , c_last.y() - c_down.y());
                 if (opposite_.isNull())
                     opposite_ = item->opposite(nDragHandle);
 
                 QPointF new_delta = item->mapFromScene(c_last) - opposite_;
                 QPointF initial_delta = item->mapFromScene(c_down) - opposite_;
-                 qDebug()<<"scale:"<<opposite_<<new_delta.x() / initial_delta.x()
-                        << " ，" << new_delta.y() / initial_delta.y()
-                        << new_delta<<initial_delta;
-                 //item->resize(nDragHandle,c_last);
-                 item->stretch(nDragHandle, new_delta.x() / initial_delta.x(),new_delta.y() / initial_delta.y(),opposite_);
+
+                double sx = new_delta.x() / initial_delta.x();
+                double sy = new_delta.y() / initial_delta.y();
+
+                //qDebug()<<"scale:"<<nDragHandle<<opposite_<< sx << " ，" << sy;
+
+                 item->stretch(nDragHandle, sx , sy ,opposite_);
             } else if ( nDragHandle > Left  && selectMode == editor ){
                 item->resize(nDragHandle,c_last);
             }
             else if(nDragHandle == Handle_None ){
                  int handle = item->collidesWithHandle(event->scenePos());
                  if ( handle != Handle_None){
-                     setCursor(scene,Qt::OpenHandCursor/*item->getCursor(handle)*/);
+                     setCursor(scene,Qt::OpenHandCursor);
                      m_hoverSizer = true;
                  }else{
                      setCursor(scene,Qt::ArrowCursor);
@@ -199,6 +201,7 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
         }
     }
     if ( selectMode == move ){
+        setCursor(scene,Qt::ClosedHandCursor);
         if ( dashRect ){
             dashRect->setPos(initialPositions + c_last - c_down);
         }
@@ -251,7 +254,6 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
     m_hoverSizer = false;
     opposite_ = QPointF();
     scene->mouseEvent(event);
-
 }
 
 RotationTool::RotationTool()
@@ -411,13 +413,7 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
         item = new GraphicsRectItem(QRect(0,0,0,0),true);
         break;
     case ellipse:
-        item = dynamic_cast<AbstractShape*> (new GraphicsEllipseItem(QRect(0,0,0,0)));
-        break;
-    case line:
-        item = new GraphicsLineItem(0);
-        break;
-    case arc:
-        item = new GraphicsArcItem(0);
+        item = dynamic_cast<AbstractShape*> (new GraphicsEllipseItem());
         break;
     }
     if ( item == 0) return;
@@ -472,7 +468,11 @@ void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
         if ( c_drawShape == polygon ){
         item = new GraphicsPolygonItem(NULL);
         }else if (c_drawShape == bezier ){
-            item = new GraphicsBezierCurve(NULL);
+            item = new GraphicsBezier();
+        }else if ( c_drawShape == polyline ){
+            item = new GraphicsBezier(false);
+        }else if ( c_drawShape == line ){
+            item = new GraphicsLineItem(0);
         }
         item->setPos(event->scenePos());
         scene->addItem(item);
@@ -507,7 +507,6 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
 //    selectTool.mouseMoveEvent(event,scene);
 
-
     if ( item != 0 ){
         if ( nDragHandle != Handle_None && selectMode == size ){
 
@@ -520,6 +519,15 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 void PolygonTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mousePressEvent(event,scene);
+    if ( c_drawShape == line ){
+        item->endPoint(event->scenePos());
+        item->updateCoordinate();
+        emit scene->itemAdded( item );
+        item = NULL;
+        selectMode = none;
+        c_drawShape = selection;
+        m_nPoints = 0;
+    }
 }
 
 void PolygonTool::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)

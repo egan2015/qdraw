@@ -122,7 +122,6 @@ private:
     QAction  * polygonAct;
     QAction  * polylineAct;
     QAction  * bezierAct;
-    QAction  * arcAct;
     QAction  * rotateAct;
 
     //property editor

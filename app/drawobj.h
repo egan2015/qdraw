@@ -43,7 +43,7 @@ public:
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
     virtual QGraphicsItem * copy() const { return NULL;}
-    int handleCount() const { return m_handles.size();}
+    virtual int handleCount() const { return m_handles.size();}
 
     int collidesWithHandle( const QPointF & point ) const
     {
@@ -58,7 +58,7 @@ public:
         return Handle_None;
     }
 
-    QPointF opposite( int handle ) {
+    virtual QPointF opposite( int handle ) {
         QPointF pt;
         switch (handle) {
         case Right:
@@ -211,28 +211,6 @@ protected:
     QRectF m_initialRect;
 };
 
-class GraphicsEllipseItem : public GraphicsRectItem
-{
-public:
-    GraphicsEllipseItem(const QRect & rect ,QGraphicsItem * parent = 0);
-    QPainterPath shape() const;
-    QGraphicsItem *copy() const;
-protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
-};
-
-class GraphicsLineItem : public GraphicsRectItem
-{
-public:
-    GraphicsLineItem(QGraphicsItem * parent = 0);
-    QPainterPath shape() const;
-    QGraphicsItem *copy() const;
-protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
-};
-
 class GraphicsPolygonItem : public GraphicsItem
 {
 public:
@@ -252,21 +230,41 @@ protected:
     QPolygonF m_initialPoints;
 };
 
-
-class GraphicsBezierCurve : public GraphicsPolygonItem
+class GraphicsLineItem : public GraphicsPolygonItem
 {
 public:
-    GraphicsBezierCurve(QGraphicsItem * parent = 0);
+    GraphicsLineItem(QGraphicsItem * parent = 0);
+    QPainterPath shape() const;
+    QGraphicsItem *copy() const;
+    void addPoint( const QPointF & point ) ;
+    void endPoint(const QPointF & point );
+    virtual QPointF opposite( int handle ) {
+        QPointF pt;
+        return pt;
+    }
+    int handleCount() const { return m_handles.size() + Left;}
+protected:
+    void updatehandles();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+};
+
+class GraphicsBezier : public GraphicsPolygonItem
+{
+public:
+    GraphicsBezier(bool bbezier = true , QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     QGraphicsItem *copy() const;
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+private:
+    bool m_isBezier;
 };
 
-class GraphicsArcItem :public GraphicsRectItem
+class GraphicsEllipseItem :public GraphicsRectItem
 {
 public:
-    GraphicsArcItem(QGraphicsItem * parent = 0);
+    GraphicsEllipseItem(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     void resize(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
@@ -276,7 +274,6 @@ public:
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    qreal m_Radius;
     int   m_startAngle;
     int   m_spanAngle;
 };

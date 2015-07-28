@@ -342,7 +342,8 @@ void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF 
 void GraphicsRectItem::updateCoordinate()
 {
     QPointF pt1,pt2,delta;
-    if (parentItem()==NULL)
+    QGraphicsItem * parent = parentItem();
+    if (parent == NULL )
     {
         pt1 = mapToScene(transformOriginPoint());
         pt2 = mapToScene(boundingRect().center());
@@ -361,7 +362,6 @@ void GraphicsRectItem::updateCoordinate()
     }
     m_width = m_localRect.width();
     m_height = m_localRect.height();
-
     m_initialRect = m_localRect;
 }
 
@@ -425,84 +425,25 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
        qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
-
-GraphicsEllipseItem::GraphicsEllipseItem(const QRect &rect, QGraphicsItem *parent)
-    :GraphicsRectItem(rect,parent)
-{
-
-}
-
-QPainterPath GraphicsEllipseItem::shape() const
-{
-    QPainterPath path;
-    path.addEllipse(boundingRect());
-    return path;
-}
-
-QGraphicsItem *GraphicsEllipseItem::copy() const
-{
-    GraphicsEllipseItem * item = new GraphicsEllipseItem( rect().toRect());
-    item->m_width = width();
-    item->m_height = height();
-    item->setPos(pos().x(),pos().y());
-    item->setPen(pen());
-    item->setBrush(brush());
-    item->setTransform(transform());
-    item->setTransformOriginPoint(transformOriginPoint());
-    item->setRotation(rotation());
-    item->setScale(scale());
-    item->setZValue(zValue()+0.1);
-    item->updateCoordinate();
-    return item;
-}
-
-void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    QColor c = brush();
-    QRectF rc = rect();
-
-    qreal radius = qMax(rc.width(),rc.height());
-    QRadialGradient result(rc.center(),radius);
-    result.setColorAt(0, c.light(200));
-    result.setColorAt(0.5, c.dark(150));
-    result.setColorAt(1, c);
-    painter->setPen(pen());
-    QBrush b(result);
-    b.setStyle(Qt::RadialGradientPattern);
-    painter->setBrush(b);
-
-//    painter->setBrush(brush());
-    painter->drawEllipse(rc);
-
-    if (option->state & QStyle::State_Selected)
-        qt_graphicsItem_highlightSelected(this, painter, option);
-
-}
-
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
-    :GraphicsRectItem(QRect(0,0,0,0),parent)
+    :GraphicsPolygonItem(parent)
 {
     // handles
     m_handles.reserve(Left);
 
     Handles::iterator hend =  m_handles.end();
     for (Handles::iterator it = m_handles.begin(); it != hend; ++it)
-        delete (*it);
+       delete (*it);
     m_handles.clear();
-
-    SizeHandleRect *shr = new SizeHandleRect(this,LeftTop);
-    m_handles.push_back(shr);
-    shr = new SizeHandleRect(this,RightBottom, this);
-    m_handles.push_back(shr);
-
-    updatehandles();
 }
 
 QPainterPath GraphicsLineItem::shape() const
 {
     QPainterPath path;
-    path.moveTo(rect().topLeft());
-    path.lineTo(rect().bottomRight());
+    if ( m_points.size() > 1 ){
+        path.moveTo(m_points.at(0));
+        path.lineTo(m_points.at(1));
+    }
     return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
@@ -511,7 +452,8 @@ QGraphicsItem *GraphicsLineItem::copy() const
     GraphicsLineItem * item = new GraphicsLineItem();
     item->m_width = width();
     item->m_height = height();
-    item->m_localRect = m_localRect;
+    item->m_points = m_points;
+    item->m_initialPoints = m_initialPoints;
     item->setPos(pos().x(),pos().y());
     item->setPen(pen());
     item->setBrush(brush());
@@ -524,12 +466,43 @@ QGraphicsItem *GraphicsLineItem::copy() const
     return item;
 }
 
+void GraphicsLineItem::addPoint(const QPointF &point)
+{
+    m_points.append(mapFromScene(point));
+    int dir = m_points.count();
+    SizeHandleRect *shr = new SizeHandleRect(this, dir+Left, dir == 1 ? false : true);
+    shr->setState(SelectionHandleActive);
+    m_handles.push_back(shr);
+}
+
+
+void GraphicsLineItem::endPoint(const QPointF &point)
+{
+    Q_UNUSED(point);
+    int nPoints = m_points.count();
+    if( nPoints > 2 && (m_points[nPoints-1] == m_points[nPoints-2] ||
+        m_points[nPoints-1].x() - 1 == m_points[nPoints-2].x() &&
+        m_points[nPoints-1].y() == m_points[nPoints-2].y())){
+        delete m_handles[ nPoints-1];
+        m_points.remove(nPoints-1);
+        m_handles.resize(nPoints-1);
+    }
+    m_initialPoints = m_points;
+}
+
+void GraphicsLineItem::updatehandles()
+{
+    for ( int i = 0 ; i < m_points.size() ; ++i ){
+        m_handles[i]->move(m_points[i].x() ,m_points[i].y() );
+    }
+}
+
 void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(pen());
-    painter->drawLine(rect().topLeft(),rect().bottomRight());
+    painter->drawLine(m_points.at(0),m_points.at(1));
 }
 
 GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
@@ -641,6 +614,10 @@ void GraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
     // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
 
     item->setTransform(itemTransform);
+//    AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
+//    if (ab && !qgraphicsitem_cast<SizeHandleRect*>(ab))
+//        ab->updateCoordinate();
+
 //    item->d_func()->setIsMemberOfGroup(item->group() != 0);
 
     // ### Quite expensive. But removeFromGroup() isn't called very often.
@@ -705,16 +682,16 @@ void GraphicsItemGroup::stretch(int handle, double sx, double sy, const QPointF 
     default:
         break;
     }
-    trans.translate(origin.x(),origin.y());
-    trans.scale(sx,sy);
-    trans.translate(-origin.x(),-origin.y());
-
 
     foreach (QGraphicsItem *item , childItems()) {
          AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
          if (ab && !qgraphicsitem_cast<SizeHandleRect*>(ab))
              ab->stretch(handle,sx,sy,ab->mapFromParent(origin));
     }
+
+    trans.translate(origin.x(),origin.y());
+    trans.scale(sx,sy);
+    trans.translate(-origin.x(),-origin.y());
 
     prepareGeometryChange();
     itemsBoundingRect = trans.mapRect(m_initialRect);
@@ -729,14 +706,13 @@ void GraphicsItemGroup::updateCoordinate()
     pt1 = mapToScene(transformOriginPoint());
     pt2 = mapToScene(boundingRect().center());
     delta = pt1 - pt2;
- //   itemsBoundingRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
+//    itemsBoundingRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     m_initialRect = itemsBoundingRect;
 
-//    setTransform(transform().translate(delta.x(),delta.y()));
-//    setTransformOriginPoint(boundingRect().center());
-//    moveBy(-delta.x(),-delta.y());
-  //  setTransform(transform().translate(-delta.x(),-delta.y()));
-
+    setTransform(transform().translate(delta.x(),delta.y()));
+    setTransformOriginPoint(boundingRect().center());
+    moveBy(-delta.x(),-delta.y());
+//    setTransform(transform().translate(-delta.x(),-delta.y()));
 
     foreach (QGraphicsItem *item , childItems()) {
          AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
@@ -868,17 +844,18 @@ void GraphicsItemGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem 
         qt_graphicsItem_highlightSelected(this, painter, option);
 }
 
-GraphicsBezierCurve::GraphicsBezierCurve(QGraphicsItem *parent)
+GraphicsBezier::GraphicsBezier(bool bbezier,QGraphicsItem *parent)
     :GraphicsPolygonItem(parent)
+    ,m_isBezier(bbezier)
 {
 }
 
-QPainterPath GraphicsBezierCurve::shape() const
+QPainterPath GraphicsBezier::shape() const
 {
     QPainterPath path;
     path.moveTo(m_points.at(0));
     int i=1;
-    while (i + 2 < m_points.size()) {
+    while (m_isBezier && ( i + 2 < m_points.size())) {
         path.cubicTo(m_points.at(i), m_points.at(i+1), m_points.at(i+2));
         i += 3;
     }
@@ -890,29 +867,13 @@ QPainterPath GraphicsBezierCurve::shape() const
     return path;
 }
 
-/*
-void GraphicsBezierCurve::addPoint(const QPointF &point)
+QGraphicsItem *GraphicsBezier::copy() const
 {
-    m_points.append(mapFromScene(point));
-    SizeHandleRect *shr = new SizeHandleRect(this, Left + m_index, true);
-    shr->setState(SelectionHandleActive);
-    m_handles.push_back(shr);
-    m_index++;
-    prepareGeometryChange();
-    m_localRect = m_points.boundingRect();
-    m_width = m_localRect.width();
-    m_height = m_localRect.height();
-    updatehandles();
-}
-*/
-
-QGraphicsItem *GraphicsBezierCurve::copy() const
-{
-    GraphicsBezierCurve * item = new GraphicsBezierCurve( );
+    GraphicsBezier * item = new GraphicsBezier( );
     item->m_width = width();
     item->m_height = height();
     item->m_points = m_points;
-
+    item->m_isBezier = m_isBezier;
     for ( int i = 0 ; i < m_points.size() ; ++i ){
         item->m_handles.push_back(new SizeHandleRect(item,Left+i+1,true));
     }
@@ -928,7 +889,7 @@ QGraphicsItem *GraphicsBezierCurve::copy() const
     return item;
 }
 
-void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void GraphicsBezier::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -939,7 +900,7 @@ void GraphicsBezierCurve::paint(QPainter *painter, const QStyleOptionGraphicsIte
     path.moveTo(m_points.at(0));
 
     int i=1;
-    while (i + 2 < m_points.size()) {
+    while (m_isBezier && ( i + 2 < m_points.size())) {
         path.cubicTo(m_points.at(i), m_points.at(i+1), m_points.at(i+2));
         i += 3;
     }
@@ -1028,10 +989,9 @@ void GridTool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 }
 
 
-GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
+GraphicsEllipseItem::GraphicsEllipseItem(QGraphicsItem *parent)
     :GraphicsRectItem(QRect(0,0,0,0),parent)
 {
-    m_Radius = 0;
     m_startAngle = 20;
     m_spanAngle  = 380;
     SizeHandleRect *shr = new SizeHandleRect(this, 9 , true);
@@ -1041,7 +1001,7 @@ GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
 
 }
 
-QPainterPath GraphicsArcItem::shape() const
+QPainterPath GraphicsEllipseItem::shape() const
 {
     QPainterPath path;
     int startAngle = m_startAngle <= m_spanAngle ? m_startAngle : m_spanAngle;
@@ -1061,7 +1021,7 @@ QPainterPath GraphicsArcItem::shape() const
     return path;
 }
 
-void GraphicsArcItem::resize(int dir, const QPointF & delta)
+void GraphicsEllipseItem::resize(int dir, const QPointF & delta)
 {
     QPointF local = mapFromScene(delta);
     QString dirName;
@@ -1120,9 +1080,7 @@ void GraphicsArcItem::resize(int dir, const QPointF & delta)
     ;
     m_width = delta1.normalized().width();
     m_height = delta1.normalized().height();
-    m_Radius = qMax(m_width/2,m_height/2);
     prepareGeometryChange();
-    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
     if ( m_startAngle > m_spanAngle )
         m_startAngle-=360;
     if ( m_spanAngle < m_startAngle ){
@@ -1139,12 +1097,12 @@ void GraphicsArcItem::resize(int dir, const QPointF & delta)
     updatehandles();
 }
 
-QRectF GraphicsArcItem::boundingRect() const
+QRectF GraphicsEllipseItem::boundingRect() const
 {
     return shape().controlPointRect();
 }
 
-void GraphicsArcItem::updateCoordinate()
+void GraphicsEllipseItem::updateCoordinate()
 {
 
     QPointF pt1,pt2,delta;
@@ -1154,9 +1112,11 @@ void GraphicsArcItem::updateCoordinate()
 
     prepareGeometryChange();
 
-    m_Radius = qMax(m_width/2,m_height/2);
-    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
+    m_localRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
+    m_width = m_localRect.width();
+    m_height = m_localRect.height();
     m_initialRect = m_localRect;
+
     setTransform(transform().translate(delta.x(),delta.y()));
     setTransformOriginPoint(m_localRect.center());
     moveBy(-delta.x(),-delta.y());
@@ -1164,15 +1124,14 @@ void GraphicsArcItem::updateCoordinate()
     updatehandles();
 }
 
-QGraphicsItem *GraphicsArcItem::copy() const
+QGraphicsItem *GraphicsEllipseItem::copy() const
 {
-    GraphicsArcItem * item = new GraphicsArcItem( );
+    GraphicsEllipseItem * item = new GraphicsEllipseItem( );
     item->m_width = width();
     item->m_height = height();
 
     item->m_startAngle = m_startAngle;
     item->m_spanAngle   = m_spanAngle;
-    item->m_Radius = m_Radius;
 
     item->setPos(pos().x(),pos().y());
     item->setPen(pen());
@@ -1186,7 +1145,7 @@ QGraphicsItem *GraphicsArcItem::copy() const
     return item;
 }
 
-void GraphicsArcItem::stretch(int handle, double sx, double sy, const QPointF &origin)
+void GraphicsEllipseItem::stretch(int handle, double sx, double sy, const QPointF &origin)
 {
     QTransform trans;
     switch (handle) {
@@ -1209,42 +1168,39 @@ void GraphicsArcItem::stretch(int handle, double sx, double sy, const QPointF &o
     m_localRect = trans.mapRect(m_initialRect);
     m_width = m_localRect.width();
     m_height = m_localRect.height();
-    m_Radius = qMax(m_width/2,m_height/2);
-    m_localRect = QRectF(-m_Radius,-m_Radius,m_Radius*2,m_Radius*2);
-    if ( m_startAngle > m_spanAngle )
-        m_startAngle-=360;
-    if ( m_spanAngle < m_startAngle ){
-        qreal tmp = m_spanAngle;
-        m_spanAngle = m_startAngle;
-        m_startAngle = tmp;
-    }
-
-    if ( std::abs(m_spanAngle-m_startAngle) > 360 ){
-        m_startAngle = 20;
-        m_spanAngle = 380;
-    }
-
     updatehandles();
 }
 
-void GraphicsArcItem::updatehandles()
+void GraphicsEllipseItem::updatehandles()
 {
     GraphicsItem::updatehandles();
-    qreal x = m_Radius * cos( -m_startAngle * 3.1416 / 180 );
-    qreal y = m_Radius * sin( -m_startAngle * 3.1416 / 180);
-    m_handles.at(8)->move(x,y);
-    x = m_Radius * cos( -m_spanAngle * 3.1416 / 180);
-    y = m_Radius * sin(-m_spanAngle * 3.1416 / 180);
-    m_handles.at(9)->move(x,y);
+    QRectF local = QRectF(-m_width/2,-m_height/2,m_width,m_height);
+    QPointF delta = local.center() - m_localRect.center();
+    qreal x = (m_width/2) * cos( -m_startAngle * 3.1416 / 180 );
+    qreal y = (m_height/2) * sin( -m_startAngle * 3.1416 / 180);
+    m_handles.at(8)->move(x-delta.x(),y-delta.y());
+    x = (m_width/2) * cos( -m_spanAngle * 3.1416 / 180);
+    y = (m_height/2) * sin(-m_spanAngle * 3.1416 / 180);
+    m_handles.at(9)->move(x-delta.x(),y-delta.y());
 }
 
-void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
+    QColor c = brush();
+    QRectF rc = m_localRect;
 
+    qreal radius = qMax(rc.width(),rc.height());
+    QRadialGradient result(rc.center(),radius);
+    result.setColorAt(0, c.light(200));
+    result.setColorAt(0.5, c.dark(150));
+    result.setColorAt(1, c);
     painter->setPen(pen());
-    painter->setBrush(brush());
+    QBrush b(result);
+    b.setStyle(Qt::RadialGradientPattern);
+    painter->setBrush(b);
+
     int startAngle = m_startAngle <= m_spanAngle ? m_startAngle : m_spanAngle;
     int endAngle = m_startAngle >= m_spanAngle ? m_startAngle : m_spanAngle;
     if(endAngle - startAngle > 360)

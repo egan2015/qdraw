@@ -161,8 +161,6 @@ void MainWindow::createActions()
     polylineAct->setCheckable(true);
     bezierAct= new QAction(QIcon(":/icons/bezier.png"),tr("bezier tool"),this);
     bezierAct->setCheckable(true);
-    arcAct = new QAction(QIcon(":/icons/arc.png"),tr("arc tool"),this);
-    arcAct->setCheckable(true);
 
     rotateAct = new QAction(QIcon(":/icons/rotate.png"),tr("rotate tool"),this);
     rotateAct->setCheckable(true);
@@ -177,7 +175,6 @@ void MainWindow::createActions()
     drawActionGroup->addAction(polylineAct);
     drawActionGroup->addAction(bezierAct);
     drawActionGroup->addAction(rotateAct);
-    drawActionGroup->addAction(arcAct);
     selectAct->setChecked(true);
 
 
@@ -190,7 +187,6 @@ void MainWindow::createActions()
     connect(polylineAct,SIGNAL(triggered()),this,SLOT(addShape()));
     connect(bezierAct,SIGNAL(triggered()),this,SLOT(addShape()));
     connect(rotateAct,SIGNAL(triggered()),this,SLOT(addShape()));
-    connect(arcAct,SIGNAL(triggered()),this,SLOT(addShape()));
 
     deleteAct = new QAction(tr("&Delete"), this);
     deleteAct->setShortcut(tr("Delete"));
@@ -251,7 +247,6 @@ void MainWindow::createToolbars()
     drawToolBar->addAction(lineAct);
     drawToolBar->addAction(rectAct);
     drawToolBar->addAction(roundRectAct);
-    drawToolBar->addAction(arcAct);
     drawToolBar->addAction(ellipseAct);
     drawToolBar->addAction(polygonAct);
     drawToolBar->addAction(polylineAct);
@@ -307,8 +302,8 @@ void MainWindow::addShape()
         DrawTool::c_drawShape = bezier ;
     else if (sender() == rotateAct )
         DrawTool::c_drawShape = rotation;
-    else if ( sender() == arcAct)
-        DrawTool::c_drawShape = arc;
+    else if (sender() == polylineAct )
+        DrawTool::c_drawShape = polyline;
 
     if ( sender() != selectAct && sender() != rotateAct )
         scene->clearSelection();
@@ -324,8 +319,7 @@ void MainWindow::updateActions()
     bezierAct->setChecked(DrawTool::c_drawShape == bezier);
     rotateAct->setChecked(DrawTool::c_drawShape == rotation);
     polygonAct->setChecked(DrawTool::c_drawShape == polygon);
-    arcAct->setChecked(DrawTool::c_drawShape==arc);
-
+    polylineAct->setChecked(DrawTool::c_drawShape == polyline );
     undoAct->setEnabled(undoStack->canUndo());
     redoAct->setEnabled(undoStack->canRedo());
 

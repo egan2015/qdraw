@@ -315,7 +315,7 @@ void GraphicsRectItem::resize(int dir, const QPointF & delta)
 
 void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF & origin)
 {
-    QTransform trans = transform() ;
+    QTransform trans ;
     switch (handle) {
     case Right:
     case Left:
@@ -342,27 +342,23 @@ void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF 
 void GraphicsRectItem::updateCoordinate()
 {
     QPointF pt1,pt2,delta;
-    QGraphicsItem * parent = parentItem();
-    if (parent == NULL )
-    {
-        pt1 = mapToScene(transformOriginPoint());
-        pt2 = mapToScene(boundingRect().center());
-        delta = pt1 - pt2;
+    pt1 = mapToScene(transformOriginPoint());
+    pt2 = mapToScene(m_localRect.center());
+    delta = pt1 - pt2;
 
-        prepareGeometryChange();
+    prepareGeometryChange();
 
-        m_localRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
-
-        setTransform(transform().translate(delta.x(),delta.y()));
-        setTransformOriginPoint(boundingRect().center());
-        moveBy(-delta.x(),-delta.y());
-        setTransform(transform().translate(-delta.x(),-delta.y()));
-
-        updatehandles();
-    }
+    m_localRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     m_width = m_localRect.width();
     m_height = m_localRect.height();
     m_initialRect = m_localRect;
+
+    setTransform(transform().translate(delta.x(),delta.y()));
+    setTransformOriginPoint(m_localRect.center());
+    moveBy(-delta.x(),-delta.y());
+    setTransform(transform().translate(-delta.x(),-delta.y()));
+    updatehandles();
+
 }
 
 void GraphicsRectItem::move(const QPointF &point)

@@ -30,7 +30,10 @@ QtRuleBar::QtRuleBar(int type , QGraphicsView * view, QWidget *parent)
     m_lower = m_upper = m_maxsize = 0;
     m_lastPos = QPoint(0,0);
     m_rulerType   = type;
-    setFont(QFont("Times New Roman",12));
+    QFont f(font());
+    f.setBold(false);
+    f.setPixelSize(10);
+    setFont(f);
 }
 
 void QtRuleBar::setRange(double lower, double upper, double max_size)
@@ -93,7 +96,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
     increment = (double) width / (upper - lower);
 
     scale = ceil (max_size);
-    sprintf (unit_str, "%d", 50);
+    sprintf (unit_str, "%d", 50 );
     text_size = strlen (unit_str) * digit_height + 1;
     for (scale = 0; scale < sizeof (ruler_metric.ruler_scale) /
          sizeof(ruler_metric.ruler_scale[0]); scale++)

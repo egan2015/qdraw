@@ -32,7 +32,7 @@ public:
         :BaseType(parent)
     {
         m_pen=QPen(Qt::NoPen);
-        m_brush.setColor(QColor(rand() % 32 * 8, rand() % 32 * 8, rand() % 32 * 8));
+        m_brush= QBrush(QColor(rand() % 32 * 8, rand() % 32 * 8, rand() % 32 * 8));
         m_width = m_height = 0;
     }
     virtual ~AbstractShapeType(){}
@@ -89,7 +89,8 @@ public:
         return pt;
     }
 
-    QColor brush() const {return m_brush.color();}
+    QColor brushColor() const {return m_brush.color();}
+    QBrush brush() const {return m_brush;}
     QPen   pen() const {return m_pen;}
     QColor penColor() const {return m_pen.color();}
     void   setPen(const QPen & pen ) { m_pen = pen;}
@@ -131,7 +132,7 @@ class GraphicsItem : public QObject,
 {
     Q_OBJECT
     Q_PROPERTY(QColor pen READ penColor WRITE setPen )
-    Q_PROPERTY(QColor brush READ brush WRITE setBrush )
+    Q_PROPERTY(QColor brush READ brushColor WRITE setBrush )
     Q_PROPERTY(qreal  width READ width WRITE setWidth )
     Q_PROPERTY(qreal  height READ height WRITE setHeight )
     Q_PROPERTY(QPointF  position READ pos WRITE setPos )
@@ -195,7 +196,7 @@ class GraphicsItemGroup : public QObject,
 {
     Q_OBJECT
     Q_PROPERTY(QColor pen READ penColor WRITE setPen )
-    Q_PROPERTY(QColor brush READ brush WRITE setBrush )
+    Q_PROPERTY(QColor brush READ brushColor WRITE setBrush )
     Q_PROPERTY(qreal  width READ width WRITE setWidth )
     Q_PROPERTY(qreal  height READ height WRITE setHeight )
     Q_PROPERTY(QPointF  position READ pos WRITE setPos )
@@ -260,6 +261,7 @@ public:
         QPointF pt;
         return pt;
     }
+    void updateCoordinate() {}
     int handleCount() const { return m_handles.size() + Left;}
 protected:
     void updatehandles();

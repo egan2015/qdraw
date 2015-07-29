@@ -17,7 +17,7 @@ QT_END_NAMESPACE
 #define RW_VSCROLL	  1
 #define RW_HSCROLL	  2
 #define RW_POSITION   3
-#define RULER_SIZE    18
+#define RULER_SIZE    16
 
 typedef struct {
     int   uMessage;

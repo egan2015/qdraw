@@ -418,7 +418,6 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
    else
        painter->drawRect(rect().toRect());
 
-
    if (option->state & QStyle::State_Selected)
        qt_graphicsItem_highlightSelected(this, painter, option);
 }
@@ -709,9 +708,9 @@ void GraphicsItemGroup::updateCoordinate()
 //    itemsBoundingRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     m_initialRect = itemsBoundingRect;
 
-//    setTransform(transform().translate(delta.x(),delta.y()));
-//    setTransformOriginPoint(itemsBoundingRect.center());
-//    moveBy(-delta.x(),-delta.y());
+    setTransform(transform().translate(delta.x(),delta.y()));
+    setTransformOriginPoint(itemsBoundingRect.center());
+    moveBy(-delta.x(),-delta.y());
 //    setTransform(transform().translate(-delta.x(),-delta.y()));
 
     foreach (QGraphicsItem *item , childItems()) {
@@ -848,6 +847,7 @@ GraphicsBezier::GraphicsBezier(bool bbezier,QGraphicsItem *parent)
     :GraphicsPolygonItem(parent)
     ,m_isBezier(bbezier)
 {
+    m_brush = QBrush(Qt::NoBrush);
 }
 
 QPainterPath GraphicsBezier::shape() const
@@ -967,8 +967,16 @@ void GridTool::paintGrid(QPainter *painter, const QRect &rect)
     {
         painter->drawLine(rect.left(),y,rect.right(),y);
     }
+    p.setStyle(Qt::SolidLine);
+    p.setColor(Qt::black);
     painter->drawLine(rect.right(),rect.top(),rect.right(),rect.bottom());
     painter->drawLine(rect.left(),rect.bottom(),rect.right(),rect.bottom());
+
+    //draw shadow
+    QColor c1(Qt::black);
+    painter->fillRect(QRect(rect.right()+1,rect.top()+2,2,rect.height()),c1.dark(200));
+    painter->fillRect(QRect(rect.left()+2,rect.bottom()+2,rect.width(),2),c1.dark(200));
+
     painter->restore();
 }
 
@@ -1188,7 +1196,7 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    QColor c = brush();
+    QColor c = brushColor();
     QRectF rc = m_localRect;
 
     qreal radius = qMax(rc.width(),rc.height());
@@ -1364,7 +1372,7 @@ void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    QColor c = brush();
+    QColor c = brushColor();
     QLinearGradient result(boundingRect().topLeft(), boundingRect().topRight());
     result.setColorAt(0, c.dark(150));
     result.setColorAt(0.5, c.light(200));

@@ -41,7 +41,11 @@ MainWindow::MainWindow(QWidget *parent)
     menuBar()->addMenu(tr("Func"))->addAction(funcAct);
 
     scene = new DrawScene(this);
-    scene->setSceneRect(QRectF(0 , 0 , 800, 600));
+
+    QRectF rc = QRectF(0 , 0 , 800, 600);
+
+    scene->setSceneRect(rc);
+    qDebug()<<rc.bottomLeft()<<rc.size() << rc.topLeft();
 
     connect(scene, SIGNAL(selectionChanged()),
             this, SLOT(itemSelected()));
@@ -69,7 +73,6 @@ MainWindow::MainWindow(QWidget *parent)
     mdiArea = new QMdiArea;
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    mdiArea->setBackgroundRole(QPalette::Dark);
     setCentralWidget(mdiArea);
     mdiArea->addSubWindow(view);
     mdiArea->tileSubWindows();

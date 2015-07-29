@@ -59,8 +59,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(view,SIGNAL(positionChanged(int,int)),this,SLOT(positionChanged(int,int)));
 
     view->setRenderHint(QPainter::Antialiasing);
-//    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-//    view->setAlignment(Qt::AlignLeft|Qt::AlignTop);
+    view->setCacheMode(QGraphicsView::CacheBackground);
+    view->setOptimizationFlags(QGraphicsView::DontSavePainterState);
+    view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    view->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
     scene->setBackgroundBrush(Qt::darkGray);
 
     mdiArea = new QMdiArea;

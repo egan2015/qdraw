@@ -230,7 +230,7 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bo
         if ( !g )
              group->addToGroup(item);
     }
-
+//    group->setPos(pt);
     return group;
 }
 

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
-    QSize size(QApplication::desktop()->availableGeometry().width() * 5 / 6 ,
+    QSize size(QApplication::desktop()->availableGeometry().width(),
                QApplication::desktop()->availableGeometry().height());
     w.resize(size);
     w.move ((QApplication::desktop()->width() - w.width())/2,

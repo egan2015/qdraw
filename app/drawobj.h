@@ -31,8 +31,8 @@ public:
    explicit AbstractShapeType(QGraphicsItem * parent = 0 )
         :BaseType(parent)
     {
-        m_pen.setColor(Qt::NoPen);
-        m_brush.setColor(Qt::white);
+        m_pen=QPen(Qt::NoPen);
+        m_brush.setColor(QColor(rand() % 32 * 8, rand() % 32 * 8, rand() % 32 * 8));
         m_width = m_height = 0;
     }
     virtual ~AbstractShapeType(){}

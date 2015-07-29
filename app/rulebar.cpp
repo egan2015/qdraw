@@ -23,14 +23,14 @@ static SPRulerMetric const ruler_metric_inches = {
 
 
 QtRuleBar::QtRuleBar(int type , QGraphicsView * view, QWidget *parent)
-    :QFrame(parent),
+    :QWidget(parent),
     m_view(view),
     m_faceColor(0xFF, 0xFF, 0xFF)
 {
     m_lower = m_upper = m_maxsize = 0;
     m_lastPos = QPoint(0,0);
     m_rulerType   = type;
-    setFont(QFont("Times New Roman",10,10));
+    setFont(QFont("Times New Roman",12));
 }
 
 void QtRuleBar::setRange(double lower, double upper, double max_size)
@@ -157,7 +157,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
                    int w = fm.width(unit_str);
                    QRect textRect(-w/2,-RULER_SIZE/2,w,RULER_SIZE);
                    painter->save();
-                   painter->translate(2, pos + w/2+2);
+                   painter->translate(4, pos + w/2+2);
                    painter->rotate(90);
                    painter->drawText(textRect,Qt::AlignRight,unit_str);
                    painter->restore();
@@ -209,9 +209,8 @@ void QtRuleBar::drawPos(QPainter *painter)
 }
 
 QtCornerBox::QtCornerBox(QWidget *parent)
-    :QFrame(parent)
+    :QWidget(parent)
 {
-    setFrameShape(QFrame::Box);
 }
 
 void QtCornerBox::paintEvent(QPaintEvent *e)

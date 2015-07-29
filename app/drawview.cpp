@@ -36,9 +36,9 @@ void DrawView::resizeEvent(QResizeEvent *event)
     QGraphicsView::resizeEvent(event);
 
     this->setViewportMargins(RULER_SIZE,RULER_SIZE,0,0);
-    m_hruler->resize(this->size().width(),RULER_SIZE);
+    m_hruler->resize(this->size().width(),RULER_SIZE+1);
     m_hruler->move(RULER_SIZE,0);
-    m_vruler->resize(RULER_SIZE,this->size().height());
+    m_vruler->resize(RULER_SIZE+1,this->size().height());
     m_vruler->move(0,RULER_SIZE);
 
     box->resize(RULER_SIZE,RULER_SIZE);
@@ -68,6 +68,5 @@ void DrawView::updateRuler()
     m_vruler->setRange(lower_y,upper_y,upper_y - lower_y );
     m_hruler->update();
     m_vruler->update();
-
 }
 

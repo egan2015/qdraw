@@ -24,7 +24,6 @@ protected:
     QtRuleBar *m_hruler;
     QtRuleBar *m_vruler;
     QtCornerBox * box;    
-    QPoint m_scrollPos;
 };
 
 #endif // DRAWVIEW_H

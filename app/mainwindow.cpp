@@ -67,6 +67,12 @@ MainWindow::MainWindow(QWidget *parent)
     view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
     view->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
+    /*
+    view->setTransform(view->transform().translate(0,600));
+    view->setTransform(view->transform().scale(1,-1));
+    view->setTransform(view->transform().translate(0,-600));
+    */
+
     scene->setBackgroundBrush(Qt::darkGray);
 
     mdiArea = new QMdiArea;

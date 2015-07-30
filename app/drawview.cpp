@@ -3,7 +3,6 @@
 DrawView::DrawView(QGraphicsScene *scene)
     :QGraphicsView(scene)
 {
-    m_scrollPos   = QPoint(0,0);
     m_hruler = new QtRuleBar(RT_HORIZONTAL,this,this);
     m_vruler = new QtRuleBar(RT_VERTICAL,this,this);
     box = new QtCornerBox(this);
@@ -27,7 +26,6 @@ void DrawView::mouseMoveEvent(QMouseEvent *event)
     QPointF pt =mapToScene(event->pos());
     m_hruler->updatePosition(event->pos());
     m_vruler->updatePosition(event->pos());
-
     emit positionChanged( pt.x() , pt.y() );
     QGraphicsView::mouseMoveEvent(event);
 }
@@ -61,14 +59,15 @@ void DrawView::updateRuler()
     double factor =  1./transform().m11();
     double lower_x = factor * ( viewbox.left()  - offset.x() );
     double upper_x = factor * ( viewbox.right() -RULER_SIZE- offset.x() -1 );
+    m_hruler->setRange(lower_x,upper_x,upper_x - lower_x );
+    m_hruler->update();
 
     double lower_y = factor * ( viewbox.top() - offset.y());
     double upper_y = factor * ( viewbox.bottom() - RULER_SIZE - offset.y() -1);
 
-    m_hruler->setRange(lower_x,upper_x,upper_x - lower_x );
     m_vruler->setRange(lower_y,upper_y,upper_y - lower_y );
-    m_hruler->update();
-    m_vruler->update();    
+    m_vruler->update();
 
+ //   qDebug()<<viewbox<<QPoint(lower_x,upper_x) << QPoint(lower_y,upper_y) << offset;
 }
 

@@ -8,20 +8,17 @@ DrawView::DrawView(QGraphicsScene *scene)
     m_vruler = new QtRuleBar(RT_VERTICAL,this,this);
     box = new QtCornerBox(this);
     setViewport(new QWidget);
-    m_zoomFactor = 1;
 }
 
 void DrawView::zoomIn()
 {
     scale(1.2,1.2);
-    m_zoomFactor+=1.2;
     updateRuler();
 }
 
 void DrawView::zoomOut()
 {
     scale(1 / 1.2, 1 / 1.2);
-    m_zoomFactor-=1.2;
     updateRuler();
 }
 

@@ -59,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     view = new DrawView(scene);
     scene->setView(view);
-
+   // view->setTransform(view->transform().scale(1.0,-1.0));
     connect(view,SIGNAL(positionChanged(int,int)),this,SLOT(positionChanged(int,int)));
 
     view->setRenderHint(QPainter::Antialiasing);

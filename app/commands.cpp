@@ -160,7 +160,7 @@ void RotateCommand::redo()
 }
 
 
-GroupCommand::GroupCommand(GraphicsItemGroup * group,
+GroupCommand::GroupCommand(QGraphicsItemGroup * group,
                            QGraphicsScene *graphicsScene,
                            QUndoCommand *parent)
 : QUndoCommand(parent)
@@ -202,7 +202,7 @@ void GroupCommand::redo()
 }
 
 
-UnGroupCommand::UnGroupCommand(GraphicsItemGroup *group,
+UnGroupCommand::UnGroupCommand(QGraphicsItemGroup *group,
                                QGraphicsScene *graphicsScene,
                                QUndoCommand *parent)
     :QUndoCommand(parent)

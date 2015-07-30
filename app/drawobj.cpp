@@ -701,6 +701,7 @@ void GraphicsItemGroup::stretch(int handle, double sx, double sy, const QPointF 
 
 void GraphicsItemGroup::updateCoordinate()
 {
+
     QPointF pt1,pt2,delta;
     pt1 = mapToScene(transformOriginPoint());
     pt2 = mapToScene(itemsBoundingRect.center());
@@ -712,6 +713,7 @@ void GraphicsItemGroup::updateCoordinate()
     setTransformOriginPoint(itemsBoundingRect.center());
     moveBy(-delta.x(),-delta.y());
 //    setTransform(transform().translate(-delta.x(),-delta.y()));
+
 
     foreach (QGraphicsItem *item , childItems()) {
          AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);

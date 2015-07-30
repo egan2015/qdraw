@@ -24,7 +24,7 @@ class QFont;
 class QToolButton;
 class QAbstractButton;
 class QGraphicsView;
-class QListView;
+class QListWidget;
 class QStatusBar;
 class QMdiArea;
 class QMdiSubWindow;
@@ -130,7 +130,7 @@ private:
 
     DrawView  *view;
     DrawScene      *scene;
-    QListView      *listView;
+    QListWidget    *listView;
 
     QUndoStack *undoStack;
     QUndoView *undoView;

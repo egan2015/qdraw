@@ -111,11 +111,12 @@ static void qt_graphicsItem_highlightSelected(
 GraphicsItem::GraphicsItem(QGraphicsItem *parent)
     :AbstractShapeType<QGraphicsItem>(parent)
 {
-/*
+
+    /*
     QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
-    effect->setBlurRadius(8);
+    effect->setBlurRadius(4);
     setGraphicsEffect(effect);
-*/
+   */
     // handles
     m_handles.reserve(Left);
     for (int i = LeftTop; i <= Left; ++i) {
@@ -123,11 +124,23 @@ GraphicsItem::GraphicsItem(QGraphicsItem *parent)
         m_handles.push_back(shr);
     }
 
-
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
     this->setAcceptHoverEvents(true);
+}
+
+QPixmap GraphicsItem::image() {
+    QPixmap pixmap(64, 64);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    setPen(QPen(Qt::black));
+    setBrush(Qt::white);
+    QStyleOptionGraphicsItem *styleOption = new QStyleOptionGraphicsItem;
+//    painter.translate(m_localRect.center().x(),m_localRect.center().y());
+    paint(&painter,styleOption);
+    delete styleOption;
+    return pixmap;
 }
 
 
@@ -191,6 +204,7 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
 
 GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphicsItem *parent)
     :GraphicsItem(parent)
+
     ,m_isRound(isRound)
     ,m_fRatioX(1/10.0)
     ,m_fRatioY(1/3.0)
@@ -198,8 +212,10 @@ GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphics
 
     m_width = rect.width();
     m_height = rect.height();
-    m_initialRect = QRect(1,1,1,1);
+    m_initialRect = rect;
     m_localRect = m_initialRect;
+    m_localRect = rect;
+
     if( m_isRound ){
         SizeHandleRect *shr = new SizeHandleRect(this, 9 , true);
         m_handles.push_back(shr);
@@ -1005,8 +1021,8 @@ void GridTool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 }
 
 
-GraphicsEllipseItem::GraphicsEllipseItem(QGraphicsItem *parent)
-    :GraphicsRectItem(QRect(0,0,1,1),parent)
+GraphicsEllipseItem::GraphicsEllipseItem(const QRect & rect ,QGraphicsItem *parent)
+    :GraphicsRectItem(rect,parent)
 {
     m_startAngle = 40;
     m_spanAngle  = 400;
@@ -1143,7 +1159,7 @@ void GraphicsEllipseItem::updateCoordinate()
 
 QGraphicsItem *GraphicsEllipseItem::copy() const
 {
-    GraphicsEllipseItem * item = new GraphicsEllipseItem( );
+    GraphicsEllipseItem * item = new GraphicsEllipseItem( m_localRect.toRect() );
     item->m_width = width();
     item->m_height = height();
     item->m_startAngle = m_startAngle;

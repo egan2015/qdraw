@@ -44,7 +44,6 @@ public:
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
     virtual QGraphicsItem * copy() const { return NULL;}
     virtual int handleCount() const { return m_handles.size();}
-
     int collidesWithHandle( const QPointF & point ) const
     {
         const Handles::const_reverse_iterator hend =  m_handles.rend();
@@ -141,6 +140,9 @@ public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
+
+    virtual QPixmap image() ;
+
 signals:
     void selectedChange(QGraphicsItem *item);
 
@@ -176,7 +178,7 @@ protected:
 class GraphicsEllipseItem :public GraphicsRectItem
 {
 public:
-    GraphicsEllipseItem(QGraphicsItem * parent = 0);
+    GraphicsEllipseItem(const QRect & rect , QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     void resize(int dir, const QPointF & delta );
     QRectF boundingRect() const ;

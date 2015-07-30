@@ -98,13 +98,22 @@ void MainWindow::createToolBox()
     QDockWidget *dock = new QDockWidget(this);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 
-    listView = new QListView();
+    listView = new QListWidget();
     listView->setViewMode(QListView::IconMode);
+    listView->setDragDropMode(QAbstractItemView::NoDragDrop);
     listView->setStyleSheet(tr("QListView {background-color: mediumaquamarine;}"));
     toolBox = new QToolBox(dock);
     toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
     toolBox->addItem(listView,tr("Graphics Library"));
     dock->setWidget(toolBox);
+    GraphicsRectItem item(QRect(0,0,48,48));
+    QIcon icon(item.image());
+    GraphicsEllipseItem item1(QRect(0,0,48,48));
+    QIcon icon1(item1.image());
+
+    listView->addItem(new QListWidgetItem(icon,tr("Rectangle")));
+    listView->addItem(new QListWidgetItem(icon1,tr("RoundRect")));
+
 }
 
 void MainWindow::createActions()

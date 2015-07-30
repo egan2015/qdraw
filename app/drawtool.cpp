@@ -423,13 +423,13 @@ void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene
     DrawTool::mousePressEvent(event,scene);
     switch ( c_drawShape ){
     case rectangle:
-        item = new GraphicsRectItem(QRect(0,0,1,1));
+        item = new GraphicsRectItem(QRect(1,1,1,1));
         break;
     case roundrect:
-        item = new GraphicsRectItem(QRect(0,0,1,1),true);
+        item = new GraphicsRectItem(QRect(1,1,1,1),true);
         break;
     case ellipse:
-        item = new GraphicsEllipseItem();
+        item = new GraphicsEllipseItem(QRect(1,1,1,1));
         break;
     }
     if ( item == 0) return;

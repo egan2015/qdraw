@@ -111,11 +111,11 @@ static void qt_graphicsItem_highlightSelected(
 GraphicsItem::GraphicsItem(QGraphicsItem *parent)
     :AbstractShapeType<QGraphicsItem>(parent)
 {
-//    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
-//    effect->setBlurRadius(8);
-//    setGraphicsEffect(effect);
-//    setCacheMode(QGraphicsItem::ItemCoordinateCache);
-
+/*
+    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
+    effect->setBlurRadius(8);
+    setGraphicsEffect(effect);
+*/
     // handles
     m_handles.reserve(Left);
     for (int i = LeftTop; i <= Left; ++i) {
@@ -828,7 +828,13 @@ void GraphicsItemGroup::updatehandles()
 QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
-        setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(parentItem());
+        if (!g)
+            setState(value.toBool() ? SelectionHandleActive : SelectionHandleOff);
+        else{
+            setSelected(false);
+            return QVariant::fromValue<bool>(false);
+        }
         if( value.toBool()){
             updateCoordinate();
         }

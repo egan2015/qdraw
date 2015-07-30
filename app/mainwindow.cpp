@@ -368,10 +368,15 @@ void MainWindow::itemSelected()
          && scene->selectedItems().first()->isSelected())
     {
         QGraphicsItem *item = scene->selectedItems().first();
+
         theControlledObject = dynamic_cast<QObject*>(item);
+        propertyEditor->setObject(theControlledObject);
+
 
     }
-    if ( theControlledObject ){
+    return ;
+    if ( theControlledObject )
+    {
         propertyEditor->setObject(theControlledObject);
     }
 }

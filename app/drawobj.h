@@ -94,6 +94,7 @@ public:
     QColor penColor() const {return m_pen.color();}
     void   setPen(const QPen & pen ) { m_pen = pen;}
     void   setBrush( const QBrush & brush ) { m_brush = brush ; }
+    void   setBrushColor( const QColor & color ) { m_brush.setColor(color);}
     qreal  width() const { return m_width ; }
     void   setWidth( qreal width )
     {
@@ -131,7 +132,7 @@ class GraphicsItem : public QObject,
 {
     Q_OBJECT
     Q_PROPERTY(QColor pen READ penColor WRITE setPen )
-    Q_PROPERTY(QColor brush READ brushColor WRITE setBrush )
+    Q_PROPERTY(QColor brush READ brushColor WRITE setBrushColor )
     Q_PROPERTY(qreal  width READ width WRITE setWidth )
     Q_PROPERTY(qreal  height READ height WRITE setHeight )
     Q_PROPERTY(QPointF  position READ pos WRITE setPos )
@@ -198,7 +199,7 @@ class GraphicsItemGroup : public QObject,
 {
     Q_OBJECT
     Q_PROPERTY(QColor pen READ penColor WRITE setPen )
-    Q_PROPERTY(QColor brush READ brushColor WRITE setBrush )
+    Q_PROPERTY(QColor brush READ brushColor WRITE setBrushColor )
     Q_PROPERTY(qreal  width READ width WRITE setWidth )
     Q_PROPERTY(qreal  height READ height WRITE setHeight )
     Q_PROPERTY(QPointF  position READ pos WRITE setPos )

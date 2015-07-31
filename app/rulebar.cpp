@@ -131,7 +131,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
         }
         int tick_index = 0;
         for (cur = start; cur <= end; cur += subd_incr){
-            pos = int(round((cur - lower) * increment + 1e-12));
+            pos = int(qRound((cur - lower) * increment + 1e-12));
             if (m_rulerType==RT_HORIZONTAL){
                 QRect rt(pos,height-length,1,length);
                 painter->drawLine(rt.topLeft(),rt.bottomLeft());
@@ -199,13 +199,13 @@ void QtRuleBar::drawPos(QPainter *painter)
        double increment;
        if (m_rulerType==RT_HORIZONTAL){
            increment = (double) width / (upper - lower);
-           x = round ((position - lower) * increment) + bs_width / 2 - 1;
+           x = qRound ((position - lower) * increment) + bs_width / 2 - 1;
            y = (height + bs_height) / 2 ;
            painter->drawLine(m_lastPos.x(),0, m_lastPos.x() , height);
        }else{
            increment = (double) height / (upper - lower);
            x = (width + bs_width) / 2 ;
-           y = round ((position - lower) * increment) + (bs_height) / 2 - 1;
+           y = qRound ((position - lower) * increment) + (bs_height) / 2 - 1;
            painter->drawLine(0 , m_lastPos.y() , width , m_lastPos.y());
        }
    }

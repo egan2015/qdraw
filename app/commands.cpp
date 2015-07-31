@@ -29,7 +29,7 @@ void MoveShapeCommand::undo()
            item->moveBy(-myDelta.x(),-myDelta.y());
         }
     }
-    setText(QObject::tr("Move %1,%2")
+    setText(QObject::tr("Undo Move %1,%2")
         .arg(-myDelta.x()).arg(-myDelta.y()));
     bMoved = false;
 }
@@ -49,7 +49,7 @@ void MoveShapeCommand::redo()
             myGraphicsScene->update();
         }
     }
-    setText(QObject::tr("Move %1,%2")
+    setText(QObject::tr("Redo Move %1,%2")
         .arg(myDelta.x()).arg(myDelta.y()));
 }
 //! [3]
@@ -59,7 +59,6 @@ RemoveShapeCommand::RemoveShapeCommand(QGraphicsScene *scene, QUndoCommand *pare
 {
     myGraphicsScene = scene;
     items = myGraphicsScene->selectedItems();
-    setText(QObject::tr("Delete %1").arg(items.count()));
 }
 
 RemoveShapeCommand::~RemoveShapeCommand()
@@ -77,7 +76,7 @@ void RemoveShapeCommand::undo()
             myGraphicsScene->addItem(item);
     }
     myGraphicsScene->update();
-
+    setText(QObject::tr("Undo Delete %1").arg(items.count()));
 }
 //! [5]
 
@@ -89,6 +88,7 @@ void RemoveShapeCommand::redo()
         if ( !g )
             myGraphicsScene->removeItem(item);
     }
+        setText(QObject::tr("Redo Delete %1").arg(items.count()));
 }
 //! [6]
 
@@ -103,8 +103,6 @@ AddShapeCommand::AddShapeCommand(QGraphicsItem *item,
     myDiagramItem = item;
     initialPosition = item->pos();
     ++itemCount;
-    setText(QObject::tr("Add %1")
-        .arg(createCommandString(myDiagramItem, initialPosition)));
 }
 //! [7]
 
@@ -119,6 +117,9 @@ void AddShapeCommand::undo()
 {
     myGraphicsScene->removeItem(myDiagramItem);
     myGraphicsScene->update();
+    setText(QObject::tr("Undo Add %1")
+        .arg(createCommandString(myDiagramItem, initialPosition)));
+
 }
 //! [8]
 
@@ -129,6 +130,9 @@ void AddShapeCommand::redo()
         myGraphicsScene->addItem(myDiagramItem);
     myDiagramItem->setPos(initialPosition);
     myGraphicsScene->update();
+    setText(QObject::tr("Redo Add %1")
+        .arg(createCommandString(myDiagramItem, initialPosition)));
+
 }
 
 QString createCommandString(QGraphicsItem *item, const QPointF &pos)
@@ -144,19 +148,21 @@ RotateShapeCommand::RotateShapeCommand(QGraphicsItem *item, const qreal oldAngle
     myItem = item;
     myOldAngle = oldAngle;
     newAngle = item->rotation();
-    setText(QObject::tr("Rotate %1").arg(newAngle));
+
 }
 
 void RotateShapeCommand::undo()
 {
     myItem->setRotation(myOldAngle);
     myItem->scene()->update();
+    setText(QObject::tr("Undo Rotate %1").arg(newAngle));
 }
 
 void RotateShapeCommand::redo()
 {
     myItem->setRotation(newAngle);
     myItem->update();
+    setText(QObject::tr("Redo Rotate %1").arg(newAngle));
 }
 
 
@@ -169,7 +175,6 @@ GroupShapeCommand::GroupShapeCommand(QGraphicsItemGroup * group,
     myGroup = group;
     items = group->childItems();
     b_undo = false;
-    setText(QObject::tr("Group %1").arg(items.count()));
 }
 
 void GroupShapeCommand::undo()
@@ -183,6 +188,8 @@ void GroupShapeCommand::undo()
     myGraphicsScene->removeItem(myGroup);
     myGraphicsScene->update();
     b_undo = true;
+    setText(QObject::tr("Undo Group %1").arg(items.count()));
+
 }
 
 void GroupShapeCommand::redo()
@@ -199,6 +206,9 @@ void GroupShapeCommand::redo()
     if ( myGroup->scene() == NULL )
         myGraphicsScene->addItem(myGroup);
     myGraphicsScene->update();
+
+    setText(QObject::tr("Redo Group %1").arg(items.count()));
+
 }
 
 
@@ -210,7 +220,6 @@ UnGroupShapeCommand::UnGroupShapeCommand(QGraphicsItemGroup *group,
     myGraphicsScene = graphicsScene;
     myGroup = group;
     items = group->childItems();
-    setText(QObject::tr("UnGroup %1").arg(items.count()));
 }
 
 void UnGroupShapeCommand::undo()
@@ -225,6 +234,9 @@ void UnGroupShapeCommand::undo()
     if ( myGroup->scene() == NULL )
         myGraphicsScene->addItem(myGroup);
     myGraphicsScene->update();
+
+    setText(QObject::tr("Undo UnGroup %1").arg(items.count()));
+
 }
 
 void UnGroupShapeCommand::redo()
@@ -236,6 +248,8 @@ void UnGroupShapeCommand::redo()
     }
     myGraphicsScene->removeItem(myGroup);
     myGraphicsScene->update();
+    setText(QObject::tr("Redo UnGroup %1").arg(items.count()));
+
 }
 
 

@@ -67,7 +67,7 @@ public:
         }
         return QPointF();
     }
-    virtual int swapHandle(int handle, const QPointF& scale ) const
+    int swapHandle(int handle, const QPointF& scale ) const
     {
         int dir = Handle_None;
         if ( scale.x() < 0 || scale.y() < 0 ){
@@ -105,16 +105,20 @@ public:
                     dir = RightTop;
                 break;
             case Right:
-                dir = Left;
+                if (scale.x() < 0 )
+                    dir = Left;
                 break;
             case Left:
-                dir = Right;
+                if (scale.x() < 0 )
+                    dir = Right;
                 break;
             case Top:
-                dir = Bottom;
+                if (scale.y()<0)
+                    dir = Bottom;
                 break;
             case Bottom:
-                dir = Top;
+                if (scale.y()<0)
+                   dir = Top;
                 break;
             }
         }

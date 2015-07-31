@@ -262,7 +262,7 @@ ResizeShapeCommand::ResizeShapeCommand(QGraphicsItem *item,
     handle_ = handle;
     scale_  = QPointF(scale) ;
     opposite_ = Handle_None;
-    bResized = true;
+    bResized = true;       
 }
 
 void ResizeShapeCommand::undo()
@@ -315,6 +315,7 @@ bool ResizeShapeCommand::mergeWith(const QUndoCommand *command)
 
     if (myItem != item)
         return false;
+
     if ( cmd->handle_ != handle_ )
         return false;
 

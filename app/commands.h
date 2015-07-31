@@ -33,10 +33,10 @@ public:
 
     bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
     int id() const Q_DECL_OVERRIDE { return Id; }
-
 private:
     QGraphicsItem  *myItem;
     int handle_;
+    int opposite_;
     QPointF scale_;
     bool bResized;
 };

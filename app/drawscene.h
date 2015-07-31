@@ -17,7 +17,6 @@ class QKeyEvent;
 class QPainter;
 QT_END_NAMESPACE
 
-
 enum AlignType
 {
     UP_ALIGN=0,

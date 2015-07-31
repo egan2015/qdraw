@@ -56,8 +56,69 @@ public:
         }
         return Handle_None;
     }
-    virtual QPointF handlePos( int handle ) const {
-        return m_handles.at(handle -1)->pos();
+    virtual QPointF handlePos( int handle ) const
+    {
+        const Handles::const_reverse_iterator hend =  m_handles.rend();
+        for (Handles::const_reverse_iterator it = m_handles.rbegin(); it != hend; ++it)
+        {
+            if ((*it)->dir() == handle ){
+                return (*it)->pos();
+            }
+        }
+        return QPointF();
+    }
+    virtual int swapHandle(int handle, const QPointF& scale ) const
+    {
+        int dir = Handle_None;
+        if ( scale.x() < 0 || scale.y() < 0 ){
+            switch (handle) {
+            case RightTop:
+                if ( scale.x() < 0 && scale.y() < 0 )
+                    dir = LeftBottom;
+                else if ( scale.x() > 0 && scale.y() < 0 )
+                    dir = RightBottom;
+                else
+                    dir = LeftTop;
+                break;
+            case RightBottom:
+                if ( scale.x() < 0 && scale.y() < 0 )
+                    dir = LeftTop;
+                else if ( scale.x() > 0 && scale.y() < 0 )
+                    dir = RightTop;
+                else
+                    dir = LeftBottom;
+                break;
+            case LeftBottom:
+                if ( scale.x() < 0 && scale.y() < 0 )
+                    dir = RightTop;
+                else if ( scale.x() > 0 && scale.y() < 0 )
+                    dir = LeftTop;
+                else
+                    dir = RightBottom;
+                break;
+            case LeftTop:
+                if ( scale.x() < 0 && scale.y() < 0 )
+                    dir = RightBottom;
+                else if ( scale.x() > 0 && scale.y() < 0 )
+                    dir = LeftBottom;
+                else
+                    dir = RightTop;
+                break;
+            case Right:
+                dir = Left;
+                break;
+            case Left:
+                dir = Right;
+                break;
+            case Top:
+                dir = Bottom;
+                break;
+            case Bottom:
+                dir = Top;
+                break;
+            }
+        }
+        return dir;
     }
     virtual QPointF opposite( int handle ) {
         QPointF pt;

@@ -4,12 +4,12 @@
 #include <QUndoCommand>
 #include "drawscene.h"
 
-class MoveCommand : public QUndoCommand
+class MoveShapeCommand : public QUndoCommand
 {
 public:
-    MoveCommand(QGraphicsScene *graphicsScene, const QPointF & delta ,
+    MoveShapeCommand(QGraphicsScene *graphicsScene, const QPointF & delta ,
                 QUndoCommand * parent = 0);
-    MoveCommand(QGraphicsItem * item, const QPointF & delta , QUndoCommand * parent = 0);
+    MoveShapeCommand(QGraphicsItem * item, const QPointF & delta , QUndoCommand * parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 private:
@@ -20,10 +20,55 @@ private:
     bool bMoved;
 };
 
-class RotateCommand : public QUndoCommand
+class ResizeShapeCommand : public QUndoCommand
 {
 public:
-    RotateCommand(QGraphicsItem *item , const qreal oldAngle ,
+    enum { Id = 1234, };
+    ResizeShapeCommand(QGraphicsItem * item ,
+                       int handle,
+                       const QPointF& scale,
+                       QUndoCommand *parent = 0 );
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
+
+    bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
+    int id() const Q_DECL_OVERRIDE { return Id; }
+
+private:
+    QGraphicsItem  *myItem;
+    int handle_;
+    QPointF scale_;
+    bool bResized;
+};
+
+class ControlShapeCommand : public QUndoCommand
+{
+public:
+    enum { Id = 1235, };
+    ControlShapeCommand(QGraphicsItem * item ,
+                       int handle,
+                       const QPointF& newPos,
+                       const QPointF& lastPos,
+                       QUndoCommand *parent = 0 );
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
+
+    bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
+    int id() const Q_DECL_OVERRIDE { return Id; }
+
+private:
+    QGraphicsItem  *myItem;
+    int handle_;
+    QPointF lastPos_;
+    QPointF newPos_;
+    bool bControled;
+};
+
+
+class RotateShapeCommand : public QUndoCommand
+{
+public:
+    RotateShapeCommand(QGraphicsItem *item , const qreal oldAngle ,
                 QUndoCommand * parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
@@ -33,11 +78,11 @@ private:
     qreal newAngle;
 };
 
-class DeleteCommand : public QUndoCommand
+class RemoveShapeCommand : public QUndoCommand
 {
 public:
-    explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
-    ~DeleteCommand();
+    explicit RemoveShapeCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
+    ~RemoveShapeCommand();
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
 
@@ -46,10 +91,10 @@ private:
     QGraphicsScene *myGraphicsScene;
 };
 
-class GroupCommand : public QUndoCommand
+class GroupShapeCommand : public QUndoCommand
 {
 public:
-    explicit GroupCommand( QGraphicsItemGroup * group, QGraphicsScene *graphicsScene,
+    explicit GroupShapeCommand( QGraphicsItemGroup * group, QGraphicsScene *graphicsScene,
                            QUndoCommand *parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
@@ -60,10 +105,10 @@ private:
     bool b_undo;
 };
 
-class UnGroupCommand : public QUndoCommand
+class UnGroupShapeCommand : public QUndoCommand
 {
 public:
-    explicit UnGroupCommand( QGraphicsItemGroup * group, QGraphicsScene *graphicsScene,
+    explicit UnGroupShapeCommand( QGraphicsItemGroup * group, QGraphicsScene *graphicsScene,
                              QUndoCommand *parent = 0);
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;
@@ -73,12 +118,12 @@ private:
     QGraphicsScene *myGraphicsScene;
 };
 
-class AddCommand : public QUndoCommand
+class AddShapeCommand : public QUndoCommand
 {
 public:
-    AddCommand(QGraphicsItem *item , QGraphicsScene *graphicsScene,
+    AddShapeCommand(QGraphicsItem *item , QGraphicsScene *graphicsScene,
                QUndoCommand *parent = 0);
-    ~AddCommand();
+    ~AddShapeCommand();
 
     void undo() Q_DECL_OVERRIDE;
     void redo() Q_DECL_OVERRIDE;

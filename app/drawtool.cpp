@@ -128,6 +128,7 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
             if (opposite_.y() == 0 )
                 opposite_.setY(1);
         }
+
         setCursor(scene,Qt::ClosedHandCursor);
 
     }else if ( items.count() > 1 )
@@ -194,12 +195,15 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
 
                 item->stretch(nDragHandle, sx , sy ,opposite_);
 
+                emit scene->itemResize(item,nDragHandle,QPointF(sx,sy));
+
 //                qDebug()<<"scale:"<<nDragHandle<<opposite_<< sx << " ，" << sy
 //                       << new_delta << item->mapFromScene(c_last)
 //                       << initial_delta << item->mapFromScene(c_down);
 
             } else if ( nDragHandle > Left  && selectMode == editor ){
-                item->resize(nDragHandle,c_last);
+                item->control(nDragHandle,c_last);
+                emit scene->itemControl(item,nDragHandle,c_last,c_down);
             }
             else if(nDragHandle == Handle_None ){
                  int handle = item->collidesWithHandle(event->scenePos());
@@ -241,6 +245,7 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
              item->setPos(initialPositions + c_last - c_down);
              emit scene->itemMoved(item , c_last - c_down );
          }else if ( item !=0 && selectMode == size && c_last != c_down ){
+
             item->updateCoordinate();
         }
     }else if ( items.count() > 1 && selectMode == move && c_last != c_down ){
@@ -525,8 +530,7 @@ void PolygonTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 
     if ( item != 0 ){
         if ( nDragHandle != Handle_None && selectMode == size ){
-
-            item->resize(nDragHandle,c_last);
+            item->control(nDragHandle,c_last);
         }
     }
 

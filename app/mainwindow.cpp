@@ -57,6 +57,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(scene,SIGNAL(itemRotate(QGraphicsItem*,qreal)),
             this,SLOT(itemRotate(QGraphicsItem*,qreal)));
 
+    connect(scene,SIGNAL(itemResize(QGraphicsItem* , int , const QPointF&)),
+            this,SLOT(itemResize(QGraphicsItem*,int,QPointF)));
+
+    connect(scene,SIGNAL(itemControl(QGraphicsItem* , int , const QPointF&,const QPointF&)),
+            this,SLOT(itemControl(QGraphicsItem*,int,QPointF,QPointF)));
+
     view = new DrawView(scene);
     scene->setView(view);
     connect(view,SIGNAL(positionChanged(int,int)),this,SLOT(positionChanged(int,int)));
@@ -391,24 +397,36 @@ void MainWindow::itemMoved(QGraphicsItem *item, const QPointF &oldPosition)
 {
     Q_UNUSED(item);
     if ( item ){
-        QUndoCommand *moveCommand = new MoveCommand(item, oldPosition);
+        QUndoCommand *moveCommand = new MoveShapeCommand(item, oldPosition);
         undoStack->push(moveCommand);
     }else{
-        QUndoCommand *moveCommand = new MoveCommand(scene, oldPosition);
+        QUndoCommand *moveCommand = new MoveShapeCommand(scene, oldPosition);
         undoStack->push(moveCommand);
     }
 }
 
 void MainWindow::itemAdded(QGraphicsItem *item)
 {
-    QUndoCommand *addCommand = new AddCommand(item, scene);
+    QUndoCommand *addCommand = new AddShapeCommand(item, scene);
     undoStack->push(addCommand);
 }
 
 void MainWindow::itemRotate(QGraphicsItem *item, const qreal oldAngle)
 {
-    QUndoCommand *rotateCommand = new RotateCommand(item , oldAngle);
+    QUndoCommand *rotateCommand = new RotateShapeCommand(item , oldAngle);
     undoStack->push(rotateCommand);
+}
+
+void MainWindow::itemResize(QGraphicsItem *item, int handle, const QPointF& scale)
+{
+    QUndoCommand *resizeCommand = new ResizeShapeCommand(item ,handle, scale );
+    undoStack->push(resizeCommand);
+}
+
+void MainWindow::itemControl(QGraphicsItem *item, int handle, const QPointF & newPos ,const QPointF &lastPos_)
+{
+    QUndoCommand *controlCommand = new ControlShapeCommand(item ,handle, newPos, lastPos_ );
+    undoStack->push(controlCommand);
 }
 
 void MainWindow::deleteItem()
@@ -416,7 +434,7 @@ void MainWindow::deleteItem()
     if (scene->selectedItems().isEmpty())
         return;
 
-    QUndoCommand *deleteCommand = new DeleteCommand(scene);
+    QUndoCommand *deleteCommand = new RemoveShapeCommand(scene);
     undoStack->push(deleteCommand);
 
 }
@@ -498,7 +516,7 @@ void MainWindow::on_group_triggered()
     // Create a new group at that level
     if ( selectedItems.count() < 2) return;
     GraphicsItemGroup *group = scene->createGroup(selectedItems);
-    QUndoCommand *groupCommand = new GroupCommand(group,scene);
+    QUndoCommand *groupCommand = new GroupShapeCommand(group,scene);
     undoStack->push(groupCommand);
 }
 
@@ -507,7 +525,7 @@ void MainWindow::on_unGroup_triggered()
     QGraphicsItem *selectedItem = scene->selectedItems().first();
     GraphicsItemGroup * group = dynamic_cast<GraphicsItemGroup*>(selectedItem);
     if ( group ){
-        QUndoCommand *unGroupCommand = new UnGroupCommand(group,scene);
+        QUndoCommand *unGroupCommand = new UnGroupShapeCommand(group,scene);
         undoStack->push(unGroupCommand);
     }
 }
@@ -558,7 +576,7 @@ void MainWindow::on_paste()
             if ( copy ){
                 copy->setSelected(true);
                 copy->moveBy(10,10);
-                QUndoCommand *addCommand = new AddCommand(copy, scene);
+                QUndoCommand *addCommand = new AddShapeCommand(copy, scene);
                 undoStack->push(addCommand);
             }
         }
@@ -574,7 +592,7 @@ void MainWindow::on_cut()
         if ( copy )
             copylist.append(copy);
     }
-    QUndoCommand *deleteCommand = new DeleteCommand(scene);
+    QUndoCommand *deleteCommand = new RemoveShapeCommand(scene);
     undoStack->push(deleteCommand);
     if ( copylist.count() > 0 ){
         ShapeMimeData * data = new ShapeMimeData( copylist );

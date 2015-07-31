@@ -52,6 +52,9 @@ public slots:
     void itemMoved(QGraphicsItem * item , const QPointF & oldPosition );
     void itemAdded(QGraphicsItem * item );
     void itemRotate(QGraphicsItem * item , const qreal oldAngle );
+    void itemResize(QGraphicsItem * item , int handle , const QPointF& scale );
+    void itemControl(QGraphicsItem * item , int handle , const QPointF & newPos , const QPointF& lastPos_ );
+
     void on_actionBringToFront_triggered();
     void on_actionSendToBack_triggered();
     void on_aglin_triggered();

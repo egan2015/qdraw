@@ -51,6 +51,8 @@ signals:
     void itemMoved( QGraphicsItem * item , const QPointF & oldPosition );
     void itemRotate(QGraphicsItem * item , const qreal oldAngle );
     void itemAdded(QGraphicsItem * item );
+    void itemResize(QGraphicsItem * item , int handle , const QPointF& scale );
+    void itemControl(QGraphicsItem * item , int handle , const QPointF & newPos , const QPointF& lastPos_ );
 
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect) Q_DECL_OVERRIDE;

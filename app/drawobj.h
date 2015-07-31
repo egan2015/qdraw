@@ -37,7 +37,7 @@ public:
     }
     virtual ~AbstractShapeType(){}
     virtual QString displayName () const { return QString("AbstractType");}
-    virtual void resize(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}    
+    virtual void control(int dir, const QPointF & delta ){ Q_UNUSED(dir);Q_UNUSED(delta);}
     virtual void stretch( int  , double  , double  , const QPointF & ) {}
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
@@ -56,7 +56,9 @@ public:
         }
         return Handle_None;
     }
-
+    virtual QPointF handlePos( int handle ) const {
+        return m_handles.at(handle -1)->pos();
+    }
     virtual QPointF opposite( int handle ) {
         QPointF pt;
         switch (handle) {
@@ -159,7 +161,7 @@ public:
     GraphicsRectItem(const QRect & rect , bool isRound = false ,QGraphicsItem * parent = 0 );
     QRectF boundingRect() const;
     QPainterPath shape() const;
-    void resize(int dir, const QPointF & delta);
+    void control(int dir, const QPointF & delta);
     void stretch(int handle , double sx , double sy , const QPointF & origin);
     QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
@@ -181,7 +183,7 @@ class GraphicsEllipseItem :public GraphicsRectItem
 public:
     GraphicsEllipseItem(const QRect & rect , QGraphicsItem * parent = 0);
     QPainterPath shape() const;
-    void resize(int dir, const QPointF & delta );
+    void control(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
     void updateCoordinate ();
     QGraphicsItem *copy() const;
@@ -216,7 +218,7 @@ public:
     QString displayName() const { return tr("group"); }
 
     QGraphicsItem *copy () const ;
-    void resize(int dir, const QPointF & delta);
+    void control(int dir, const QPointF & delta);
     void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate();
 signals:
@@ -241,7 +243,7 @@ public:
     QPainterPath shape() const;
     virtual void addPoint( const QPointF & point ) ;
     virtual void endPoint(const QPointF & point );
-    void resize(int dir, const QPointF & delta);
+    void control(int dir, const QPointF & delta);
     void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate ();
      QGraphicsItem *copy() const;

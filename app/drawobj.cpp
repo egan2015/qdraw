@@ -250,45 +250,10 @@ QPainterPath GraphicsRectItem::shape() const
     return path;
 }
 
-void GraphicsRectItem::resize(int dir, const QPointF & delta)
+void GraphicsRectItem::control(int dir, const QPointF & delta)
 {
     QPointF local = mapFromParent(delta);
-    QString dirName;
-
-    QRect delta1 = this->rect().toRect();
     switch (dir) {
-    case Right:
-        dirName = "Rigth";
-        delta1.setRight(local.x());
-        break;
-    case RightTop:
-        dirName = "RightTop";
-        delta1.setTopRight(local.toPoint());
-        break;
-    case RightBottom:
-        dirName = "RightBottom";
-        delta1.setBottomRight(local.toPoint());
-        break;
-    case LeftBottom:
-        dirName = "LeftBottom";
-        delta1.setBottomLeft(local.toPoint());
-        break;
-    case Bottom:
-        dirName = "Bottom";
-        delta1.setBottom(local.y());
-        break;
-    case LeftTop:
-        dirName = "LeftTop";
-        delta1.setTopLeft(local.toPoint());
-        break;
-    case Left:
-        dirName = "Left";
-        delta1.setLeft(local.x());
-        break;
-    case Top:
-        dirName = "Top";
-        delta1.setTop(local.y());
-        break;
     case 9:
     {
         QRectF delta1 = rect();
@@ -320,12 +285,7 @@ void GraphicsRectItem::resize(int dir, const QPointF & delta)
    default:
         break;
     }
-
-    m_width = delta1.normalized().width();
-    m_height = delta1.normalized().height();
-
     prepareGeometryChange();
-    m_localRect = delta1;
     updatehandles();
 }
 
@@ -671,7 +631,7 @@ QGraphicsItem *GraphicsItemGroup::copy() const
     return item;
 }
 
-void GraphicsItemGroup::resize(int dir, const QPointF &delta)
+void GraphicsItemGroup::control(int dir, const QPointF &delta)
 {
     QPointF local = mapFromParent(delta);
     if ( dir < Left ) return ;
@@ -888,7 +848,7 @@ QPainterPath GraphicsBezier::shape() const
         ++i;
     }
 
-    return path;
+    return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
 QGraphicsItem *GraphicsBezier::copy() const
@@ -1030,7 +990,7 @@ GraphicsEllipseItem::GraphicsEllipseItem(const QRect & rect ,QGraphicsItem *pare
     m_handles.push_back(shr);
     shr = new SizeHandleRect(this, 10 , true);
     m_handles.push_back(shr);
-
+    updatehandles();
 }
 
 QPainterPath GraphicsEllipseItem::shape() const
@@ -1053,45 +1013,11 @@ QPainterPath GraphicsEllipseItem::shape() const
     return path;
 }
 
-void GraphicsEllipseItem::resize(int dir, const QPointF & delta)
+void GraphicsEllipseItem::control(int dir, const QPointF & delta)
 {
     QPointF local = mapFromScene(delta);
-    QString dirName;
 
-    QRect delta1 = this->rect().toRect();
     switch (dir) {
-    case Right:
-        dirName = "Rigth";
-        delta1.setRight(local.x());
-        break;
-    case RightTop:
-        dirName = "RightTop";
-        delta1.setTopRight(local.toPoint());
-        break;
-    case RightBottom:
-        dirName = "RightBottom";
-        delta1.setBottomRight(local.toPoint());
-        break;
-    case LeftBottom:
-        dirName = "LeftBottom";
-        delta1.setBottomLeft(local.toPoint());
-        break;
-    case Bottom:
-        dirName = "Bottom";
-        delta1.setBottom(local.y());
-        break;
-    case LeftTop:
-        dirName = "LeftTop";
-        delta1.setTopLeft(local.toPoint());
-        break;
-    case Left:
-        dirName = "Left";
-        delta1.setLeft(local.x());
-        break;
-    case Top:
-        dirName = "Top";
-        delta1.setTop(local.y());
-        break;
     case 9:
     {
         qreal len_y = local.y() - m_localRect.center().y();
@@ -1109,9 +1035,6 @@ void GraphicsEllipseItem::resize(int dir, const QPointF & delta)
    default:
         break;
     }
-    ;
-    m_width = delta1.normalized().width();
-    m_height = delta1.normalized().height();
     prepareGeometryChange();
     if ( m_startAngle > m_spanAngle )
         m_startAngle-=360;
@@ -1266,7 +1189,7 @@ QPainterPath GraphicsPolygonItem::shape() const
     QPainterPath path;
     path.addPolygon(m_points);
     path.closeSubpath();
-    return path;
+    return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
 void GraphicsPolygonItem::addPoint(const QPointF &point)
@@ -1278,7 +1201,7 @@ void GraphicsPolygonItem::addPoint(const QPointF &point)
     m_handles.push_back(shr);
 }
 
-void GraphicsPolygonItem::resize(int dir, const QPointF &delta)
+void GraphicsPolygonItem::control(int dir, const QPointF &delta)
 {
     QPointF pt = mapFromScene(delta);
     if ( dir <= Left ) return ;

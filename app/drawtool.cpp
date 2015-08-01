@@ -100,6 +100,8 @@ void SelectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *sce
 {
     DrawTool::mousePressEvent(event,scene);
 
+    if ( event->button() != Qt::LeftButton ) return;
+
     if (!m_hoverSizer)
        scene->mouseEvent(event);
 
@@ -238,13 +240,15 @@ void SelectTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *s
 
     DrawTool::mouseReleaseEvent(event,scene);
 
+    if ( event->button() != Qt::LeftButton ) return;
+
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
         AbstractShape * item = qgraphicsitem_cast<AbstractShape*>(items.first());
         if ( item != 0  && selectMode == move && c_last != c_down ){
              item->setPos(initialPositions + c_last - c_down);
              emit scene->itemMoved(item , c_last - c_down );
-         }else if ( item !=0 && selectMode == size && c_last != c_down ){
+         }else if ( item !=0 && (selectMode == size || selectMode ==editor) && c_last != c_down ){
 
             item->updateCoordinate();
         }
@@ -287,6 +291,7 @@ RotationTool::RotationTool()
 void RotationTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mousePressEvent(event,scene);
+    if ( event->button() != Qt::LeftButton ) return;
 
     if (!m_hoverSizer)
       scene->mouseEvent(event);
@@ -378,6 +383,7 @@ void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
 void RotationTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mouseReleaseEvent(event,scene);
+    if ( event->button() != Qt::LeftButton ) return;
 
     QList<QGraphicsItem *> items = scene->selectedItems();
     if ( items.count() == 1 ){
@@ -423,6 +429,8 @@ RectTool::RectTool(DrawShape drawShape)
 
 void RectTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
+
+    if ( event->button() != Qt::LeftButton ) return;
 
     scene->clearSelection();
     DrawTool::mousePressEvent(event,scene);
@@ -485,6 +493,9 @@ PolygonTool::PolygonTool(DrawShape shape)
 void PolygonTool::mousePressEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
     DrawTool::mousePressEvent(event,scene);
+
+    if ( event->button() != Qt::LeftButton ) return;
+
     if ( item == NULL ){
         if ( c_drawShape == polygon ){
         item = new GraphicsPolygonItem(NULL);

@@ -292,9 +292,6 @@ void ResizeShapeCommand::redo()
     if ( !bResized ){
         AbstractShape * item = qgraphicsitem_cast<AbstractShape*>(myItem);
         if ( item ){
-            if ( Handle_None != opposite_ ){
-                handle = handle_;
-            }
             item->stretch(handle,scale_.x(),scale_.y(),item->opposite(handle));
             item->updateCoordinate();
             item->update();

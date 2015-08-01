@@ -313,10 +313,12 @@ void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF 
     m_width = m_localRect.width();
     m_height = m_localRect.height();
     updatehandles();
+
 }
 
 void GraphicsRectItem::updateCoordinate()
 {
+
     QPointF pt1,pt2,delta;
 
     pt1 = mapToScene(transformOriginPoint());

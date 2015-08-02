@@ -75,6 +75,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
     uint            scale;        /* Number of units per major unit */
     double          start, end, cur;
     char            unit_str[32];
+    char            digit_str[2] = { '\0', '\0' };
     int             digit_height;
     int             digit_offset;
     int             text_size;
@@ -83,7 +84,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
     SPRulerMetric    ruler_metric = ruler_metric_general; /* The metric to use for this unit system */
     QRect allocation = this->rect();
     QFontMetrics fm(font());
-    digit_height = fm.height() + 2 ;
+    digit_height = fm.height() ;
     digit_offset = 0;
     if (m_rulerType==RT_HORIZONTAL){
         width = allocation.width();
@@ -156,7 +157,27 @@ void QtRuleBar::drawTicker(QPainter *painter)
                                      RULER_SIZE,
                                      Qt::AlignLeft|Qt::AlignTop,unit_str);
                } else{
-
+#if 0
+                   int w = fm.width("u") + 2;
+                   int start = cur < 0 ? 1 : 0 ;
+                   if ( start == 1 ){
+                       QRect textRect(-w/2,-digit_height/2,w,digit_height);
+                       painter->save();
+                       painter->translate(4, pos + w/2 + 2 );
+                       painter->rotate(90);
+                       painter->drawText(textRect,
+                                         Qt::AlignRight,QString(unit_str[0]));
+                       painter->restore();
+                   }
+                   for (int j = start; j < (int) strlen (unit_str); j++){
+                       digit_str[0] = unit_str[j];
+                       painter->drawText(1,
+                                         pos + digit_height * j,
+                                         w,
+                                         digit_height,
+                                         Qt::AlignLeft|Qt::AlignTop,QString(digit_str[0]));
+                   }
+#else
                    int w = fm.width(unit_str);
                    QRect textRect(-w/2,-RULER_SIZE/2,w,RULER_SIZE);
                    painter->save();
@@ -164,6 +185,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
                    painter->rotate(90);
                    painter->drawText(textRect,Qt::AlignRight,unit_str);
                    painter->restore();
+#endif
                }
             }
            tick_index++;

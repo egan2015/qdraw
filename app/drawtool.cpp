@@ -68,7 +68,7 @@ void DrawTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 
 void DrawTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, DrawScene *scene)
 {
-    if (event->scenePos() == (c_down - QPoint(2,2)))
+    if (event->scenePos() == c_down )
         c_drawShape = selection;
     setCursor(scene,Qt::ArrowCursor);
 }
@@ -195,13 +195,13 @@ void SelectTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *scen
                 double sx = new_delta.x() / initial_delta.x();
                 double sy = new_delta.y() / initial_delta.y();
 
-                item->stretch(nDragHandle, sx , sy ,opposite_);
+                item->stretch(nDragHandle, sx , sy , opposite_);
 
                 emit scene->itemResize(item,nDragHandle,QPointF(sx,sy));
 
-//                qDebug()<<"scale:"<<nDragHandle<<opposite_<< sx << " ，" << sy
-//                       << new_delta << item->mapFromScene(c_last)
-//                       << initial_delta << item->mapFromScene(c_down);
+              //  qDebug()<<"scale:"<<nDragHandle<< item->mapToScene(opposite_)<< sx << " ，" << sy
+              //         << new_delta << item->mapFromScene(c_last)
+              //         << initial_delta << item->mapFromScene(c_down) << item->boundingRect();
 
             } else if ( nDragHandle > Left  && selectMode == editor ){
                 item->control(nDragHandle,c_last);

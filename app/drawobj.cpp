@@ -198,6 +198,19 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
             return QVariant::fromValue<bool>(false);
         }
     }
+/*
+    else if (change == ItemPositionChange && scene()) {
+        // value is the new position.
+        QPointF newPos = value.toPointF();
+        QRectF rect = scene()->sceneRect();
+        if (!rect.contains(newPos)) {
+            // Keep the item inside the scene rect.
+            newPos.setX(qMin(rect.right()-boundingRect().width()/2, qMax(newPos.x(), rect.left()+boundingRect().width()/2)));
+            newPos.setY(qMin(rect.bottom()-boundingRect().height()/2, qMax(newPos.y(), rect.top()+boundingRect().height()/2)));
+            return newPos;
+        }
+    }
+*/
     return QGraphicsItem::itemChange(change, value);
 }
 
@@ -291,7 +304,7 @@ void GraphicsRectItem::control(int dir, const QPointF & delta)
 
 void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF & origin)
 {
-    QTransform trans ;
+    QTransform trans  ;
     switch (handle) {
     case Right:
     case Left:
@@ -304,6 +317,8 @@ void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF 
     default:
         break;
     }
+
+    opposite_ = origin;
     trans.translate(origin.x(),origin.y());
     trans.scale(sx,sy);
     trans.translate(-origin.x(),-origin.y());
@@ -331,11 +346,11 @@ void GraphicsRectItem::updateCoordinate()
         m_localRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
         m_width = m_localRect.width();
         m_height = m_localRect.height();
-
         setTransform(transform().translate(delta.x(),delta.y()));
         setTransformOriginPoint(m_localRect.center());
         moveBy(-delta.x(),-delta.y());
         setTransform(transform().translate(-delta.x(),-delta.y()));
+        opposite_ = QPointF(0,0);
         updatehandles();
     }
     m_initialRect = m_localRect;
@@ -375,6 +390,23 @@ void GraphicsRectItem::updatehandles()
     }
 }
 
+QRectF RecalcBounds(const QPolygonF&  pts)
+{
+    QRectF bounds(pts[0], QSize(0, 0));
+    for (int i = 1; i < pts.count(); ++i)
+    {
+        if (pts[i].x() < bounds.left())
+            bounds.setLeft(pts[i].x());
+        if (pts[i].x() > bounds.right())
+            bounds.setRight(pts[i].x());
+        if (pts[i].y() < bounds.top())
+            bounds.setTop(pts[i].y());
+        if (pts[i].y() > bounds.bottom())
+            bounds.setBottom (pts[i].y());
+    }
+    bounds = bounds.normalized();
+    return bounds;
+}
 
 void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
@@ -395,9 +427,33 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
        painter->drawRoundedRect(rect(),rx,ry);
    else
        painter->drawRect(rect().toRect());
-
+/*
+   painter->setPen(Qt::blue);
+   painter->drawLine(QLine(QPoint(opposite_.x()-6,opposite_.y()),QPoint(opposite_.x()+6,opposite_.y())));
+   painter->drawLine(QLine(QPoint(opposite_.x(),opposite_.y()-6),QPoint(opposite_.x(),opposite_.y()+6)));
+*/
    if (option->state & QStyle::State_Selected)
        qt_graphicsItem_highlightSelected(this, painter, option);
+
+/*
+   QPolygonF pts;
+   pts<<m_localRect.topLeft()<<m_localRect.topRight()<<m_localRect.bottomRight()<<m_localRect.bottomLeft();
+   pts = mapToScene(pts);
+   QRectF bound = RecalcBounds(pts);
+
+
+   qDebug()<<m_localRect<<bound;
+    pts.clear();
+   pts<<bound.topLeft()<<bound.topRight()<<bound.bottomRight()<<bound.bottomLeft();
+   pts = mapFromScene(pts);
+   if ( scene() ){
+   painter->save();
+   painter->setPen(Qt::blue);
+   painter->setBrush(Qt::NoBrush);
+   painter->drawPolygon(pts);
+   painter->restore();
+   }
+*/
 }
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
@@ -675,6 +731,7 @@ void GraphicsItemGroup::stretch(int handle, double sx, double sy, const QPointF 
     m_width = itemsBoundingRect.width();
     m_height = itemsBoundingRect.height();
     updatehandles();
+
 }
 
 void GraphicsItemGroup::updateCoordinate()
@@ -817,6 +874,20 @@ QVariant GraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change,
             updateCoordinate();
         }
     }
+    /*
+    else if (change == ItemPositionChange && scene()) {
+        // value is the new position.
+        QPointF newPos = value.toPointF();
+        QRectF rect = scene()->sceneRect();
+        if (!rect.contains(newPos)) {
+            // Keep the item inside the scene rect.
+            newPos.setX(qMin(rect.right()-boundingRect().width()/2, qMax(newPos.x(), rect.left()+boundingRect().width()/2)));
+            newPos.setY(qMin(rect.bottom()-boundingRect().height()/2, qMax(newPos.y(), rect.top()+boundingRect().height()/2)));
+            return newPos;
+        }
+    }
+    */
+
     return QGraphicsItemGroup::itemChange(change, value);
 }
 
@@ -1058,30 +1129,6 @@ QRectF GraphicsEllipseItem::boundingRect() const
     return shape().controlPointRect();
 }
 
-void GraphicsEllipseItem::updateCoordinate()
-{
-
-    QPointF pt1,pt2,delta;
-    pt1 = mapToScene(transformOriginPoint());
-    pt2 = mapToScene(m_localRect.center());
-    delta = pt1 - pt2;
-
-    if (!parentItem() ){
-        prepareGeometryChange();
-
-        m_localRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
-        m_width = m_localRect.width();
-        m_height = m_localRect.height();
-
-        setTransform(transform().translate(delta.x(),delta.y()));
-        setTransformOriginPoint(m_localRect.center());
-        moveBy(-delta.x(),-delta.y());
-        setTransform(transform().translate(-delta.x(),-delta.y()));
-        updatehandles();
-    }
-    m_initialRect = m_localRect;
-}
-
 QGraphicsItem *GraphicsEllipseItem::copy() const
 {
     GraphicsEllipseItem * item = new GraphicsEllipseItem( m_localRect.toRect() );
@@ -1102,31 +1149,6 @@ QGraphicsItem *GraphicsEllipseItem::copy() const
     return item;
 }
 
-void GraphicsEllipseItem::stretch(int handle, double sx, double sy, const QPointF &origin)
-{
-    QTransform trans;
-    switch (handle) {
-    case Right:
-    case Left:
-        sy = 1;
-        break;
-    case Top:
-    case Bottom:
-        sx = 1;
-        break;
-    default:
-        break;
-    }
-    trans.translate(origin.x(),origin.y());
-    trans.scale(sx,sy);
-    trans.translate(-origin.x(),-origin.y());
-
-    prepareGeometryChange();
-    m_localRect = trans.mapRect(m_initialRect);
-    m_width = m_localRect.width();
-    m_height = m_localRect.height();
-    updatehandles();
-}
 
 void GraphicsEllipseItem::updatehandles()
 {
@@ -1149,10 +1171,21 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     QRectF rc = m_localRect;
 
     qreal radius = qMax(rc.width(),rc.height());
+
     QRadialGradient result(rc.center(),radius);
     result.setColorAt(0, c.light(200));
     result.setColorAt(0.5, c.dark(150));
     result.setColorAt(1, c);
+
+/*
+    QConicalGradient  result(rc.center(),-45);
+
+    QColor niceBlue(150, 150, 200);
+    result.setColorAt(0.0, c.dark(200));
+    result.setColorAt(0.2, niceBlue);
+    result.setColorAt(0.5, c.light(120));
+    result.setColorAt(1.0, c.dark(200));
+*/
     painter->setPen(pen());
     QBrush b(result);
     b.setStyle(Qt::RadialGradientPattern);

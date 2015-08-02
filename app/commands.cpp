@@ -323,7 +323,7 @@ bool ResizeShapeCommand::mergeWith(const QUndoCommand *command)
     handle_ = cmd->handle_;
     scale_ = cmd->scale_;
     setText(QObject::tr(" mergeWith Resize %1,%2,%3,%4")
-        .arg(scale_.x(),8,'f',2).arg(scale_.y(),8,'f',2).arg(handle_).arg(opposite_));
+        .arg(scale_.x(),8,'f',2).arg(scale_.y() ,8,'f',2).arg(handle_).arg(opposite_));
 
     return true;
 }

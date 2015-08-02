@@ -241,6 +241,7 @@ protected:
     qreal m_fRatioY;
     qreal m_fRatioX;
     QRectF m_initialRect;
+    QPointF opposite_;
 };
 
 class GraphicsEllipseItem :public GraphicsRectItem
@@ -250,9 +251,7 @@ public:
     QPainterPath shape() const;
     void control(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
-    void updateCoordinate ();
     QGraphicsItem *copy() const;
-    void stretch( int handle , double sx , double sy , const QPointF & origin );
      QString displayName() const { return tr("ellipse"); }
 protected:
     void updatehandles();

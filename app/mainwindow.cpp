@@ -70,7 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
     view->setRenderHint(QPainter::Antialiasing);
     view->setCacheMode(QGraphicsView::CacheBackground);
     view->setOptimizationFlags(QGraphicsView::DontSavePainterState);
-    view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+   // view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     view->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
     /*

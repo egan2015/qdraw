@@ -360,7 +360,10 @@ void RotationTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, DrawScene *sc
                  angle+=360;
 
              if ( dashRect ){
+                 //dashRect->setTransform(QTransform::fromTranslate(0,0),true);
                  dashRect->setRotation( angle );
+                 //dashRect->setTransform(QTransform().rotate(angle));
+                 //dashRect->setTransform(QTransform::fromTranslate(-0,-0),true);
              }
 
              setCursor(scene,QCursor((QPixmap(":/icons/rotate.png"))));

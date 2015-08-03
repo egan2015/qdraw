@@ -380,6 +380,17 @@ QGraphicsItem *GraphicsRectItem::copy() const
     return item;
 }
 
+bool GraphicsRectItem::loadFromXml(const QDomElement * node )
+{
+
+    return true;
+}
+
+bool GraphicsRectItem::saveToXml(QDomElement * node)
+{
+    return true;
+}
+
 void GraphicsRectItem::updatehandles()
 {
     const QRectF &geom = this->boundingRect();
@@ -520,6 +531,16 @@ void GraphicsLineItem::endPoint(const QPointF &point)
         m_handles.resize(nPoints-1);
     }
     m_initialPoints = m_points;
+}
+
+bool GraphicsLineItem::loadFromXml(const QDomElement *node)
+{
+    return true;
+}
+
+bool GraphicsLineItem::saveToXml(QDomElement *node)
+{
+    return true;
 }
 
 void GraphicsLineItem::updatehandles()
@@ -668,6 +689,16 @@ QRectF GraphicsItemGroup::boundingRect() const
 GraphicsItemGroup::~GraphicsItemGroup()
 {
 
+}
+
+bool GraphicsItemGroup::loadFromXml(const QDomElement *node)
+{
+    return true;
+}
+
+bool GraphicsItemGroup::saveToXml(QDomElement *node)
+{
+    return true;
 }
 
 QGraphicsItem *GraphicsItemGroup::copy() const
@@ -946,6 +977,16 @@ QGraphicsItem *GraphicsBezier::copy() const
     return item;
 }
 
+bool GraphicsBezier::loadFromXml(const QDomElement *node)
+{
+    return true;
+}
+
+bool GraphicsBezier::saveToXml(QDomElement *node)
+{
+    return true;
+}
+
 void GraphicsBezier::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
@@ -1149,6 +1190,16 @@ QGraphicsItem *GraphicsEllipseItem::copy() const
     return item;
 }
 
+bool GraphicsEllipseItem::loadFromXml(const QDomElement *node)
+{
+    return true;
+}
+
+bool GraphicsEllipseItem::saveToXml(QDomElement * node)
+{
+    return true;
+}
+
 
 void GraphicsEllipseItem::updatehandles()
 {
@@ -1301,6 +1352,16 @@ void GraphicsPolygonItem::updateCoordinate()
     }
     m_initialPoints = m_points;
 
+}
+
+bool GraphicsPolygonItem::loadFromXml(const QDomElement *node)
+{
+    return true;
+}
+
+bool GraphicsPolygonItem::saveToXml(QDomElement *node)
+{
+    return true;
 }
 
 void GraphicsPolygonItem::endPoint(const QPointF & point)

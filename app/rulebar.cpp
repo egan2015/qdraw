@@ -247,6 +247,7 @@ void QtCornerBox::paintEvent(QPaintEvent *e)
     painter.setPen(Qt::DashLine);
     painter.drawLine(rect().center().x(),rect().top(),rect().center().x(),rect().bottom());
     painter.drawLine(rect().left(),rect().center().y(),rect().right(),rect().center().y());
+
     painter.drawLine(rect().topRight(),rect().bottomRight());
     painter.drawLine(rect().bottomLeft(),rect().bottomRight());
 

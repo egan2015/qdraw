@@ -11,6 +11,7 @@
 #include <QCursor>
 #include <vector>
 #include <QMimeData>
+#include <QDomElement>
 
 class ShapeMimeData : public QMimeData
 {
@@ -44,6 +45,8 @@ public:
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
     virtual QGraphicsItem * copy() const { return NULL;}
     virtual int handleCount() const { return m_handles.size();}
+    virtual bool loadFromXml(const QDomElement * node ) {}
+    virtual bool saveToXml( QDomElement * node ) {}
     int collidesWithHandle( const QPointF & point ) const
     {
         const Handles::const_reverse_iterator hend =  m_handles.rend();
@@ -232,8 +235,11 @@ public:
     void updateCoordinate();
     void move( const QPointF & point );
     QGraphicsItem *copy () const ;
-
     QString displayName() const { return tr("rectangle"); }
+
+    bool loadFromXml(const QDomElement * node );
+    bool saveToXml( QDomElement * node );
+
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -252,7 +258,9 @@ public:
     void control(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
     QGraphicsItem *copy() const;
-     QString displayName() const { return tr("ellipse"); }
+    QString displayName() const { return tr("ellipse"); }
+    bool loadFromXml(const QDomElement * node );
+    bool saveToXml( QDomElement * node );
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -280,6 +288,8 @@ public:
     ~GraphicsItemGroup();
 
     QString displayName() const { return tr("group"); }
+    bool loadFromXml(const QDomElement * node );
+    bool saveToXml( QDomElement * node );
 
     QGraphicsItem *copy () const ;
     void control(int dir, const QPointF & delta);
@@ -310,7 +320,10 @@ public:
     void control(int dir, const QPointF & delta);
     void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate ();
-     QGraphicsItem *copy() const;
+    bool loadFromXml(const QDomElement * node );
+    bool saveToXml( QDomElement * node );
+    QString displayName() const { return tr("polygon"); }
+    QGraphicsItem *copy() const;
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -332,6 +345,9 @@ public:
     }
     void updateCoordinate() {}
     int handleCount() const { return m_handles.size() + Left;}
+    bool loadFromXml(const QDomElement * node );
+    bool saveToXml( QDomElement * node );
+    QString displayName() const { return tr("line"); }
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -344,6 +360,9 @@ public:
     GraphicsBezier(bool bbezier = true , QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     QGraphicsItem *copy() const;
+    bool loadFromXml(const QDomElement * node );
+    bool saveToXml( QDomElement * node );
+    QString displayName() const { return tr("bezier"); }
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 private:

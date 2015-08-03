@@ -44,7 +44,18 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    bool openFile(const QString &fileName);
+
 public slots:
+
+    void newFile();
+    void open();
+    void save();
+    DrawView *createMdiChild();
+    void updateMenus();
+    void updateWindowMenu();
+    void setActiveSubWindow(QWidget *window);
+
     void addShape();
     void updateActions();
     void deleteItem();
@@ -68,6 +79,11 @@ public slots:
     void on_cut();
     void dataChanged();
     void positionChanged(int x, int y );
+
+    void about();
+protected:
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+
 private:
     void createActions();
     void createMenus();
@@ -75,8 +91,15 @@ private:
     void createPropertyEditor();
     void createToolBox();
 
+    DrawView *activeMdiChild();
+    QMdiSubWindow *findMdiChild(const QString &fileName);
+
+
+    QMenu *windowMenu;
 
     QMdiArea *mdiArea;
+    QSignalMapper *windowMapper;
+
     // update ui
     QTimer      m_timer;
     // toolbox
@@ -100,6 +123,11 @@ private:
     QAction  * sendToBackAct;
 
     QAction  * funcAct;
+    // file
+    QAction *newAct;
+    QAction *openAct;
+    QAction *saveAct;
+    QAction *exitAct;
 
     QAction  * groupAct;
     QAction  * unGroupAct;
@@ -127,12 +155,20 @@ private:
     QAction  * bezierAct;
     QAction  * rotateAct;
 
+    QAction *closeAct;
+    QAction *closeAllAct;
+    QAction *tileAct;
+    QAction *cascadeAct;
+    QAction *nextAct;
+    QAction *previousAct;
+    QAction *separatorAct;
+    QAction *aboutAct;
+    QAction *aboutQtAct;
+
     //property editor
     ObjectController *propertyEditor;
     QObject *theControlledObject;
 
-    DrawView  *view;
-    DrawScene      *scene;
     QListWidget    *listView;
 
     QUndoStack *undoStack;

@@ -1222,13 +1222,13 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     QRectF rc = m_localRect;
 
     qreal radius = qMax(rc.width(),rc.height());
-
+/*
     QRadialGradient result(rc.center(),radius);
     result.setColorAt(0, c.light(200));
     result.setColorAt(0.5, c.dark(150));
     result.setColorAt(1, c);
+*/
 
-/*
     QConicalGradient  result(rc.center(),-45);
 
     QColor niceBlue(150, 150, 200);
@@ -1236,10 +1236,9 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     result.setColorAt(0.2, niceBlue);
     result.setColorAt(0.5, c.light(120));
     result.setColorAt(1.0, c.dark(200));
-*/
+
     painter->setPen(pen());
     QBrush b(result);
-    b.setStyle(Qt::RadialGradientPattern);
     painter->setBrush(b);
 
     int startAngle = m_startAngle <= m_spanAngle ? m_startAngle : m_spanAngle;

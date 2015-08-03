@@ -1,4 +1,7 @@
 #include "drawview.h"
+#include <QSvgGenerator>
+
+//http://www.w3.org/TR/SVG/Overview.html
 
 DrawView::DrawView(QGraphicsScene *scene)
     :QGraphicsView(scene)
@@ -30,7 +33,7 @@ void DrawView::newFile()
     static int sequenceNumber = 1;
 
     isUntitled = true;
-    curFile = tr("document%1.qdw").arg(sequenceNumber++);
+    curFile = tr("drawing%1.svg").arg(sequenceNumber++);
     setWindowTitle(curFile + "[*]");
 }
 
@@ -38,7 +41,7 @@ bool DrawView::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("MDI"),
+        QMessageBox::warning(this, tr("Qt Drawing"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(fileName)
                              .arg(file.errorString()));
@@ -72,6 +75,7 @@ bool DrawView::saveAs()
 
 bool DrawView::saveFile(const QString &fileName)
 {
+/*
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("Qt Drawing"),
@@ -80,8 +84,24 @@ bool DrawView::saveFile(const QString &fileName)
                              .arg(file.errorString()));
         return false;
     }
-
-
+*/
+    QSvgGenerator generator;
+    generator.setFileName(fileName);
+    generator.setSize(QSize(800, 600));
+    generator.setTitle(tr("SVG Generator Example Drawing"));
+    generator.setDescription(tr("An SVG drawing created by the SVG Generator "
+                                "Example provided with Qt."));
+//![configure SVG generator]
+//![begin painting]
+    QPainter painter;
+    painter.begin(&generator);
+//![begin painting]
+//!
+    scene()->clearSelection();
+    scene()->render(&painter);
+//![end painting]
+    painter.end();
+//![end painting]
 
     setCurrentFile(fileName);
     return true;

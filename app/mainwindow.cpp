@@ -269,11 +269,12 @@ void MainWindow::createActions()
 
     copyAct = new QAction(QIcon(":/icons/copy.png"),tr("copy"),this);
     copyAct->setShortcut(QKeySequence::Copy);
+
     pasteAct = new QAction(QIcon(":/icons/paste.png"),tr("paste"),this);
     pasteAct->setShortcut(QKeySequence::Paste);
+    pasteAct->setEnabled(false);
     cutAct = new QAction(QIcon(":/icons/cut.png"),tr("cut"),this);
     cutAct->setShortcut(QKeySequence::Cut);
-    pasteAct->setEnabled(false);
 
     connect(copyAct,SIGNAL(triggered()),this,SLOT(on_copy()));
     connect(pasteAct,SIGNAL(triggered()),this,SLOT(on_paste()));
@@ -394,7 +395,6 @@ void MainWindow::updateMenus()
 {
     bool hasMdiChild = (activeMdiChild() != 0);
     saveAct->setEnabled(hasMdiChild);
-    pasteAct->setEnabled(hasMdiChild);
     if (!hasMdiChild){
         undoStack->clear();
     }
@@ -408,6 +408,7 @@ void MainWindow::updateMenus()
 
     bool hasSelection = (activeMdiChild() &&
                          activeMdiChild()->scene()->selectedItems().count()>0);
+
     cutAct->setEnabled(hasSelection);
     copyAct->setEnabled(hasSelection);
 }

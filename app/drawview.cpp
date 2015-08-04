@@ -6,8 +6,8 @@
 DrawView::DrawView(QGraphicsScene *scene)
     :QGraphicsView(scene)
 {
-    m_hruler = new QtRuleBar(RT_HORIZONTAL,this,this);
-    m_vruler = new QtRuleBar(RT_VERTICAL,this,this);
+    m_hruler = new QtRuleBar(Qt::Horizontal,this,this);
+    m_vruler = new QtRuleBar(Qt::Vertical,this,this);
     box = new QtCornerBox(this);
     setViewport(new QWidget);
 

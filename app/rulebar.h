@@ -40,14 +40,14 @@ class QtRuleBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit QtRuleBar(int type , QGraphicsView * view, QWidget * parent = 0  );
+    explicit QtRuleBar(Qt::Orientation direction, QGraphicsView * view, QWidget * parent = 0  );
     void setRange( double lower , double upper , double max_size );
     void updatePosition( const QPoint & pos );
 protected:
     void paintEvent(QPaintEvent *event);
     void drawTicker(QPainter * painter);
     void drawPos(QPainter * painter) ;
-    int   m_rulerType;
+    Qt::Orientation   m_direction;
     QPoint m_lastPos;
     QColor m_faceColor;
     QGraphicsView * m_view;

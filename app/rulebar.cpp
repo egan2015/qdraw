@@ -22,14 +22,14 @@ static SPRulerMetric const ruler_metric_inches = {
 };
 
 
-QtRuleBar::QtRuleBar(int type , QGraphicsView * view, QWidget *parent)
+QtRuleBar::QtRuleBar(Qt::Orientation direction, QGraphicsView * view, QWidget *parent)
     :QWidget(parent),
     m_view(view),
     m_faceColor(0xFF, 0xFF, 0xFF)
 {
     m_lower = m_upper = m_maxsize = 0;
     m_lastPos = QPoint(0,0);
-    m_rulerType   = type;
+    m_direction   = direction;
     QFont f(font());
     f.setBold(false);
     f.setPixelSize(10);
@@ -55,7 +55,7 @@ void QtRuleBar::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     QRect rulerRect = rect();
     painter.fillRect(rulerRect,m_faceColor);
-    if ( m_rulerType == RT_HORIZONTAL ){
+    if ( m_direction == Qt::Horizontal ){
         painter.drawLine(rulerRect.bottomLeft(),rulerRect.bottomRight());
     }
     else{
@@ -86,7 +86,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
     QFontMetrics fm(font());
     digit_height = fm.height() ;
     digit_offset = 0;
-    if (m_rulerType==RT_HORIZONTAL){
+    if (m_direction==Qt::Horizontal){
         width = allocation.width();
         height = allocation.height();
     }else{
@@ -133,7 +133,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
         int tick_index = 0;
         for (cur = start; cur <= end; cur += subd_incr){
             pos = int(qRound((cur - lower) * increment + 1e-12));
-            if (m_rulerType==RT_HORIZONTAL){
+            if (m_direction==Qt::Horizontal){
                 QRect rt(pos,height-length,1,length);
                 painter->drawLine(rt.topLeft(),rt.bottomLeft());
             }else{
@@ -149,7 +149,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
                     sprintf (unit_str, "%dk", ((int) cur)/1000);
                 else
                     sprintf (unit_str, "%d", (int) cur);
-               if (m_rulerType==RT_HORIZONTAL){
+               if (m_direction==Qt::Horizontal){
                    int w = fm.width(unit_str);
                    painter->drawText(pos + 2,
                                      allocation.top(),
@@ -202,7 +202,7 @@ void QtRuleBar::drawPos(QPainter *painter)
    double position;
    double lower = m_lower;
    double upper = m_upper;
-   if (m_rulerType==RT_HORIZONTAL){
+   if (m_direction==Qt::Horizontal){
        width = allocation.width();
        height = allocation.height();
        bs_width = height / 2 + 2 ;
@@ -219,7 +219,7 @@ void QtRuleBar::drawPos(QPainter *painter)
    }
    if ((bs_width > 0) && (bs_height > 0)){
        double increment;
-       if (m_rulerType==RT_HORIZONTAL){
+       if (m_direction==Qt::Horizontal){
            increment = (double) width / (upper - lower);
            x = qRound ((position - lower) * increment) + bs_width / 2 - 1;
            y = (height + bs_height) / 2 ;

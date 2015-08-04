@@ -766,6 +766,7 @@ bool GraphicsItemGroup::saveToXml(QXmlStreamWriter *xml)
     xml->writeStartElement("group");
     xml->writeAttribute(tr("x"),QString("%1").arg(pos().x()));
     xml->writeAttribute(tr("y"),QString("%1").arg(pos().y()));
+    xml->writeAttribute(tr("rotate"),QString("%1").arg(rotation()));
 
     foreach (QGraphicsItem * item , childItems()) {
         removeFromGroup(item);
@@ -857,7 +858,8 @@ void GraphicsItemGroup::updateCoordinate()
     setTransform(transform().translate(delta.x(),delta.y()));
     setTransformOriginPoint(itemsBoundingRect.center());
     moveBy(-delta.x(),-delta.y());
-//    setTransform(transform().translate(-delta.x(),-delta.y()));
+
+    //    setTransform(transform().translate(-delta.x(),-delta.y()));
 
 
     foreach (QGraphicsItem *item , childItems()) {

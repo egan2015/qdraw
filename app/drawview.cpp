@@ -17,6 +17,7 @@ DrawView::DrawView(QGraphicsScene *scene)
     setAttribute(Qt::WA_DeleteOnClose);
     isUntitled = true;
 
+    modified = false;
 }
 
 void DrawView::zoomIn()
@@ -63,7 +64,6 @@ bool DrawView::loadFile(const QString &fileName)
     }
 
     setCurrentFile(fileName);
-
     qDebug()<<xml.errorString();
     return !xml.error();
 }
@@ -272,6 +272,7 @@ void DrawView::loadCanvas( QXmlStreamReader *xml)
 GraphicsItemGroup *DrawView::loadGroupFromXML(QXmlStreamReader *xml)
 {
     QList<QGraphicsItem*> items;
+    qreal angle = xml->attributes().value(tr("rotate")).toDouble();
     while (xml->readNextStartElement()) {
         AbstractShape * item = NULL;
         if (xml->name() == tr("rect")){
@@ -301,13 +302,14 @@ GraphicsItemGroup *DrawView::loadGroupFromXML(QXmlStreamReader *xml)
 
     if ( items.count() > 0 ){
         DrawScene * s = dynamic_cast<DrawScene*>(scene());
-        GraphicsItemGroup * group = s->createGroup(items);
+        GraphicsItemGroup * group = s->createGroup(items,false);
         if (group){
+            group->setRotation(angle);
             group->updateCoordinate();
+            qDebug()<<"angle:" <<angle;
         }
         return group;
     }
-
     return 0;
 }
 

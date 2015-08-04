@@ -543,8 +543,8 @@ DrawView *MainWindow::createMdiChild()
     scene->setBackgroundBrush(Qt::darkGray);
 
     mdiArea->addSubWindow(view);
-   // mdiArea->tileSubWindows();
 
+    view->showMaximized();
     return view;
 }
 

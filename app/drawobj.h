@@ -11,7 +11,8 @@
 #include <QCursor>
 #include <vector>
 #include <QMimeData>
-#include <QDomElement>
+
+#include <QXmlStreamReader>
 
 class ShapeMimeData : public QMimeData
 {
@@ -45,8 +46,8 @@ public:
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
     virtual QGraphicsItem * copy() const { return NULL;}
     virtual int handleCount() const { return m_handles.size();}
-    virtual bool loadFromXml(const QDomElement * node ) {}
-    virtual bool saveToXml( QDomElement * node ) {}
+    virtual bool loadFromXml(const QXmlStreamReader * xml ) {}
+    virtual bool saveToXml( QXmlStreamWriter * xml ) {}
     int collidesWithHandle( const QPointF & point ) const
     {
         const Handles::const_reverse_iterator hend =  m_handles.rend();
@@ -211,8 +212,8 @@ public:
     GraphicsItem(QGraphicsItem * parent );
     enum {Type = UserType+1};
     int  type() const { return Type; }
-
     virtual QPixmap image() ;
+
 
 signals:
     void selectedChange(QGraphicsItem *item);
@@ -237,8 +238,8 @@ public:
     QGraphicsItem *copy () const ;
     QString displayName() const { return tr("rectangle"); }
 
-    bool loadFromXml(const QDomElement * node );
-    bool saveToXml( QDomElement * node );
+    virtual bool loadFromXml(const QXmlStreamReader * xml );
+    virtual bool saveToXml( QXmlStreamWriter * xml );
 
 protected:
     void updatehandles();
@@ -259,8 +260,8 @@ public:
     QRectF boundingRect() const ;
     QGraphicsItem *copy() const;
     QString displayName() const { return tr("ellipse"); }
-    bool loadFromXml(const QDomElement * node );
-    bool saveToXml( QDomElement * node );
+    virtual bool loadFromXml(const QXmlStreamReader * xml );
+    virtual bool saveToXml( QXmlStreamWriter * xml );
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -288,8 +289,9 @@ public:
     ~GraphicsItemGroup();
 
     QString displayName() const { return tr("group"); }
-    bool loadFromXml(const QDomElement * node );
-    bool saveToXml( QDomElement * node );
+
+    virtual bool loadFromXml(const QXmlStreamReader * xml );
+    virtual bool saveToXml( QXmlStreamWriter * xml );
 
     QGraphicsItem *copy () const ;
     void control(int dir, const QPointF & delta);
@@ -320,8 +322,8 @@ public:
     void control(int dir, const QPointF & delta);
     void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate ();
-    bool loadFromXml(const QDomElement * node );
-    bool saveToXml( QDomElement * node );
+    virtual bool loadFromXml(const QXmlStreamReader * xml );
+    virtual bool saveToXml( QXmlStreamWriter * xml );
     QString displayName() const { return tr("polygon"); }
     QGraphicsItem *copy() const;
 protected:
@@ -345,8 +347,8 @@ public:
     }
     void updateCoordinate() {}
     int handleCount() const { return m_handles.size() + Left;}
-    bool loadFromXml(const QDomElement * node );
-    bool saveToXml( QDomElement * node );
+    virtual bool loadFromXml(const QXmlStreamReader * xml );
+    virtual bool saveToXml( QXmlStreamWriter * xml );
     QString displayName() const { return tr("line"); }
 protected:
     void updatehandles();
@@ -360,8 +362,8 @@ public:
     GraphicsBezier(bool bbezier = true , QGraphicsItem * parent = 0);
     QPainterPath shape() const;
     QGraphicsItem *copy() const;
-    bool loadFromXml(const QDomElement * node );
-    bool saveToXml( QDomElement * node );
+    virtual bool loadFromXml(const QXmlStreamReader * xml );
+    virtual bool saveToXml( QXmlStreamWriter * xml );
     QString displayName() const { return tr("bezier"); }
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

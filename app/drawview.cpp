@@ -1,5 +1,7 @@
 #include "drawview.h"
 #include <QSvgGenerator>
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 
 //http://www.w3.org/TR/SVG/Overview.html
 
@@ -33,7 +35,7 @@ void DrawView::newFile()
     static int sequenceNumber = 1;
 
     isUntitled = true;
-    curFile = tr("drawing%1.svg").arg(sequenceNumber++);
+    curFile = tr("drawing%1.xml").arg(sequenceNumber++);
     setWindowTitle(curFile + "[*]");
 }
 
@@ -75,7 +77,7 @@ bool DrawView::saveAs()
 
 bool DrawView::saveFile(const QString &fileName)
 {
-/*
+
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("Qt Drawing"),
@@ -84,7 +86,25 @@ bool DrawView::saveFile(const QString &fileName)
                              .arg(file.errorString()));
         return false;
     }
-*/
+
+    QXmlStreamWriter xml(&file);
+    xml.setAutoFormatting(true);
+    xml.writeStartDocument();
+    xml.writeDTD("<!DOCTYPE qdraw>");
+    xml.writeStartElement("canvas");
+    xml.writeAttribute("width","800");
+    xml.writeAttribute("height","600");
+
+    foreach (QGraphicsItem *item , scene()->items()) {
+        AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
+        QGraphicsItemGroup *g = dynamic_cast<QGraphicsItemGroup*>(item->parentItem());
+        if ( ab &&!qgraphicsitem_cast<SizeHandleRect*>(ab) && !g ){
+            ab->saveToXml(&xml);
+        }
+    }
+    xml.writeEndElement();
+    xml.writeEndDocument();
+#if 0
     QSvgGenerator generator;
     generator.setFileName(fileName);
     generator.setSize(QSize(800, 600));
@@ -102,7 +122,7 @@ bool DrawView::saveFile(const QString &fileName)
 //![end painting]
     painter.end();
 //![end painting]
-
+#endif
     setCurrentFile(fileName);
     return true;
 }

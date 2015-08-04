@@ -380,14 +380,27 @@ QGraphicsItem *GraphicsRectItem::copy() const
     return item;
 }
 
-bool GraphicsRectItem::loadFromXml(const QDomElement * node )
+bool GraphicsRectItem::loadFromXml(const QXmlStreamReader * xml )
 {
 
     return true;
 }
 
-bool GraphicsRectItem::saveToXml(QDomElement * node)
+bool GraphicsRectItem::saveToXml(QXmlStreamWriter * xml)
 {
+    if ( m_isRound ){
+        xml->writeStartElement(tr("roundrect"));
+        xml->writeAttribute(tr("rx"),QString("%1").arg(m_fRatioX));
+        xml->writeAttribute(tr("ry"),QString("%1").arg(m_fRatioY));
+    }
+    else
+        xml->writeStartElement(tr("rect"));
+
+    xml->writeAttribute(tr("x"),QString("%1").arg(pos().x()));
+    xml->writeAttribute(tr("y"),QString("%1").arg(pos().y()));
+    xml->writeAttribute(tr("width"),QString("%1").arg(m_width));
+    xml->writeAttribute(tr("height"),QString("%1").arg(m_height));
+    xml->writeEndElement();
     return true;
 }
 
@@ -533,12 +546,12 @@ void GraphicsLineItem::endPoint(const QPointF &point)
     m_initialPoints = m_points;
 }
 
-bool GraphicsLineItem::loadFromXml(const QDomElement *node)
+bool GraphicsLineItem::loadFromXml(const QXmlStreamReader *xml)
 {
     return true;
 }
 
-bool GraphicsLineItem::saveToXml(QDomElement *node)
+bool GraphicsLineItem::saveToXml(QXmlStreamWriter *xml)
 {
     return true;
 }
@@ -691,12 +704,12 @@ GraphicsItemGroup::~GraphicsItemGroup()
 
 }
 
-bool GraphicsItemGroup::loadFromXml(const QDomElement *node)
+bool GraphicsItemGroup::loadFromXml(const QXmlStreamReader *xml)
 {
     return true;
 }
 
-bool GraphicsItemGroup::saveToXml(QDomElement *node)
+bool GraphicsItemGroup::saveToXml(QXmlStreamWriter *xml)
 {
     return true;
 }
@@ -977,12 +990,12 @@ QGraphicsItem *GraphicsBezier::copy() const
     return item;
 }
 
-bool GraphicsBezier::loadFromXml(const QDomElement *node)
+bool GraphicsBezier::loadFromXml(const QXmlStreamReader *xml)
 {
     return true;
 }
 
-bool GraphicsBezier::saveToXml(QDomElement *node)
+bool GraphicsBezier::saveToXml(QXmlStreamWriter *xml)
 {
     return true;
 }
@@ -1190,12 +1203,12 @@ QGraphicsItem *GraphicsEllipseItem::copy() const
     return item;
 }
 
-bool GraphicsEllipseItem::loadFromXml(const QDomElement *node)
+bool GraphicsEllipseItem::loadFromXml(const QXmlStreamReader *xml)
 {
     return true;
 }
 
-bool GraphicsEllipseItem::saveToXml(QDomElement * node)
+bool GraphicsEllipseItem::saveToXml(QXmlStreamWriter * xml)
 {
     return true;
 }
@@ -1353,12 +1366,12 @@ void GraphicsPolygonItem::updateCoordinate()
 
 }
 
-bool GraphicsPolygonItem::loadFromXml(const QDomElement *node)
+bool GraphicsPolygonItem::loadFromXml(const QXmlStreamReader *xml)
 {
     return true;
 }
 
-bool GraphicsPolygonItem::saveToXml(QDomElement *node)
+bool GraphicsPolygonItem::saveToXml(QXmlStreamWriter *xml)
 {
     return true;
 }

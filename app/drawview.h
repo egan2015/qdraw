@@ -42,6 +42,7 @@ private:
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
+    void loadCanvas( QXmlStreamReader *xml );
 
     QString curFile;
     bool isUntitled;

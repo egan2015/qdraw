@@ -187,6 +187,29 @@ void GraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     Q_UNUSED(event);
 }
 
+bool GraphicsItem::readBaseAttributes(QXmlStreamReader *xml)
+{
+    qreal x = xml->attributes().value(tr("x")).toDouble();
+    qreal y = xml->attributes().value(tr("y")).toDouble();
+    m_width = xml->attributes().value("width").toDouble();
+    m_height = xml->attributes().value("height").toDouble();
+    setZValue(xml->attributes().value("z").toDouble());
+    setRotation(xml->attributes().value("rotate").toDouble());
+    setPos(x,y);
+    return true;
+}
+
+bool GraphicsItem::writeBaseAttributes(QXmlStreamWriter *xml)
+{
+    xml->writeAttribute(tr("rotate"),QString("%1").arg(rotation()));
+    xml->writeAttribute(tr("x"),QString("%1").arg(pos().x()));
+    xml->writeAttribute(tr("y"),QString("%1").arg(pos().y()));
+    xml->writeAttribute(tr("z"),QString("%1").arg(zValue()));
+    xml->writeAttribute(tr("width"),QString("%1").arg(m_width));
+    xml->writeAttribute(tr("height"),QString("%1").arg(m_height));
+    return true;
+}
+
 QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     if ( change == QGraphicsItem::ItemSelectedHasChanged ) {
@@ -380,9 +403,16 @@ QGraphicsItem *GraphicsRectItem::copy() const
     return item;
 }
 
-bool GraphicsRectItem::loadFromXml(const QXmlStreamReader * xml )
+bool GraphicsRectItem::loadFromXml(QXmlStreamReader * xml )
 {
-
+    m_isRound = (xml->name() == tr("roundrect"));
+    if ( m_isRound ){
+        m_fRatioX = xml->attributes().value(tr("rx")).toDouble();
+        m_fRatioY = xml->attributes().value(tr("ry")).toDouble();
+    }
+    readBaseAttributes(xml);
+    updateCoordinate();
+    xml->skipCurrentElement();
     return true;
 }
 
@@ -396,10 +426,7 @@ bool GraphicsRectItem::saveToXml(QXmlStreamWriter * xml)
     else
         xml->writeStartElement(tr("rect"));
 
-    xml->writeAttribute(tr("x"),QString("%1").arg(pos().x()));
-    xml->writeAttribute(tr("y"),QString("%1").arg(pos().y()));
-    xml->writeAttribute(tr("width"),QString("%1").arg(m_width));
-    xml->writeAttribute(tr("height"),QString("%1").arg(m_height));
+    writeBaseAttributes(xml);
     xml->writeEndElement();
     return true;
 }
@@ -546,7 +573,7 @@ void GraphicsLineItem::endPoint(const QPointF &point)
     m_initialPoints = m_points;
 }
 
-bool GraphicsLineItem::loadFromXml(const QXmlStreamReader *xml)
+bool GraphicsLineItem::loadFromXml(QXmlStreamReader *xml)
 {
     return true;
 }
@@ -704,7 +731,7 @@ GraphicsItemGroup::~GraphicsItemGroup()
 
 }
 
-bool GraphicsItemGroup::loadFromXml(const QXmlStreamReader *xml)
+bool GraphicsItemGroup::loadFromXml(QXmlStreamReader *xml)
 {
     return true;
 }
@@ -990,7 +1017,7 @@ QGraphicsItem *GraphicsBezier::copy() const
     return item;
 }
 
-bool GraphicsBezier::loadFromXml(const QXmlStreamReader *xml)
+bool GraphicsBezier::loadFromXml(QXmlStreamReader *xml)
 {
     return true;
 }
@@ -1203,13 +1230,24 @@ QGraphicsItem *GraphicsEllipseItem::copy() const
     return item;
 }
 
-bool GraphicsEllipseItem::loadFromXml(const QXmlStreamReader *xml)
+bool GraphicsEllipseItem::loadFromXml(QXmlStreamReader *xml)
 {
+    m_startAngle = xml->attributes().value("startAngle").toInt();
+    m_spanAngle  = xml->attributes().value("spanAngle").toInt();
+    readBaseAttributes(xml);
+    xml->skipCurrentElement();
+    updateCoordinate();
     return true;
 }
 
 bool GraphicsEllipseItem::saveToXml(QXmlStreamWriter * xml)
 {
+    xml->writeStartElement(tr("ellipse"));
+    xml->writeAttribute("startAngle",QString("%1").arg(m_startAngle));
+    xml->writeAttribute("spanAngle",QString("%1").arg(m_spanAngle));
+
+    writeBaseAttributes(xml);
+    xml->writeEndElement();
     return true;
 }
 
@@ -1366,13 +1404,39 @@ void GraphicsPolygonItem::updateCoordinate()
 
 }
 
-bool GraphicsPolygonItem::loadFromXml(const QXmlStreamReader *xml)
+bool GraphicsPolygonItem::loadFromXml(QXmlStreamReader *xml)
 {
+    readBaseAttributes(xml);
+    while(xml->readNextStartElement()){
+        if (xml->name()=="point"){
+            qreal x = xml->attributes().value("x").toDouble();
+            qreal y = xml->attributes().value("y").toDouble();
+            m_points.append(QPointF(x,y));
+            int dir = m_points.count();
+            SizeHandleRect *shr = new SizeHandleRect(this, dir+Left, true);
+            shr->setState(SelectionHandleActive);
+            m_handles.push_back(shr);
+            xml->skipCurrentElement();
+        }else
+            xml->skipCurrentElement();
+        qDebug()<<"polygon:"<<xml->name();
+    }
+   // xml->skipCurrentElement();
+    updateCoordinate();
     return true;
 }
 
 bool GraphicsPolygonItem::saveToXml(QXmlStreamWriter *xml)
 {
+    xml->writeStartElement("polygon");
+    writeBaseAttributes(xml);
+    for ( int i = 0 ; i < m_points.count();++i){
+        xml->writeStartElement("point");
+        xml->writeAttribute("x",QString("%1").arg(m_points[i].x()));
+        xml->writeAttribute("y",QString("%1").arg(m_points[i].y()));
+        xml->writeEndElement();
+    }
+    xml->writeEndElement();
     return true;
 }
 

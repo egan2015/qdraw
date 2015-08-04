@@ -50,9 +50,21 @@ bool DrawView::loadFile(const QString &fileName)
         return false;
     }
 
+    QXmlStreamReader xml(&file);
+    if (xml.readNextStartElement()) {
+        if ( xml.name() == tr("canvas"))
+        {
+            int width = xml.attributes().value(tr("width")).toInt();
+            int height = xml.attributes().value(tr("height")).toInt();
+            scene()->setSceneRect(0,0,width,height);
+            loadCanvas(&xml);
+        }
+    }
+
     setCurrentFile(fileName);
 
-    return true;
+    qDebug()<<xml.errorString();
+    return !xml.error();
 }
 
 bool DrawView::save()
@@ -92,8 +104,8 @@ bool DrawView::saveFile(const QString &fileName)
     xml.writeStartDocument();
     xml.writeDTD("<!DOCTYPE qdraw>");
     xml.writeStartElement("canvas");
-    xml.writeAttribute("width","800");
-    xml.writeAttribute("height","600");
+    xml.writeAttribute("width",QString("%1").arg(scene()->width()));
+    xml.writeAttribute("height",QString("%1").arg(scene()->height()));
 
     foreach (QGraphicsItem *item , scene()->items()) {
         AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
@@ -222,5 +234,29 @@ QString DrawView::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 
+}
+
+void DrawView::loadCanvas( QXmlStreamReader *xml)
+{
+    Q_ASSERT(xml->isStartElement() && xml->name() == "canvas");
+
+    while (xml->readNextStartElement()) {
+        AbstractShape * item = NULL;
+        if (xml->name() == tr("rect")){
+            item = new GraphicsRectItem(QRect(0,0,1,1));
+        }else if (xml->name() == tr("roundrect")){
+            item = new GraphicsRectItem(QRect(0,0,1,1),true);
+        }else if (xml->name() == tr("ellipse"))
+            item = new GraphicsEllipseItem(QRect(0,0,1,1));
+        else if (xml->name()==tr("polygon"))
+            item = new GraphicsPolygonItem();
+        else
+            xml->skipCurrentElement();
+
+        if (item && item->loadFromXml(xml))
+            scene()->addItem(item);
+        else if ( item )
+            delete item;
+    }
 }
 

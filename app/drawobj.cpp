@@ -575,11 +575,35 @@ void GraphicsLineItem::endPoint(const QPointF &point)
 
 bool GraphicsLineItem::loadFromXml(QXmlStreamReader *xml)
 {
+    readBaseAttributes(xml);
+    while(xml->readNextStartElement()){
+        if (xml->name()=="point"){
+            qreal x = xml->attributes().value("x").toDouble();
+            qreal y = xml->attributes().value("y").toDouble();
+            m_points.append(QPointF(x,y));
+            int dir = m_points.count();
+            SizeHandleRect *shr = new SizeHandleRect(this, dir+Left, dir == 1 ? false : true);
+            m_handles.push_back(shr);
+            xml->skipCurrentElement();
+        }else
+            xml->skipCurrentElement();
+    }
+    updatehandles();
     return true;
 }
 
 bool GraphicsLineItem::saveToXml(QXmlStreamWriter *xml)
 {
+    xml->writeStartElement("line");
+    writeBaseAttributes(xml);
+    for ( int i = 0 ; i < m_points.count();++i){
+        xml->writeStartElement("point");
+        xml->writeAttribute("x",QString("%1").arg(m_points[i].x()));
+        xml->writeAttribute("y",QString("%1").arg(m_points[i].y()));
+        xml->writeEndElement();
+    }
+    xml->writeEndElement();
+
     return true;
 }
 
@@ -733,11 +757,26 @@ GraphicsItemGroup::~GraphicsItemGroup()
 
 bool GraphicsItemGroup::loadFromXml(QXmlStreamReader *xml)
 {
+    qreal x = xml->attributes().value("x").toDouble();
+    qreal y = xml->attributes().value("y").toDouble();
+    setPos(x,y);
+    updateCoordinate();
     return true;
 }
 
 bool GraphicsItemGroup::saveToXml(QXmlStreamWriter *xml)
 {
+    xml->writeStartElement("group");
+    xml->writeAttribute(tr("x"),QString("%1").arg(pos().x()));
+    xml->writeAttribute(tr("y"),QString("%1").arg(pos().y()));
+
+    foreach (QGraphicsItem * item , childItems()) {
+        AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
+        if ( ab &&!qgraphicsitem_cast<SizeHandleRect*>(ab)){
+            ab->saveToXml(xml);
+        }
+    }
+    xml->writeEndElement();
     return true;
 }
 
@@ -1019,11 +1058,27 @@ QGraphicsItem *GraphicsBezier::copy() const
 
 bool GraphicsBezier::loadFromXml(QXmlStreamReader *xml)
 {
-    return true;
+    m_isBezier = (xml->name() == tr("bezier"));
+    return GraphicsPolygonItem::loadFromXml(xml);
 }
 
 bool GraphicsBezier::saveToXml(QXmlStreamWriter *xml)
 {
+    if ( m_isBezier )
+        xml->writeStartElement("bezier");
+    else
+        xml->writeStartElement("polyline");
+
+    writeBaseAttributes(xml);
+
+    for ( int i = 0 ; i < m_points.count();++i){
+        xml->writeStartElement("point");
+        xml->writeAttribute("x",QString("%1").arg(m_points[i].x()));
+        xml->writeAttribute("y",QString("%1").arg(m_points[i].y()));
+        xml->writeEndElement();
+    }
+    xml->writeEndElement();
+
     return true;
 }
 
@@ -1414,14 +1469,11 @@ bool GraphicsPolygonItem::loadFromXml(QXmlStreamReader *xml)
             m_points.append(QPointF(x,y));
             int dir = m_points.count();
             SizeHandleRect *shr = new SizeHandleRect(this, dir+Left, true);
-            shr->setState(SelectionHandleActive);
             m_handles.push_back(shr);
             xml->skipCurrentElement();
         }else
             xml->skipCurrentElement();
-        qDebug()<<"polygon:"<<xml->name();
     }
-   // xml->skipCurrentElement();
     updateCoordinate();
     return true;
 }

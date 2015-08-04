@@ -250,6 +250,14 @@ void DrawView::loadCanvas( QXmlStreamReader *xml)
             item = new GraphicsEllipseItem(QRect(0,0,1,1));
         else if (xml->name()==tr("polygon"))
             item = new GraphicsPolygonItem();
+        else if ( xml->name()==tr("bezier"))
+            item = new GraphicsBezier();
+        else if ( xml->name() == tr("polyline"))
+            item = new GraphicsBezier(false);
+        else if ( xml->name() == tr("line"))
+            item = new GraphicsLineItem();
+        //else if ( xml->name() == tr("group"))
+        //    item = 0;
         else
             xml->skipCurrentElement();
 

@@ -245,6 +245,9 @@ void UnGroupShapeCommand::redo()
     foreach (QGraphicsItem *item, myGroup->childItems()){
         item->setSelected(true);
         myGroup->removeFromGroup(item);
+        AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
+        if (ab && !qgraphicsitem_cast<SizeHandleRect*>(ab))
+            ab->updateCoordinate();
     }
     myGraphicsScene->removeItem(myGroup);
     myGraphicsScene->update();

@@ -43,6 +43,7 @@ private:
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
     void loadCanvas( QXmlStreamReader *xml );
+    GraphicsItemGroup * loadGroupFromXML( QXmlStreamReader * xml );
 
     QString curFile;
     bool isUntitled;

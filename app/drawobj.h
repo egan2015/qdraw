@@ -288,7 +288,7 @@ public:
     int  type() const { return Type; }
     explicit GraphicsItemGroup(QGraphicsItem *parent = 0);
     void addToGroup(QGraphicsItem *item);
-    void removeFromGroup(QGraphicsItem *item);
+//    void removeFromGroup(QGraphicsItem *item);
     QRectF boundingRect() const;
     ~GraphicsItemGroup();
 

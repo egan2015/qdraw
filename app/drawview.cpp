@@ -1,4 +1,5 @@
 #include "drawview.h"
+#include "drawscene.h"
 #include <QSvgGenerator>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
@@ -256,8 +257,8 @@ void DrawView::loadCanvas( QXmlStreamReader *xml)
             item = new GraphicsBezier(false);
         else if ( xml->name() == tr("line"))
             item = new GraphicsLineItem();
-        //else if ( xml->name() == tr("group"))
-        //    item = 0;
+        else if ( xml->name() == tr("group"))
+            item =qgraphicsitem_cast<AbstractShape*>(loadGroupFromXML(xml));
         else
             xml->skipCurrentElement();
 
@@ -266,5 +267,47 @@ void DrawView::loadCanvas( QXmlStreamReader *xml)
         else if ( item )
             delete item;
     }
+}
+
+GraphicsItemGroup *DrawView::loadGroupFromXML(QXmlStreamReader *xml)
+{
+    QList<QGraphicsItem*> items;
+    while (xml->readNextStartElement()) {
+        AbstractShape * item = NULL;
+        if (xml->name() == tr("rect")){
+            item = new GraphicsRectItem(QRect(0,0,1,1));
+        }else if (xml->name() == tr("roundrect")){
+            item = new GraphicsRectItem(QRect(0,0,1,1),true);
+        }else if (xml->name() == tr("ellipse"))
+            item = new GraphicsEllipseItem(QRect(0,0,1,1));
+        else if (xml->name()==tr("polygon"))
+            item = new GraphicsPolygonItem();
+        else if ( xml->name()==tr("bezier"))
+            item = new GraphicsBezier();
+        else if ( xml->name() == tr("polyline"))
+            item = new GraphicsBezier(false);
+        else if ( xml->name() == tr("line"))
+            item = new GraphicsLineItem();
+        else if ( xml->name() == tr("group"))
+            item =qgraphicsitem_cast<AbstractShape*>(loadGroupFromXML(xml));
+        else
+            xml->skipCurrentElement();
+        if (item && item->loadFromXml(xml)){
+            scene()->addItem(item);
+            items.append(item);
+        }else if ( item )
+            delete item;
+    }
+
+    if ( items.count() > 0 ){
+        DrawScene * s = dynamic_cast<DrawScene*>(scene());
+        GraphicsItemGroup * group = s->createGroup(items);
+        if (group){
+            group->updateCoordinate();
+        }
+        return group;
+    }
+
+    return 0;
 }
 

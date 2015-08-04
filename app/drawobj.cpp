@@ -689,7 +689,7 @@ void GraphicsItemGroup::addToGroup(QGraphicsItem *item)
     m_height = itemsBoundingRect.height();
     update();
 }
-
+/*
 void GraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
 {
     if (!item) {
@@ -744,7 +744,7 @@ void GraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
     m_width = itemsBoundingRect.width();
     m_height = itemsBoundingRect.height();
 }
-
+*/
 QRectF GraphicsItemGroup::boundingRect() const
 {
     return itemsBoundingRect;
@@ -757,10 +757,7 @@ GraphicsItemGroup::~GraphicsItemGroup()
 
 bool GraphicsItemGroup::loadFromXml(QXmlStreamReader *xml)
 {
-    qreal x = xml->attributes().value("x").toDouble();
-    qreal y = xml->attributes().value("y").toDouble();
-    setPos(x,y);
-    updateCoordinate();
+//    qDebug()<<"GraphicsItemGroup::loadFromXml";
     return true;
 }
 
@@ -771,10 +768,13 @@ bool GraphicsItemGroup::saveToXml(QXmlStreamWriter *xml)
     xml->writeAttribute(tr("y"),QString("%1").arg(pos().y()));
 
     foreach (QGraphicsItem * item , childItems()) {
+        removeFromGroup(item);
         AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
         if ( ab &&!qgraphicsitem_cast<SizeHandleRect*>(ab)){
+            ab->updateCoordinate();
             ab->saveToXml(xml);
         }
+        addToGroup(item);
     }
     xml->writeEndElement();
     return true;
@@ -1426,6 +1426,7 @@ void GraphicsPolygonItem::stretch(int handle, double sx, double sy, const QPoint
 
     prepareGeometryChange();
     m_points = trans.map(m_initialPoints);
+    m_localRect = m_points.boundingRect();
     m_width = m_localRect.width();
     m_height = m_localRect.height();
     updatehandles();
@@ -1448,6 +1449,9 @@ void GraphicsPolygonItem::updateCoordinate()
         prepareGeometryChange();
 
         m_points = mapFromScene(pts);
+        m_localRect = m_points.boundingRect();
+        m_width = m_localRect.width();
+        m_height = m_localRect.height();
 
         setTransform(transform().translate(delta.x(),delta.y()));
         setTransformOriginPoint(boundingRect().center());

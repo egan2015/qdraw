@@ -306,7 +306,7 @@ GraphicsItemGroup *DrawView::loadGroupFromXML(QXmlStreamReader *xml)
         if (group){
             group->setRotation(angle);
             group->updateCoordinate();
-            qDebug()<<"angle:" <<angle;
+            //qDebug()<<"angle:" <<angle;
         }
         return group;
     }

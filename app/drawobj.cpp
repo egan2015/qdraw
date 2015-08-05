@@ -573,6 +573,33 @@ void GraphicsLineItem::endPoint(const QPointF &point)
     m_initialPoints = m_points;
 }
 
+void GraphicsLineItem::stretch(int handle, double sx, double sy, const QPointF &origin)
+{
+    QTransform trans;
+    switch (handle) {
+    case Right:
+    case Left:
+        sy = 1;
+        break;
+    case Top:
+    case Bottom:
+        sx = 1;
+        break;
+    default:
+        break;
+    }
+    trans.translate(origin.x(),origin.y());
+    trans.scale(sx,sy);
+    trans.translate(-origin.x(),-origin.y());
+
+    prepareGeometryChange();
+    m_points = trans.map(m_initialPoints);
+    m_localRect = m_points.boundingRect();
+    m_width = m_localRect.width();
+    m_height = m_localRect.height();
+    updatehandles();
+}
+
 bool GraphicsLineItem::loadFromXml(QXmlStreamReader *xml)
 {
     readBaseAttributes(xml);
@@ -603,7 +630,6 @@ bool GraphicsLineItem::saveToXml(QXmlStreamWriter *xml)
         xml->writeEndElement();
     }
     xml->writeEndElement();
-
     return true;
 }
 
@@ -619,6 +645,7 @@ void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->setPen(pen());
+    if ( m_points.size() > 1)
     painter->drawLine(m_points.at(0),m_points.at(1));
 }
 

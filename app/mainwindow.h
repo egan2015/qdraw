@@ -166,6 +166,7 @@ private:
     QAction *aboutQtAct;
 
     //property editor
+    QDockWidget *dockProperty;
     ObjectController *propertyEditor;
     QObject *theControlledObject;
 

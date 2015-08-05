@@ -311,14 +311,17 @@ void MainWindow::createMenus()
     viewMenu->addAction(zoomOutAct);
 
     QMenu *toolMenu = menuBar()->addMenu(tr("&Tools"));
-    toolMenu->addAction(selectAct);
-    toolMenu->addAction(rectAct);
-    toolMenu->addAction(roundRectAct);
-    toolMenu->addAction(ellipseAct);
-    toolMenu->addAction(polygonAct);
-    toolMenu->addAction(polylineAct);
-    toolMenu->addAction(bezierAct);
-    toolMenu->addAction(rotateAct);
+    QMenu *shapeTool = new QMenu("&Shape");
+    shapeTool->addAction(selectAct);
+    shapeTool->addAction(rectAct);
+    shapeTool->addAction(roundRectAct);
+    shapeTool->addAction(ellipseAct);
+    shapeTool->addAction(polygonAct);
+    shapeTool->addAction(polylineAct);
+    shapeTool->addAction(bezierAct);
+    shapeTool->addAction(rotateAct);
+
+    toolMenu->addMenu(shapeTool);
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -329,6 +332,7 @@ void MainWindow::createMenus()
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
+    helpMenu->addAction(funcAct);
 
 }
 
@@ -384,11 +388,11 @@ void MainWindow::createToolbars()
 
 void MainWindow::createPropertyEditor()
 {
-    QDockWidget *dock = new QDockWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
+    dockProperty = new QDockWidget(this);
+    addDockWidget(Qt::RightDockWidgetArea, dockProperty);
 
     propertyEditor = new ObjectController(this);
-    dock->setWidget(propertyEditor);
+    dockProperty->setWidget(propertyEditor);
 }
 
 void MainWindow::updateMenus()
@@ -851,10 +855,11 @@ void MainWindow::on_func_test_triggered()
        editor->show();
     */
 
-
+/*
         QtGradientEditor * editor = new QtGradientEditor(NULL);
         editor->show();
-
+*/
+    dockProperty->showNormal();
 
 }
 

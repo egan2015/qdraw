@@ -251,13 +251,16 @@ GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphics
     m_initialRect = rect;
     m_localRect = m_initialRect;
     m_localRect = rect;
-
+    m_originPoint = QPointF(0,0);
     if( m_isRound ){
         SizeHandleRect *shr = new SizeHandleRect(this, 9 , true);
         m_handles.push_back(shr);
         shr = new SizeHandleRect(this, 10 , true);
         m_handles.push_back(shr);
+//        shr = new SizeHandleRect(this, 11 , true);
+//        m_handles.push_back(shr);
     }
+
     updatehandles();
 }
 
@@ -318,6 +321,14 @@ void GraphicsRectItem::control(int dir, const QPointF & delta)
         m_fRatioX = std::abs(((float)(delta1.right()-x)))/W;
         break;
     }
+    case 11:
+    {
+//        setTransform(transform().translate(-local.x(),-local.y()));
+//        setTransformOriginPoint(local.x(),local.y());
+//        setTransform(transform().translate(local.x(),local.y()));
+        m_originPoint = local;
+    }
+        break;
    default:
         break;
     }
@@ -359,7 +370,7 @@ void GraphicsRectItem::updateCoordinate()
 
     QPointF pt1,pt2,delta;
 
-    pt1 = mapToScene(transformOriginPoint());
+    pt1 = pos();//mapToScene(transformOriginPoint());
     pt2 = mapToScene(m_localRect.center());
     delta = pt1 - pt2;
 
@@ -370,7 +381,7 @@ void GraphicsRectItem::updateCoordinate()
         m_width = m_localRect.width();
         m_height = m_localRect.height();
         setTransform(transform().translate(delta.x(),delta.y()));
-        setTransformOriginPoint(m_localRect.center());
+      //  setTransformOriginPoint(m_localRect.center());
         moveBy(-delta.x(),-delta.y());
         setTransform(transform().translate(-delta.x(),-delta.y()));
         opposite_ = QPointF(0,0);
@@ -438,6 +449,7 @@ void GraphicsRectItem::updatehandles()
     if ( m_isRound ){
         m_handles[8]->move( geom.right() , geom.top() + geom.height() * m_fRatioY );
         m_handles[9]->move( geom.right() - geom.width() * m_fRatioX , geom.top());
+        //m_handles[10]->move(m_originPoint.x(),m_originPoint.y());
     }
 }
 
@@ -1483,7 +1495,7 @@ void GraphicsPolygonItem::updateCoordinate()
         m_height = m_localRect.height();
 
         setTransform(transform().translate(delta.x(),delta.y()));
-        setTransformOriginPoint(boundingRect().center());
+        //setTransformOriginPoint(boundingRect().center());
         moveBy(-delta.x(),-delta.y());
         setTransform(transform().translate(-delta.x(),-delta.y()));
         updatehandles();

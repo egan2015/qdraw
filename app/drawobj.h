@@ -253,6 +253,7 @@ protected:
     qreal m_fRatioX;
     QRectF m_initialRect;
     QPointF opposite_;
+    QPointF m_originPoint;
 };
 
 class GraphicsEllipseItem :public GraphicsRectItem

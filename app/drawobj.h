@@ -342,24 +342,7 @@ public:
     QGraphicsItem *duplicate() const;
     void addPoint( const QPointF & point ) ;
     void endPoint(const QPointF & point );
-    virtual QPointF opposite( int handle ) {
-        QPointF pt;
-        switch (handle) {
-        case Right:
-        case Left:
-        case Top:
-        case LeftTop:
-        case RightTop:
-            pt = m_handles[1]->pos();
-            break;
-        case RightBottom:
-        case LeftBottom:
-        case Bottom:
-            pt = m_handles[0]->pos();
-            break;
-         }
-        return pt;
-    }
+    virtual QPointF opposite( int handle ) ;
     void updateCoordinate() { m_initialPoints = m_points;}
     int handleCount() const { return m_handles.size() + Left;}
     void stretch( int handle , double sx , double sy , const QPointF & origin );

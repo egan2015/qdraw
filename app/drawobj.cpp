@@ -585,6 +585,26 @@ void GraphicsLineItem::endPoint(const QPointF &point)
     m_initialPoints = m_points;
 }
 
+QPointF GraphicsLineItem::opposite(int handle)
+{
+    QPointF pt;
+    switch (handle) {
+    case Right:
+    case Left:
+    case Top:
+    case LeftTop:
+    case RightTop:
+        pt = m_handles[1]->pos();
+        break;
+    case RightBottom:
+    case LeftBottom:
+    case Bottom:
+        pt = m_handles[0]->pos();
+        break;
+     }
+    return pt;
+}
+
 void GraphicsLineItem::stretch(int handle, double sx, double sy, const QPointF &origin)
 {
     QTransform trans;

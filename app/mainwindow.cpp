@@ -872,7 +872,6 @@ void MainWindow::on_func_test_triggered()
         editor->show();
 */
     dockProperty->showNormal();
-
 }
 
 void MainWindow::on_copy()

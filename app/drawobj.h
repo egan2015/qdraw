@@ -11,7 +11,6 @@
 #include <QCursor>
 #include <vector>
 #include <QMimeData>
-
 #include <QXmlStreamReader>
 
 class ShapeMimeData : public QMimeData
@@ -288,8 +287,6 @@ public:
     enum {Type = UserType+2};
     int  type() const { return Type; }
     explicit GraphicsItemGroup(QGraphicsItem *parent = 0);
-    void addToGroup(QGraphicsItem *item);
-//    void removeFromGroup(QGraphicsItem *item);
     QRectF boundingRect() const;
     ~GraphicsItemGroup();
 

@@ -665,6 +665,7 @@ GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
     :AbstractShapeType <QGraphicsItemGroup>(parent),
       m_parent(parent)
 {
+    itemsBoundingRect = QRectF();
     // handles
     m_handles.reserve(Left);
     for (int i = LeftTop; i <= Left; ++i) {
@@ -677,113 +678,7 @@ GraphicsItemGroup::GraphicsItemGroup(QGraphicsItem *parent)
     this->setAcceptHoverEvents(true);
 }
 
-void GraphicsItemGroup::addToGroup(QGraphicsItem *item)
-{
-    if (!item) {
-        qWarning("QGraphicsItemGroup::addToGroup: cannot add null item");
-        return;
-    }
-    if (item == this) {
-        qWarning("QGraphicsItemGroup::addToGroup: cannot add a group to itself");
-        return;
-    }
 
-    // COMBINE
-    bool ok;
-    QTransform itemTransform = item->itemTransform(this, &ok);
-
-    if (!ok) {
-        qWarning("QGraphicsItemGroup::addToGroup: could not find a valid transformation from item to group coordinates");
-        return;
-    }
-
-    QTransform newItemTransform(itemTransform);
-    item->setPos(mapFromItem(item, 0, 0));
-    item->setParentItem(this);
-
-    // removing position from translation component of the new transform
-    if (!item->pos().isNull())
-        newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
-
-    // removing additional transformations properties applied with itemTransform()
-    QPointF origin = item->transformOriginPoint();
-    QMatrix4x4 m;
-    QList<QGraphicsTransform*> transformList = item->transformations();
-    for (int i = 0; i < transformList.size(); ++i)
-        transformList.at(i)->applyTo(&m);
-    newItemTransform *= m.toTransform().inverted();
-    newItemTransform.translate(origin.x(), origin.y());
-    newItemTransform.rotate(-item->rotation());
-    newItemTransform.scale(1/item->scale(), 1/item->scale());
-    newItemTransform.translate(-origin.x(), -origin.y());
-
-    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
-
-    item->setTransform(newItemTransform);
-//    item->d_func()->setIsMemberOfGroup(true);
-    prepareGeometryChange();
-    itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
-    m_initialRect = itemsBoundingRect;
-    m_width = itemsBoundingRect.width();
-    m_height = itemsBoundingRect.height();
-    update();
-}
-/*
-void GraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
-{
-    if (!item) {
-        qWarning("QGraphicsItemGroup::removeFromGroup: cannot remove null item");
-        return;
-    }
-
-    QGraphicsItem *newParent = m_parent;
-
-    // COMBINE
-    bool ok;
-    QTransform itemTransform;
-    if (newParent)
-        itemTransform = item->itemTransform(newParent, &ok);
-    else
-        itemTransform = item->sceneTransform();
-
-    QPointF oldPos = item->mapToItem(newParent, 0, 0);
-    item->setParentItem(newParent);
-    item->setPos(oldPos);
-
-    // removing position from translation component of the new transform
-    if (!item->pos().isNull())
-        itemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
-
-    // removing additional transformations properties applied
-    // with itemTransform() or sceneTransform()
-    QPointF origin = item->transformOriginPoint();
-    QMatrix4x4 m;
-    QList<QGraphicsTransform*> transformList = item->transformations();
-    for (int i = 0; i < transformList.size(); ++i)
-        transformList.at(i)->applyTo(&m);
-    itemTransform *= m.toTransform().inverted();
-    itemTransform.translate(origin.x(), origin.y());
-    itemTransform.rotate(-item->rotation());
-    itemTransform.scale(1 / item->scale(), 1 / item->scale());
-    itemTransform.translate(-origin.x(), -origin.y());
-
-    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
-
-    item->setTransform(itemTransform);
-//    AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
-//    if (ab && !qgraphicsitem_cast<SizeHandleRect*>(ab))
-//        ab->updateCoordinate();
-
-//    item->d_func()->setIsMemberOfGroup(item->group() != 0);
-
-    // ### Quite expensive. But removeFromGroup() isn't called very often.
-    prepareGeometryChange();
-    itemsBoundingRect = childrenBoundingRect();
-    m_initialRect = itemsBoundingRect;
-    m_width = itemsBoundingRect.width();
-    m_height = itemsBoundingRect.height();
-}
-*/
 QRectF GraphicsItemGroup::boundingRect() const
 {
     return itemsBoundingRect;
@@ -888,27 +783,27 @@ void GraphicsItemGroup::updateCoordinate()
 {
 
     QPointF pt1,pt2,delta;
-    pt1 = mapToScene(transformOriginPoint());
+    if (itemsBoundingRect.isNull() )
+        itemsBoundingRect = QGraphicsItemGroup::boundingRect();
+
+    pt1 = pos();//mapToScene(transformOriginPoint());
     pt2 = mapToScene(itemsBoundingRect.center());
     delta = pt1 - pt2;
-//    itemsBoundingRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     m_initialRect = itemsBoundingRect;
-
+    m_width = itemsBoundingRect.width();
+    m_height = itemsBoundingRect.height();
+//    itemsBoundingRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     setTransform(transform().translate(delta.x(),delta.y()));
     setTransformOriginPoint(itemsBoundingRect.center());
     moveBy(-delta.x(),-delta.y());
-
-    //    setTransform(transform().translate(-delta.x(),-delta.y()));
-
+ //   setTransform(transform().translate(-delta.x(),-delta.y()));
 
     foreach (QGraphicsItem *item , childItems()) {
          AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(item);
          if (ab && !qgraphicsitem_cast<SizeHandleRect*>(ab))
              ab->updateCoordinate();
     }
-
     updatehandles();
-
 }
 
 GraphicsItemGroup *GraphicsItemGroup::createGroup(const QList<QGraphicsItem *> &items) const

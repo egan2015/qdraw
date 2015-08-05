@@ -196,7 +196,6 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bo
         while ((parent = parent->parentItem()))
             ancestors.append(parent);
     }
-
     // Find the common ancestor for all items
     QGraphicsItem *commonAncestor = 0;
     if (!ancestors.isEmpty()) {
@@ -230,7 +229,7 @@ GraphicsItemGroup *DrawScene::createGroup(const QList<QGraphicsItem *> &items,bo
         if ( !g )
              group->addToGroup(item);
     }
-//    group->setPos(pt);
+    group->updateCoordinate();
     return group;
 }
 

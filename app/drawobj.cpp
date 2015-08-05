@@ -16,7 +16,7 @@ ShapeMimeData::ShapeMimeData(QList<QGraphicsItem *> items)
 {
     foreach (QGraphicsItem *item , items ) {
        AbstractShape *sp = qgraphicsitem_cast<AbstractShape*>(item);
-       m_items.append(sp->copy());
+       m_items.append(sp->duplicate());
     }
 }
 ShapeMimeData::~ShapeMimeData()
@@ -395,7 +395,7 @@ void GraphicsRectItem::move(const QPointF &point)
     moveBy(point.x(),point.y());
 }
 
-QGraphicsItem *GraphicsRectItem::copy() const
+QGraphicsItem *GraphicsRectItem::duplicate() const
 {
     GraphicsRectItem * item = new GraphicsRectItem( rect().toRect(),m_isRound);
     item->m_width = width();
@@ -542,7 +542,7 @@ QPainterPath GraphicsLineItem::shape() const
     return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
-QGraphicsItem *GraphicsLineItem::copy() const
+QGraphicsItem *GraphicsLineItem::duplicate() const
 {
     GraphicsLineItem * item = new GraphicsLineItem();
     item->m_width = width();
@@ -715,10 +715,10 @@ bool GraphicsItemGroup::saveToXml(QXmlStreamWriter *xml)
     return true;
 }
 
-QGraphicsItem *GraphicsItemGroup::copy() const
+QGraphicsItem *GraphicsItemGroup::duplicate() const
 {
     GraphicsItemGroup *item = 0;
-    QList<QGraphicsItem*> copylist = copyChildItems();
+    QList<QGraphicsItem*> copylist = duplicateItems();
     item = createGroup(copylist);
     item->setPos(pos().x(),pos().y());
     item->setPen(pen());
@@ -850,13 +850,13 @@ GraphicsItemGroup *GraphicsItemGroup::createGroup(const QList<QGraphicsItem *> &
     return group;
 }
 
-QList<QGraphicsItem *> GraphicsItemGroup::copyChildItems() const
+QList<QGraphicsItem *> GraphicsItemGroup::duplicateItems() const
 {
     QList<QGraphicsItem*> copylist ;
     foreach (QGraphicsItem * shape , childItems() ) {
         AbstractShape * ab = qgraphicsitem_cast<AbstractShape*>(shape);
         if ( ab && !qgraphicsitem_cast<SizeHandleRect*>(ab)){
-            QGraphicsItem * cp = ab->copy();
+            QGraphicsItem * cp = ab->duplicate();
             //if ( !cp->scene() )
             //    scene()->addItem(cp);
             copylist.append(cp);
@@ -970,7 +970,7 @@ QPainterPath GraphicsBezier::shape() const
     return qt_graphicsItem_shapeFromPath(path,pen());
 }
 
-QGraphicsItem *GraphicsBezier::copy() const
+QGraphicsItem *GraphicsBezier::duplicate() const
 {
     GraphicsBezier * item = new GraphicsBezier( );
     item->m_width = width();
@@ -1201,7 +1201,7 @@ QRectF GraphicsEllipseItem::boundingRect() const
     return shape().controlPointRect();
 }
 
-QGraphicsItem *GraphicsEllipseItem::copy() const
+QGraphicsItem *GraphicsEllipseItem::duplicate() const
 {
     GraphicsEllipseItem * item = new GraphicsEllipseItem( m_localRect.toRect() );
     item->m_width = width();
@@ -1446,7 +1446,7 @@ void GraphicsPolygonItem::endPoint(const QPointF & point)
     m_initialPoints = m_points;
 }
 
-QGraphicsItem *GraphicsPolygonItem::copy() const
+QGraphicsItem *GraphicsPolygonItem::duplicate() const
 {
     GraphicsPolygonItem * item = new GraphicsPolygonItem( );
     item->m_width = width();

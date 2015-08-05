@@ -24,7 +24,6 @@ private:
     QList<QGraphicsItem * > m_items;
 };
 
-
 template < typename BaseType = QGraphicsItem >
 class AbstractShapeType : public BaseType
 {
@@ -43,10 +42,10 @@ public:
     virtual QRectF  rect() const { return m_localRect; }
     virtual void updateCoordinate () {}
     virtual void move( const QPointF & point ){Q_UNUSED(point);}
-    virtual QGraphicsItem * copy() const { return NULL;}
+    virtual QGraphicsItem * duplicate() const { return NULL;}
     virtual int handleCount() const { return m_handles.size();}
-    virtual bool loadFromXml(QXmlStreamReader * xml ) {}
-    virtual bool saveToXml( QXmlStreamWriter * xml ) {}
+    virtual bool loadFromXml(QXmlStreamReader * xml ) = 0;
+    virtual bool saveToXml( QXmlStreamWriter * xml ) = 0 ;
     int collidesWithHandle( const QPointF & point ) const
     {
         const Handles::const_reverse_iterator hend =  m_handles.rend();
@@ -238,7 +237,7 @@ public:
     QRectF  rect() const {  return m_localRect;}
     void updateCoordinate();
     void move( const QPointF & point );
-    QGraphicsItem *copy () const ;
+    QGraphicsItem *duplicate () const ;
     QString displayName() const { return tr("rectangle"); }
 
     virtual bool loadFromXml(QXmlStreamReader * xml );
@@ -262,7 +261,7 @@ public:
     QPainterPath shape() const;
     void control(int dir, const QPointF & delta );
     QRectF boundingRect() const ;
-    QGraphicsItem *copy() const;
+    QGraphicsItem *duplicate() const;
     QString displayName() const { return tr("ellipse"); }
     virtual bool loadFromXml(QXmlStreamReader * xml );
     virtual bool saveToXml( QXmlStreamWriter * xml );
@@ -295,7 +294,7 @@ public:
     virtual bool loadFromXml(QXmlStreamReader * xml );
     virtual bool saveToXml( QXmlStreamWriter * xml );
 
-    QGraphicsItem *copy () const ;
+    QGraphicsItem *duplicate () const ;
     void control(int dir, const QPointF & delta);
     void stretch( int handle , double sx , double sy , const QPointF & origin );
     void updateCoordinate();
@@ -304,7 +303,7 @@ signals:
 
 protected:
     GraphicsItemGroup * createGroup(const QList<QGraphicsItem *> &items) const;
-    QList<QGraphicsItem *> copyChildItems() const;
+    QList<QGraphicsItem *> duplicateItems() const;
     void updatehandles();
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
@@ -327,7 +326,7 @@ public:
     virtual bool loadFromXml(QXmlStreamReader * xml );
     virtual bool saveToXml( QXmlStreamWriter * xml );
     QString displayName() const { return tr("polygon"); }
-    QGraphicsItem *copy() const;
+    QGraphicsItem *duplicate() const;
 protected:
     void updatehandles();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -340,7 +339,7 @@ class GraphicsLineItem : public GraphicsPolygonItem
 public:
     GraphicsLineItem(QGraphicsItem * parent = 0);
     QPainterPath shape() const;
-    QGraphicsItem *copy() const;
+    QGraphicsItem *duplicate() const;
     void addPoint( const QPointF & point ) ;
     void endPoint(const QPointF & point );
     virtual QPointF opposite( int handle ) {
@@ -378,7 +377,7 @@ class GraphicsBezier : public GraphicsPolygonItem
 public:
     GraphicsBezier(bool bbezier = true , QGraphicsItem * parent = 0);
     QPainterPath shape() const;
-    QGraphicsItem *copy() const;
+    QGraphicsItem *duplicate() const;
     virtual bool loadFromXml(QXmlStreamReader * xml );
     virtual bool saveToXml( QXmlStreamWriter * xml );
     QString displayName() const { return tr("bezier"); }

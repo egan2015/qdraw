@@ -894,7 +894,7 @@ void MainWindow::on_paste()
         scene->clearSelection();
         foreach (QGraphicsItem * item , data->items() ) {
             AbstractShape *sp = qgraphicsitem_cast<AbstractShape*>(item);
-            QGraphicsItem * copy = sp->copy();
+            QGraphicsItem * copy = sp->duplicate();
             if ( copy ){
                 copy->setSelected(true);
                 copy->moveBy(10,10);
@@ -913,7 +913,7 @@ void MainWindow::on_cut()
     QList<QGraphicsItem *> copylist ;
     foreach (QGraphicsItem *item , scene->selectedItems()) {
         AbstractShape *sp = qgraphicsitem_cast<AbstractShape*>(item);
-        QGraphicsItem * copy = sp->copy();
+        QGraphicsItem * copy = sp->duplicate();
         if ( copy )
             copylist.append(copy);
     }

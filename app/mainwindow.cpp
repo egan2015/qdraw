@@ -171,17 +171,17 @@ void MainWindow::createActions()
     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
     // create align actions
-    rightAct   = new QAction(QIcon(":/icons/align_right.png"),tr("align right"),this);
-    leftAct    = new QAction(QIcon(":/icons/align_left.png"),tr("align left"),this);
-    vCenterAct = new QAction(QIcon(":/icons/align_vcenter.png"),tr("align vcenter"),this);
-    hCenterAct = new QAction(QIcon(":/icons/align_hcenter.png"),tr("align hcenter"),this);
-    upAct      = new QAction(QIcon(":/icons/align_top.png"),tr("align top"),this);
-    downAct    = new QAction(QIcon(":/icons/align_bottom.png"),tr("align bottom"),this);
-    horzAct    = new QAction(QIcon(":/icons/align_horzeven.png"),tr("align horzeven"),this);
-    vertAct    = new QAction(QIcon(":/icons/align_verteven.png"),tr("align verteven"),this);
-    heightAct  = new QAction(QIcon(":/icons/align_height.png"),tr("align height"),this);
-    widthAct   = new QAction(QIcon(":/icons/align_width.png"),tr("align width"),this);
-    allAct     = new QAction(QIcon(":/icons/align_all.png"),tr("align width and height"),this);
+    rightAct   = new QAction(QIcon(":/icons/align_right.png"),tr("right"),this);
+    leftAct    = new QAction(QIcon(":/icons/align_left.png"),tr("left"),this);
+    vCenterAct = new QAction(QIcon(":/icons/align_vcenter.png"),tr("vcenter"),this);
+    hCenterAct = new QAction(QIcon(":/icons/align_hcenter.png"),tr("hcenter"),this);
+    upAct      = new QAction(QIcon(":/icons/align_top.png"),tr("top"),this);
+    downAct    = new QAction(QIcon(":/icons/align_bottom.png"),tr("bottom"),this);
+    horzAct    = new QAction(QIcon(":/icons/align_horzeven.png"),tr("Horizontal"),this);
+    vertAct    = new QAction(QIcon(":/icons/align_verteven.png"),tr("vertical"),this);
+    heightAct  = new QAction(QIcon(":/icons/align_height.png"),tr("height"),this);
+    widthAct   = new QAction(QIcon(":/icons/align_width.png"),tr("width"),this);
+    allAct     = new QAction(QIcon(":/icons/align_all.png"),tr("width and height"),this);
 
     bringToFrontAct = new QAction(QIcon(":/icons/bringtofront.png"),tr("bring to front"),this);
     sendToBackAct   = new QAction(QIcon(":/icons/sendtoback.png"),tr("send to back"),this);
@@ -320,8 +320,20 @@ void MainWindow::createMenus()
     shapeTool->addAction(polylineAct);
     shapeTool->addAction(bezierAct);
     shapeTool->addAction(rotateAct);
-
     toolMenu->addMenu(shapeTool);
+    QMenu *alignMenu = new QMenu("Align");
+    alignMenu->addAction(rightAct);
+    alignMenu->addAction(leftAct);
+    alignMenu->addAction(hCenterAct);
+    alignMenu->addAction(vCenterAct);
+    alignMenu->addAction(upAct);
+    alignMenu->addAction(downAct);
+    alignMenu->addAction(horzAct);
+    alignMenu->addAction(vertAct);
+    alignMenu->addAction(heightAct);
+    alignMenu->addAction(widthAct);
+    alignMenu->addAction(allAct);
+    toolMenu->addMenu(alignMenu);
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();

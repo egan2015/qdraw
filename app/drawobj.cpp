@@ -130,6 +130,7 @@ GraphicsItem::GraphicsItem(QGraphicsItem *parent)
     this->setAcceptHoverEvents(true);
 }
 
+
 QPixmap GraphicsItem::image() {
     QPixmap pixmap(64, 64);
     pixmap.fill(Qt::transparent);
@@ -240,7 +241,6 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
 
 GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphicsItem *parent)
     :GraphicsItem(parent)
-
     ,m_isRound(isRound)
     ,m_fRatioX(1/10.0)
     ,m_fRatioY(1/3.0)
@@ -257,8 +257,8 @@ GraphicsRectItem::GraphicsRectItem(const QRect & rect , bool isRound , QGraphics
         m_handles.push_back(shr);
         shr = new SizeHandleRect(this, 10 , true);
         m_handles.push_back(shr);
-//        shr = new SizeHandleRect(this, 11 , true);
-//        m_handles.push_back(shr);
+        //shr = new SizeHandleRect(this, 11 , true);
+        //m_handles.push_back(shr);
     }
 
     updatehandles();
@@ -370,18 +370,17 @@ void GraphicsRectItem::updateCoordinate()
 
     QPointF pt1,pt2,delta;
 
-    pt1 = pos();//mapToScene(transformOriginPoint());
+    pt1 = mapToScene(transformOriginPoint());
     pt2 = mapToScene(m_localRect.center());
     delta = pt1 - pt2;
 
     if (!parentItem() ){
         prepareGeometryChange();
-
         m_localRect = QRectF(-m_width/2,-m_height/2,m_width,m_height);
         m_width = m_localRect.width();
         m_height = m_localRect.height();
         setTransform(transform().translate(delta.x(),delta.y()));
-      //  setTransformOriginPoint(m_localRect.center());
+        setTransformOriginPoint(m_localRect.center());
         moveBy(-delta.x(),-delta.y());
         setTransform(transform().translate(-delta.x(),-delta.y()));
         opposite_ = QPointF(0,0);
@@ -453,6 +452,7 @@ void GraphicsRectItem::updatehandles()
     }
 }
 
+static
 QRectF RecalcBounds(const QPolygonF&  pts)
 {
     QRectF bounds(pts[0], QSize(0, 0));
@@ -495,6 +495,7 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
    painter->drawLine(QLine(QPoint(opposite_.x()-6,opposite_.y()),QPoint(opposite_.x()+6,opposite_.y())));
    painter->drawLine(QLine(QPoint(opposite_.x(),opposite_.y()-6),QPoint(opposite_.x(),opposite_.y()+6)));
 */
+
    if (option->state & QStyle::State_Selected)
        qt_graphicsItem_highlightSelected(this, painter, option);
 
@@ -806,7 +807,7 @@ void GraphicsItemGroup::updateCoordinate()
     if (itemsBoundingRect.isNull() )
         itemsBoundingRect = QGraphicsItemGroup::boundingRect();
 
-    pt1 = pos();//mapToScene(transformOriginPoint());
+    pt1 = mapToScene(transformOriginPoint());
     pt2 = mapToScene(itemsBoundingRect.center());
     delta = pt1 - pt2;
     m_initialRect = itemsBoundingRect;
@@ -1070,80 +1071,7 @@ void GraphicsBezier::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 }
 
 
-GridTool::GridTool(const QSize & grid , const QSize & space )
-    :QGraphicsItem(NULL)
-    ,m_sizeGrid(grid)
-    ,m_sizeGridSpace(20,20)
-{
-    setFlag(QGraphicsItem::ItemIsMovable, false);
-    setFlag(QGraphicsItem::ItemIsSelectable, false);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges, false);
-}
 
-QRectF GridTool::boundingRect() const
-{
-
-    return QRectF(0,
-                  0,
-                  m_sizeGrid.width(),
-                  m_sizeGrid.height());
-}
-
-QPainterPath GridTool::shape() const
-{
-    QPainterPath path;
-    path.addRect(boundingRect());
-    return path;
-}
-
-void GridTool::paintGrid(QPainter *painter, const QRect &rect)
-{
-    QColor c(Qt::darkCyan);
-    QPen p(c);
-    p.setStyle(Qt::DashLine);
-    p.setWidthF(0.2);
-    painter->setPen(p);
-
-    painter->save();
-    painter->setRenderHints(QPainter::Antialiasing,false);
-
-    painter->fillRect(rect,Qt::white);
-    for (int x=rect.left() ;x <rect.right()  ;x+=(int)(m_sizeGridSpace.width())) {
-        painter->drawLine(x,rect.top(),x,rect.bottom());
-
-    }
-    for (int y=rect.top();y<rect.bottom() ;y+=(int)(m_sizeGridSpace.height()))
-    {
-        painter->drawLine(rect.left(),y,rect.right(),y);
-    }
-    p.setStyle(Qt::SolidLine);
-    p.setColor(Qt::black);
-    painter->drawLine(rect.right(),rect.top(),rect.right(),rect.bottom());
-    painter->drawLine(rect.left(),rect.bottom(),rect.right(),rect.bottom());
-
-    //draw shadow
-    QColor c1(Qt::black);
-    painter->fillRect(QRect(rect.right()+1,rect.top()+2,2,rect.height()),c1.dark(200));
-    painter->fillRect(QRect(rect.left()+2,rect.bottom()+2,rect.width(),2),c1.dark(200));
-
-    painter->restore();
-}
-
-void GridTool::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-
-    QColor c(Qt::darkCyan);
-    painter->setPen(c);
-
-    for (int x=boundingRect().left() ;x < boundingRect().right()  ;x+=(int)(m_sizeGridSpace.width())) {
-        for (int y=boundingRect().top();y<boundingRect().bottom() ;y+=(int)(m_sizeGridSpace.height()))
-        {
-            painter->drawPoint(x,y);
-        }
-    }
-}
 
 
 GraphicsEllipseItem::GraphicsEllipseItem(const QRect & rect ,QGraphicsItem *parent)

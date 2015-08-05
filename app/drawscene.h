@@ -33,13 +33,24 @@ enum AlignType
     ALL_ALIGN
 };
 
+class GridTool
+{
+public:
+    GridTool(const QSize &grid = QSize(3200,2400) , const QSize & space = QSize(20,20) );
+    void paintGrid(QPainter *painter,const QRect & rect );
+protected:
+    QSize m_sizeGrid;
+    QSize m_sizeGridSpace;
+};
+
 class GraphicsItemGroup;
-class GridTool;
+
 class DrawScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
     explicit DrawScene(QObject *parent = 0);
+    ~DrawScene();
     void setView(QGraphicsView * view ) { m_view = view ; }
     QGraphicsView * view() { return m_view; }
     void align(AlignType alignType );

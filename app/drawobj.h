@@ -372,18 +372,4 @@ private:
 
 
 
-class GridTool : public QGraphicsItem
-{
-public:
-    GridTool(const QSize &grid = QSize(3200,2400) , const QSize & space = QSize(20,20) );
-    QRectF boundingRect() const ;
-    QPainterPath shape() const;
-    void paintGrid(QPainter *painter,const QRect & rect );
-protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
-    QSize m_sizeGrid;
-    QSize m_sizeGridSpace;
-};
-
 #endif // DRAWOBJ

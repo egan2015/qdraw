@@ -848,14 +848,13 @@ void MainWindow::on_unGroup_triggered()
 
 void MainWindow::on_func_test_triggered()
 {
-    /*
+
        QtPenPropertyManager *penPropertyManager = new QtPenPropertyManager();
        QtProperty * property = penPropertyManager->addProperty("pen");
 
        QtTreePropertyBrowser *editor = new QtTreePropertyBrowser();
        editor->setFactoryForManager(penPropertyManager->subIntPropertyManager(),new QtSpinBoxFactory());
        editor->setFactoryForManager(penPropertyManager->subEnumPropertyManager(),new QtEnumEditorFactory());
-
        editor->addProperty(property);
 
        QPen pen;
@@ -865,13 +864,13 @@ void MainWindow::on_func_test_triggered()
        penPropertyManager->setValue(property,pen);
 
        editor->show();
-    */
+
 
 /*
         QtGradientEditor * editor = new QtGradientEditor(NULL);
         editor->show();
 */
-    dockProperty->showNormal();
+//    dockProperty->showNormal();
 }
 
 void MainWindow::on_copy()

@@ -1071,9 +1071,6 @@ void GraphicsBezier::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 }
 
 
-
-
-
 GraphicsEllipseItem::GraphicsEllipseItem(const QRect & rect ,QGraphicsItem *parent)
     :GraphicsRectItem(rect,parent)
 {

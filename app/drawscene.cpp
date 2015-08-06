@@ -101,8 +101,8 @@ void DrawScene::align(AlignType alignType)
     if ( !firstItem ) return;
     QRectF rectref = firstItem->mapRectToScene(firstItem->boundingRect());
     int nLeft, nRight, nTop, nBottom;
-    int width = firstItem->width();
-    int height = firstItem->height();
+    qreal width = firstItem->width();
+    qreal height = firstItem->height();
 
     nLeft=nRight=rectref.center().x();
     nTop=nBottom=rectref.center().y();
@@ -185,24 +185,39 @@ void DrawScene::align(AlignType alignType)
        {
            AbstractShape * aitem = qgraphicsitem_cast<AbstractShape*>(item);
            if ( aitem ){
-               aitem->setWidth(width);
-               aitem->setHeight(height);
+               qreal fx = width / aitem->width();
+               qreal fy = height / aitem->height();
+               if ( fx == 1.0 && fy == 1.0 ) break;
+               aitem->stretch(RightBottom,fx,fy,aitem->opposite(RightBottom));
+               aitem->updateCoordinate();
+               emit itemResize(aitem,RightBottom,QPointF(fx,fy));
            }
        }
            break;
         case WIDTH_ALIGN:
        {
             AbstractShape * aitem = qgraphicsitem_cast<AbstractShape*>(item);
-            if ( aitem )
-                aitem->setWidth(width);
+            if ( aitem ){
+                qreal fx = width / aitem->width();
+                if ( fx == 1.0 ) break;
+                aitem->stretch(Right,fx,1,aitem->opposite(Right));
+                aitem->updateCoordinate();
+                emit itemResize(aitem,Right,QPointF(fx,1));
+            }
        }
             break;
 
         case HEIGHT_ALIGN:
        {
             AbstractShape * aitem = qgraphicsitem_cast<AbstractShape*>(item);
-            if ( aitem )
-                aitem->setHeight(height);
+            if ( aitem ){
+
+                qreal fy = height / aitem->height();
+                if (fy == 1.0 ) break ;
+                aitem->stretch(Bottom,1,fy,aitem->opposite(Bottom));
+                aitem->updateCoordinate();
+                emit itemResize(aitem,Bottom,QPointF(1,fy));
+            }
        }
             break;
         }

@@ -353,6 +353,7 @@ void GraphicsRectItem::stretch(int handle , double sx, double sy, const QPointF 
     }
 
     opposite_ = origin;
+
     trans.translate(origin.x(),origin.y());
     trans.scale(sx,sy);
     trans.translate(-origin.x(),-origin.y());

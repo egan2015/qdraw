@@ -625,7 +625,7 @@ void MainWindow::updateActions()
 
     bringToFrontAct->setEnabled(scene && scene->selectedItems().count() > 0);
     sendToBackAct->setEnabled(scene && scene->selectedItems().count() > 0);
-    groupAct->setEnabled( scene && scene->selectedItems().count() > 1);
+    groupAct->setEnabled( scene && scene->selectedItems().count() > 0);
     unGroupAct->setEnabled(scene &&scene->selectedItems().count() > 0 &&
                               dynamic_cast<GraphicsItemGroup*>( scene->selectedItems().first()));
 
@@ -827,7 +827,7 @@ void MainWindow::on_group_triggered()
     //QGraphicsItemGroup
     QList<QGraphicsItem *> selectedItems = scene->selectedItems();
     // Create a new group at that level
-    if ( selectedItems.count() < 2) return;
+    if ( selectedItems.count() < 1) return;
     GraphicsItemGroup *group = scene->createGroup(selectedItems);
     QUndoCommand *groupCommand = new GroupShapeCommand(group,scene);
     undoStack->push(groupCommand);

@@ -97,7 +97,7 @@ void QtRuleBar::drawTicker(QPainter *painter)
     increment = (double) width / (upper - lower);
 
     scale = ceil (max_size);
-    sprintf (unit_str, "%d", 50 );
+    sprintf (unit_str, "%d", scale );
     text_size = strlen (unit_str) * digit_height + 1;
     for (scale = 0; scale < sizeof (ruler_metric.ruler_scale) /
          sizeof(ruler_metric.ruler_scale[0]); scale++)

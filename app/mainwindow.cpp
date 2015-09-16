@@ -518,7 +518,7 @@ DrawView *MainWindow::createMdiChild()
 
     DrawScene *scene = new DrawScene(this);
 
-    QRectF rc = QRectF(0 , 0 , 800, 600);
+    QRectF rc = QRectF(0 , 0 , 1800, 1600);
 
     scene->setSceneRect(rc);
     qDebug()<<rc.bottomLeft()<<rc.size() << rc.topLeft();
@@ -546,8 +546,8 @@ DrawView *MainWindow::createMdiChild()
     view->setRenderHint(QPainter::Antialiasing);
     view->setCacheMode(QGraphicsView::CacheBackground);
     view->setOptimizationFlags(QGraphicsView::DontSavePainterState);
-   // view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
-    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    //view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     view->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
     /*

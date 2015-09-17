@@ -518,7 +518,7 @@ DrawView *MainWindow::createMdiChild()
 
     DrawScene *scene = new DrawScene(this);
 
-    QRectF rc = QRectF(0 , 0 , 1800, 1600);
+    QRectF rc = QRectF(0 , 0 , 800, 600);
 
     scene->setSceneRect(rc);
     qDebug()<<rc.bottomLeft()<<rc.size() << rc.topLeft();

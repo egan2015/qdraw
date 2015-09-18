@@ -211,8 +211,6 @@ public:
     enum {Type = UserType+1};
     int  type() const { return Type; }
     virtual QPixmap image() ;
-
-
 signals:
     void selectedChange(QGraphicsItem *item);
 

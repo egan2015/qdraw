@@ -10,22 +10,7 @@ class QPainter;
 class QGraphicsView;
 QT_END_NAMESPACE
 
-#define RT_VERTICAL	  0
-#define RT_HORIZONTAL 1
-
-// hint information
-#define RW_VSCROLL	  1
-#define RW_HSCROLL	  2
-#define RW_POSITION   3
 #define RULER_SIZE    16
-
-typedef struct {
-    int   uMessage;
-    QPoint ScrollPos;
-    QPoint Pos;
-    QSize  DocSize;
-    float  fZoomFactor;
-}RULER_INFO;
 
 class QtCornerBox : public QWidget
 {

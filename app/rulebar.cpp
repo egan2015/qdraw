@@ -250,5 +250,4 @@ void QtCornerBox::paintEvent(QPaintEvent *e)
 
     painter.drawLine(rect().topRight(),rect().bottomRight());
     painter.drawLine(rect().bottomLeft(),rect().bottomRight());
-
 }

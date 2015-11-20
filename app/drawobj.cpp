@@ -1194,8 +1194,10 @@ void GraphicsEllipseItem::updatehandles()
     GraphicsItem::updatehandles();
     QRectF local = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     QPointF delta = local.center() - m_localRect.center();
+
     qreal x = (m_width/2) * cos( -m_startAngle * 3.1416 / 180 );
     qreal y = (m_height/2) * sin( -m_startAngle * 3.1416 / 180);
+
     m_handles.at(8)->move(x-delta.x(),y-delta.y());
     x = (m_width/2) * cos( -m_spanAngle * 3.1416 / 180);
     y = (m_height/2) * sin(-m_spanAngle * 3.1416 / 180);

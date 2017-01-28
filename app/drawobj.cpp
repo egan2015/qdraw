@@ -222,7 +222,7 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
             return QVariant::fromValue<bool>(false);
         }
     }
-/*
+    /*
     else if (change == ItemPositionChange && scene()) {
         // value is the new position.
         QPointF newPos = value.toPointF();
@@ -234,7 +234,7 @@ QVariant GraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, cons
             return newPos;
         }
     }
-*/
+    */
     return QGraphicsItem::itemChange(change, value);
 }
 
@@ -491,16 +491,16 @@ void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
        painter->drawRoundedRect(rect(),rx,ry);
    else
        painter->drawRect(rect().toRect());
-/*
+
    painter->setPen(Qt::blue);
    painter->drawLine(QLine(QPoint(opposite_.x()-6,opposite_.y()),QPoint(opposite_.x()+6,opposite_.y())));
    painter->drawLine(QLine(QPoint(opposite_.x(),opposite_.y()-6),QPoint(opposite_.x(),opposite_.y()+6)));
-*/
+
 
    if (option->state & QStyle::State_Selected)
        qt_graphicsItem_highlightSelected(this, painter, option);
-
 /*
+
    QPolygonF pts;
    pts<<m_localRect.topLeft()<<m_localRect.topRight()<<m_localRect.bottomRight()<<m_localRect.bottomLeft();
    pts = mapToScene(pts);
@@ -1113,14 +1113,14 @@ void GraphicsEllipseItem::control(int dir, const QPointF & delta)
     {
         qreal len_y = local.y() - m_localRect.center().y();
         qreal len_x = local.x() - m_localRect.center().x();
-        m_startAngle = -atan2(len_y,len_x)*180/3.1416;
+        m_startAngle = -atan2(len_y,len_x)*180/M_PI;
     }
         break;
     case 10:
     {
         qreal len_y = local.y() - m_localRect.center().y();
         qreal len_x = local.x() - m_localRect.center().x();
-        m_spanAngle = -atan2(len_y,len_x)*180/3.1416;
+        m_spanAngle = -atan2(len_y,len_x)*180/M_PI;
         break;
     }
    default:
@@ -1135,7 +1135,7 @@ void GraphicsEllipseItem::control(int dir, const QPointF & delta)
         m_startAngle = tmp;
     }
 
-    if ( std::abs(m_spanAngle-m_startAngle) > 360 ){
+    if ( qAbs(m_spanAngle-m_startAngle) > 360 ){
         m_startAngle = 40;
         m_spanAngle = 400;
     }
@@ -1195,12 +1195,12 @@ void GraphicsEllipseItem::updatehandles()
     QRectF local = QRectF(-m_width/2,-m_height/2,m_width,m_height);
     QPointF delta = local.center() - m_localRect.center();
 
-    qreal x = (m_width/2) * cos( -m_startAngle * 3.1416 / 180 );
-    qreal y = (m_height/2) * sin( -m_startAngle * 3.1416 / 180);
+    qreal x = (m_width/2) * cos( -m_startAngle * M_PI / 180 );
+    qreal y = (m_height/2) * sin( -m_startAngle * M_PI / 180);
 
     m_handles.at(8)->move(x-delta.x(),y-delta.y());
-    x = (m_width/2) * cos( -m_spanAngle * 3.1416 / 180);
-    y = (m_height/2) * sin(-m_spanAngle * 3.1416 / 180);
+    x = (m_width/2) * cos( -m_spanAngle * M_PI / 180);
+    y = (m_height/2) * sin(-m_spanAngle * M_PI / 180);
     m_handles.at(9)->move(x-delta.x(),y-delta.y());
 }
 
@@ -1212,13 +1212,8 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     QRectF rc = m_localRect;
 
     qreal radius = qMax(rc.width(),rc.height());
-/*
-    QRadialGradient result(rc.center(),radius);
-    result.setColorAt(0, c.light(200));
-    result.setColorAt(0.5, c.dark(150));
-    result.setColorAt(1, c);
-*/
 
+/*
     QConicalGradient  result(rc.center(),-45);
 
     QColor niceBlue(150, 150, 200);
@@ -1226,9 +1221,9 @@ void GraphicsEllipseItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     result.setColorAt(0.2, niceBlue);
     result.setColorAt(0.5, c.light(120));
     result.setColorAt(1.0, c.dark(200));
-
+*/
     painter->setPen(pen());
-    QBrush b(result);
+    QBrush b(c);
     painter->setBrush(b);
 
     int startAngle = m_startAngle <= m_spanAngle ? m_startAngle : m_spanAngle;

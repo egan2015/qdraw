@@ -41,9 +41,9 @@ void GridTool::paintGrid(QPainter *painter, const QRect &rect)
     painter->drawLine(rect.left(),rect.bottom(),rect.right(),rect.bottom());
 
     //draw shadow
-    QColor c1(Qt::black);
-    painter->fillRect(QRect(rect.right()+1,rect.top()+2,2,rect.height()),c1.dark(200));
-    painter->fillRect(QRect(rect.left()+2,rect.bottom()+2,rect.width(),2),c1.dark(200));
+//    QColor c1(Qt::black);
+//    painter->fillRect(QRect(rect.right()+1,rect.top()+2,2,rect.height()),c1.dark(200));
+//    painter->fillRect(QRect(rect.left()+2,rect.bottom()+2,rect.width(),2),c1.dark(200));
 
     painter->restore();
 }

@@ -254,7 +254,7 @@ void MainWindow::createActions()
     connect(rotateAct,SIGNAL(triggered()),this,SLOT(addShape()));
 
     deleteAct = new QAction(tr("&Delete"), this);
-    deleteAct->setShortcut(tr("Delete"));
+    deleteAct->setShortcut(QKeySequence::Delete);
 
     undoAct = undoStack->createUndoAction(this,tr("undo"));
     undoAct->setIcon(QIcon(":/icons/undo.png"));
@@ -283,7 +283,6 @@ void MainWindow::createActions()
     connect(zoomInAct , SIGNAL(triggered()),this,SLOT(zoomIn()));
     connect(zoomOutAct , SIGNAL(triggered()),this,SLOT(zoomOut()));
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteItem()));
-    this->addAction(deleteAct);
 
     funcAct = new QAction(tr("func test"),this);
     connect(funcAct,SIGNAL(triggered()),this,SLOT(on_func_test_triggered()));
@@ -305,6 +304,7 @@ void MainWindow::createMenus()
     editMenu->addAction(cutAct);
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
+    editMenu->addAction(deleteAct);
 
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(zoomInAct);
@@ -550,11 +550,9 @@ DrawView *MainWindow::createMdiChild()
     //view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     view->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
-    /*
-    view->setTransform(view->transform().translate(0,600));
+    // move orign point to leftbottom
     view->setTransform(view->transform().scale(1,-1));
-    view->setTransform(view->transform().translate(0,-600));
-    */
+
 
     scene->setBackgroundBrush(Qt::darkGray);
 
@@ -722,6 +720,7 @@ void MainWindow::itemControl(QGraphicsItem *item, int handle, const QPointF & ne
 
 void MainWindow::deleteItem()
 {
+    qDebug()<<"deleteItem";
     if (!activeMdiChild()) return ;
     QGraphicsScene * scene = activeMdiChild()->scene();
     activeMdiChild()->setModified(true);
